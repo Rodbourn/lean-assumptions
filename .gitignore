@@ -1,0 +1,35 @@
+# Lean / Lake build artifacts
+.lake/
+lake-packages/
+*.olean
+*.ilean
+*.olean.server
+*.c
+*.o
+*.a
+*.so
+*.dylib
+*.dll
+
+# Generated documentation and local reports
+/docbuild/build/
+/docs/_site/
+/site/
+/coverage/
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
+*.trace
+*.prof
+*.bak
+*.swp
+*~
+
+# Editor and OS metadata
+.DS_Store
+Thumbs.db
+Desktop.ini
+.idea/
+.vscode/
