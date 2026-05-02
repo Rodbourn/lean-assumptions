@@ -3,10 +3,18 @@
 `lean-assumptions` is a Lean 4 package and CLI for auditing assumptions that
 appear in theorem and declaration statements.
 
-Lean already has strong proof-validation tools. For example, `#print axioms`
-answers which axioms a proof term transitively depends on. This project answers
-a different question: what assumptions are present in the elaborated declaration
-type itself?
+It is meant to sit next to Lean's built-in axiom reporting:
+
+```lean
+#print axioms MyTheorem
+#print assumptions MyTheorem
+#print assumption_tree MyTheorem
+#print assumption_json MyTheorem
+```
+
+`#print axioms` answers which axioms a proof term transitively depends on.
+`#print assumptions` answers a different question: what assumptions are present
+in the elaborated declaration type itself?
 
 That includes assumptions carried by:
 
