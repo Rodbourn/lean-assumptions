@@ -186,6 +186,9 @@ where
       let payloadFamily := args[1]
       forallTelescopeReducing (← inferType payloadFamily) fun fvars _ => do
         let payloadType := mkAppN payloadFamily fvars
+        -- `Sigma` payloads live in `Type`, so this direct-`Prop` check is
+        -- only reachable for `PSigma`; the wrapper check below is meaningful
+        -- for both families.
         if ← bindsDirectPropSurface payloadType then
           return true
         else
