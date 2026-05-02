@@ -10,6 +10,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 EXAMPLE = "Examples/HiddenPackage.lean"
+EXPECTED_OUTPUT = ROOT / "Examples" / "HiddenPackage.expected.txt"
 
 
 def windows_path_to_wsl(path: Path) -> str:
@@ -42,24 +43,47 @@ def run_command(command: list[str]) -> subprocess.CompletedProcess[str]:
 
 
 def main() -> int:
+    source = (ROOT / EXAMPLE).read_text(encoding="utf-8")
+    required_commands = [
+        "#print axioms Examples.HiddenPackage.usesCertifiedValue",
+        "#print assumptions Examples.HiddenPackage.usesCertifiedValue",
+        "#print assumption_tree Examples.HiddenPackage.usesCertifiedValue",
+        "#print assumption_json Examples.HiddenPackage.usesCertifiedValue",
+    ]
+    missing_commands = [command for command in required_commands if command not in source]
+    if missing_commands:
+        print("example source is missing expected command(s):", file=sys.stderr)
+        for command in missing_commands:
+            print(f"- {command}", file=sys.stderr)
+        return 1
+
     command = ["lake", "env", "lean", EXAMPLE]
     try:
         completed = run_command(command)
     except (FileNotFoundError, ValueError) as error:
         print(f"example check could not start: {error}", file=sys.stderr)
         return 1
-    combined_output = completed.stdout + completed.stderr
+    combined_output = (completed.stdout + completed.stderr).replace("\r\n", "\n")
     if completed.returncode != 0:
         print(f"example check failed with exit {completed.returncode}", file=sys.stderr)
         print(combined_output, file=sys.stderr)
         return 1
 
+    expected_output = EXPECTED_OUTPUT.read_text(encoding="utf-8").replace("\r\n", "\n")
+    if combined_output.strip() != expected_output.strip():
+        print(f"example output differs from {EXPECTED_OUTPUT.relative_to(ROOT)}", file=sys.stderr)
+        return 1
+
     required_fragments = [
+        "'Examples.HiddenPackage.usesCertifiedValue' does not depend on any axioms",
         "target: Examples.HiddenPackage.usesCertifiedValue",
         "- pkg : package_with_prop_fields [explicit]",
         "- value : pure_data [explicit]",
         "- certified : direct_prop [explicit] flags=[binder_type_is_prop]",
         "policy_result: fail",
+        '"policy_result":"fail"',
+        '"primary_category":"package_with_prop_fields"',
+        '"name":"certified"',
         "limitations: audits elaborated declaration types only",
     ]
     missing = [fragment for fragment in required_fragments if fragment not in combined_output]

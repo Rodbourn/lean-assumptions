@@ -43,26 +43,61 @@ theorem usesCertifiedValue (pkg : CertifiedValue) : pkg.value = pkg.value := rfl
 ```
 
 The theorem has no direct hypothesis named `h`, but its `pkg` argument carries a
-proposition-valued field. Running:
+proposition-valued field. The four commands below show how this sits next to
+Lean's built-in axiom view:
 
 ```lean
-#print assumptions usesCertifiedValue
+#print axioms Examples.HiddenPackage.usesCertifiedValue
+#print assumptions Examples.HiddenPackage.usesCertifiedValue
+#print assumption_tree Examples.HiddenPackage.usesCertifiedValue
+#print assumption_json Examples.HiddenPackage.usesCertifiedValue
 ```
 
-shows the hidden statement-surface assumption:
+The first command answers the proof-dependency question:
 
 ```text
+'Examples.HiddenPackage.usesCertifiedValue' does not depend on any axioms
+```
+
+The relevant output from `#print assumptions` answers the statement-surface
+question:
+
+```text
+lean-assumptions report
+target: Examples.HiddenPackage.usesCertifiedValue
+policy_result: fail
 assumption_tree:
 - pkg : package_with_prop_fields [explicit]
   - value : pure_data [explicit]
   - certified : direct_prop [explicit] flags=[binder_type_is_prop]
-policy_result: fail
+policy_findings:
+- unapproved_package_with_prop_fields severity=failure path=pkg category=package_with_prop_fields type=Examples.HiddenPackage.CertifiedValue
+```
+
+`#print assumption_tree` emits the same normalized tree in the text report.
+`#print assumption_json` emits the same result as machine-readable JSON; the
+relevant fields are:
+
+```json
+{
+  "schema_version": "1",
+  "target": "Examples.HiddenPackage.usesCertifiedValue",
+  "policy_result": "fail",
+  "assumption_tree": [
+    {
+      "name": "pkg",
+      "primary_category": "package_with_prop_fields"
+    }
+  ]
+}
 ```
 
 That is the core use case: make statement-level assumptions visible even when
 they are hidden behind packaging, typeclasses, aliases, or proof-carrying data.
 The complete runnable version is in
-[Examples/HiddenPackage.lean](Examples/HiddenPackage.lean):
+[Examples/HiddenPackage.lean](Examples/HiddenPackage.lean), and the checked
+current output is in
+[Examples/HiddenPackage.expected.txt](Examples/HiddenPackage.expected.txt):
 
 ```text
 lake env lean Examples/HiddenPackage.lean

@@ -1,0 +1,44 @@
+'Examples.HiddenPackage.usesCertifiedValue' does not depend on any axioms
+lean-assumptions report
+tool_version: 0.1.0-dev
+lean_version: 4.30.0-rc2
+schema_version: 1
+report_model_version: 0.1.0-dev
+target: Examples.HiddenPackage.usesCertifiedValue
+declaration_kind: theorem
+transparency_mode: none
+policy_identifier: strict
+policy_result: fail
+unknowns_occurred: false
+cycles_truncated: false
+assumption_tree:
+- pkg : package_with_prop_fields [explicit]
+  - value : pure_data [explicit]
+  - certified : direct_prop [explicit] flags=[binder_type_is_prop]
+policy_findings:
+- unapproved_package_with_prop_fields severity=failure path=pkg category=package_with_prop_fields type=Examples.HiddenPackage.CertifiedValue
+raw_declaration_type_repr: forall(pkg,explicit,const(Examples.HiddenPackage.CertifiedValue,[]),app(app(app(const(Eq,[succ(0)]),const(Nat,[])),app(const(Examples.HiddenPackage.CertifiedValue.value,[]),bvar(0))),app(const(Examples.HiddenPackage.CertifiedValue.value,[]),bvar(0))))
+result_type_repr: app(app(app(const(Eq,[succ(0)]),const(Nat,[])),app(const(Examples.HiddenPackage.CertifiedValue.value,[]),fvar)),app(const(Examples.HiddenPackage.CertifiedValue.value,[]),fvar))
+limitations: audits elaborated declaration types only; does not validate proof axioms, sandbox execution, or theorem-statement equivalence.
+lean-assumptions report
+tool_version: 0.1.0-dev
+lean_version: 4.30.0-rc2
+schema_version: 1
+report_model_version: 0.1.0-dev
+target: Examples.HiddenPackage.usesCertifiedValue
+declaration_kind: theorem
+transparency_mode: none
+policy_identifier: strict
+policy_result: fail
+unknowns_occurred: false
+cycles_truncated: false
+assumption_tree:
+- pkg : package_with_prop_fields [explicit]
+  - value : pure_data [explicit]
+  - certified : direct_prop [explicit] flags=[binder_type_is_prop]
+policy_findings:
+- unapproved_package_with_prop_fields severity=failure path=pkg category=package_with_prop_fields type=Examples.HiddenPackage.CertifiedValue
+raw_declaration_type_repr: forall(pkg,explicit,const(Examples.HiddenPackage.CertifiedValue,[]),app(app(app(const(Eq,[succ(0)]),const(Nat,[])),app(const(Examples.HiddenPackage.CertifiedValue.value,[]),bvar(0))),app(const(Examples.HiddenPackage.CertifiedValue.value,[]),bvar(0))))
+result_type_repr: app(app(app(const(Eq,[succ(0)]),const(Nat,[])),app(const(Examples.HiddenPackage.CertifiedValue.value,[]),fvar)),app(const(Examples.HiddenPackage.CertifiedValue.value,[]),fvar))
+limitations: audits elaborated declaration types only; does not validate proof axioms, sandbox execution, or theorem-statement equivalence.
+{"schema_version":"1","tool_version":"0.1.0-dev","lean_version":"4.30.0-rc2","report_model_version":"0.1.0-dev","target":"Examples.HiddenPackage.usesCertifiedValue","declaration_kind":"theorem","transparency_mode":"none","policy_identifier":"strict","policy_result":"fail","unknowns_occurred":false,"cycles_truncated":false,"raw_declaration_type_repr":"forall(pkg,explicit,const(Examples.HiddenPackage.CertifiedValue,[]),app(app(app(const(Eq,[succ(0)]),const(Nat,[])),app(const(Examples.HiddenPackage.CertifiedValue.value,[]),bvar(0))),app(const(Examples.HiddenPackage.CertifiedValue.value,[]),bvar(0))))","result_type_repr":"app(app(app(const(Eq,[succ(0)]),const(Nat,[])),app(const(Examples.HiddenPackage.CertifiedValue.value,[]),fvar)),app(const(Examples.HiddenPackage.CertifiedValue.value,[]),fvar))","assumption_tree":[{"name":"pkg","binder_kind":"explicit","primary_category":"package_with_prop_fields","secondary_flags":[],"binder_type_repr":"const(Examples.HiddenPackage.CertifiedValue,[])","children":[{"name":"value","binder_kind":"explicit","primary_category":"pure_data","secondary_flags":[],"binder_type_repr":"const(Nat,[])","children":[],"renderer_children_truncated":false},{"name":"certified","binder_kind":"explicit","primary_category":"direct_prop","secondary_flags":["binder_type_is_prop"],"binder_type_repr":"app(app(app(const(Eq,[succ(0)]),const(Nat,[])),app(const(Examples.HiddenPackage.CertifiedValue.value,[]),fvar)),app(const(Examples.HiddenPackage.CertifiedValue.value,[]),fvar))","children":[],"renderer_children_truncated":false}],"renderer_children_truncated":false}],"policy_findings":[{"kind":"unapproved_package_with_prop_fields","severity":"failure","path":["pkg"],"category":"package_with_prop_fields","type_name":"Examples.HiddenPackage.CertifiedValue"}],"limitations":["audits elaborated declaration types only","does not validate proof axioms","does not sandbox Lean execution","does not prove theorem-statement equivalence"]}
