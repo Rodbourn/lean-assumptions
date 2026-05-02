@@ -1,5 +1,6 @@
 import LeanAssumptionsTest.Unit.Core.Phase1
 import LeanAssumptionsTest.Unit.Core.Phase2
+import LeanAssumptionsTest.Unit.Policy.Phase2
 import LeanAssumptionsTest.Integration.Phase1
 
 /-!

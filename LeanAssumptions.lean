@@ -1,10 +1,11 @@
 import LeanAssumptions.Version
 import LeanAssumptions.Core
+import LeanAssumptions.Policy
 
 /-!
 `lean-assumptions` public root module.
 
-This root exposes package metadata and the certified classification entry
+This root exposes package metadata and the certified classification/policy entry
 points.
 -/
 
@@ -16,7 +17,8 @@ namespace LeanAssumptions
 Public certified inspection entry point.
 
 This thin adapter exposes certified-path declaration inspection without adding
-rendering or command syntax.
+rendering or command syntax. Policy evaluation is available separately through
+`LeanAssumptions.Policy`.
 -/
 def inspectDeclaration (declName : Lean.Name) : CommandElabM Core.AssumptionReport :=
   Core.inspectDeclaration declName
