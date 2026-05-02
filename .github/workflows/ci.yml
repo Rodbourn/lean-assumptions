@@ -56,8 +56,8 @@ jobs:
           build: false
           test: false
           lint: false
-      - name: Build CLI executable
-        run: lake build lean-assumptions
+      - name: Build CLI and smoke fixtures
+        run: lake build lean-assumptions LeanAssumptionsTest.Fixtures
       - name: Validate performance baseline
         run: python scripts/check_performance_baseline.py
 
@@ -71,8 +71,8 @@ jobs:
           build: false
           test: false
           lint: false
-      - name: Build CLI executable
-        run: lake build lean-assumptions
+      - name: Build CLI and smoke fixtures
+        run: lake build lean-assumptions LeanAssumptionsTest.Fixtures
       - name: Validate local release readiness
         run: python scripts/check_release_readiness.py
 

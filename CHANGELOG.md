@@ -23,4 +23,4 @@
 - Pin repository text files to LF line endings and validate them for cross-platform golden tests.
 - Harden GitHub Actions Lake steps to use Bash consistently after Lean toolchain setup.
 - Temporarily remove hosted Windows from the CI matrix while retaining identical Ubuntu and macOS gates.
-- Build the CLI executable before CI performance and release-readiness smoke checks.
+- Build the CLI executable and test fixture module before CI performance and release-readiness smoke checks.
