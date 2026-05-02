@@ -21,6 +21,39 @@ want a deterministic report of a theorem's statement-level assumption surface.
 The tool is especially useful when cleaning up APIs that accidentally hide
 logical assumptions inside packages, typeclasses, or aliases.
 
+## Example
+
+A theorem can look like it takes ordinary data while also receiving a proof
+through a package argument:
+
+```lean
+structure CertifiedValue where
+  value : Nat
+  certified : value = value
+
+theorem usesCertifiedValue (pkg : CertifiedValue) : pkg.value = pkg.value := rfl
+```
+
+The theorem has no direct hypothesis named `h`, but its `pkg` argument carries a
+proposition-valued field. Running:
+
+```lean
+#print assumptions usesCertifiedValue
+```
+
+shows the hidden statement-surface assumption:
+
+```text
+assumption_tree:
+- pkg : package_with_prop_fields [explicit]
+  - value : pure_data [explicit]
+  - certified : direct_prop [explicit] flags=[binder_type_is_prop]
+policy_result: fail
+```
+
+That is the core use case: make statement-level assumptions visible even when
+they are hidden behind packaging, typeclasses, aliases, or proof-carrying data.
+
 ## Quick Start
 
 In a Lean file:
