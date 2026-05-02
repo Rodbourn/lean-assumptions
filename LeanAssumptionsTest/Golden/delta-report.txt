@@ -1,0 +1,62 @@
+lean-assumptions delta report
+tool_version: 0.1.0-dev
+schema_version: 1
+baseline_schema_version: 1
+current_schema_version: 1
+baseline_lean_version: 4.30.0-rc2
+current_lean_version: 4.30.0-rc2
+baseline_policy_identifier: strict
+current_policy_identifier: strict
+baseline_transparency_mode: none
+current_transparency_mode: none
+baseline_declarations: 3
+current_declarations: 3
+summary:
+declarations_added: 1
+declarations_removed: 1
+declarations_changed: 2
+policy_result_changed: 1
+finding_categories_changed: 2
+boundary_shape_changed: 1
+changes:
+- Example.added kind=added
+  baseline_policy_result: none
+  current_policy_result: fail
+  policy_result_changed: false
+  baseline_finding_categories: []
+  current_finding_categories: [direct_prop]
+  finding_categories_changed: false
+  baseline_boundary_shape: []
+  current_boundary_shape: [h|explicit|direct_prop|sort(0)]
+  boundary_shape_changed: false
+- Example.explicit kind=changed
+  baseline_policy_result: fail
+  current_policy_result: fail
+  policy_result_changed: false
+  baseline_finding_categories: [direct_prop]
+  current_finding_categories: [package_with_prop_fields]
+  finding_categories_changed: true
+  baseline_boundary_shape: [h|explicit|direct_prop|sort(0)]
+  current_boundary_shape: [pkg|explicit|package_with_prop_fields|const(Example.Package,[])]
+  boundary_shape_changed: true
+- Example.hidden kind=changed
+  baseline_policy_result: fail
+  current_policy_result: pass
+  policy_result_changed: true
+  baseline_finding_categories: [package_with_prop_fields]
+  current_finding_categories: []
+  finding_categories_changed: true
+  baseline_boundary_shape: [pkg|explicit|package_with_prop_fields|const(Example.Package,[])]
+  current_boundary_shape: [pkg|explicit|package_with_prop_fields|const(Example.Package,[])]
+  boundary_shape_changed: false
+- Example.removed kind=removed
+  baseline_policy_result: pass
+  current_policy_result: none
+  policy_result_changed: false
+  baseline_finding_categories: []
+  current_finding_categories: []
+  finding_categories_changed: false
+  baseline_boundary_shape: [n|explicit|pure_data|const(Nat,[])]
+  current_boundary_shape: []
+  boundary_shape_changed: false
+limitations: compares rendered audit artifacts only; does not re-run Lean elaboration, validate proof axioms, sandbox execution, prove theorem-statement equivalence, or suggest remediation.

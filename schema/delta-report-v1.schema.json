@@ -1,0 +1,146 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lean-assumptions.local/schema/delta-report-v1.schema.json",
+  "title": "lean-assumptions delta report v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "tool_version",
+    "delta_model_version",
+    "baseline",
+    "current",
+    "summary",
+    "changes",
+    "limitations"
+  ],
+  "properties": {
+    "schema_version": { "const": "1" },
+    "tool_version": { "type": "string" },
+    "delta_model_version": { "type": "string" },
+    "baseline": { "$ref": "#/$defs/artifact_metadata" },
+    "current": { "$ref": "#/$defs/artifact_metadata" },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "baseline_declarations",
+        "current_declarations",
+        "declarations_added",
+        "declarations_removed",
+        "declarations_changed",
+        "policy_result_changed",
+        "finding_categories_changed",
+        "boundary_shape_changed"
+      ],
+      "properties": {
+        "baseline_declarations": { "type": "number" },
+        "current_declarations": { "type": "number" },
+        "declarations_added": { "type": "number" },
+        "declarations_removed": { "type": "number" },
+        "declarations_changed": { "type": "number" },
+        "policy_result_changed": { "type": "number" },
+        "finding_categories_changed": { "type": "number" },
+        "boundary_shape_changed": { "type": "number" }
+      }
+    },
+    "changes": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/declaration_delta" }
+    },
+    "limitations": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "$defs": {
+    "artifact_metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifact_role",
+        "schema_version",
+        "lean_version",
+        "policy_identifier",
+        "transparency_mode",
+        "declarations"
+      ],
+      "properties": {
+        "artifact_role": {
+          "enum": ["baseline", "current"]
+        },
+        "schema_version": { "type": "string" },
+        "lean_version": { "type": "string" },
+        "policy_identifier": { "type": "string" },
+        "transparency_mode": {
+          "enum": ["none", "reducible", "recursive_normalization", "unknown"]
+        },
+        "declarations": { "type": "number" }
+      }
+    },
+    "boundary_node": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "binder_kind",
+        "primary_category",
+        "binder_type_repr"
+      ],
+      "properties": {
+        "name": { "type": "string" },
+        "binder_kind": { "type": "string" },
+        "primary_category": { "type": "string" },
+        "binder_type_repr": { "type": "string" }
+      }
+    },
+    "declaration_delta": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "change_kind",
+        "baseline_policy_result",
+        "current_policy_result",
+        "policy_result_changed",
+        "baseline_finding_categories",
+        "current_finding_categories",
+        "finding_categories_changed",
+        "baseline_boundary_shape",
+        "current_boundary_shape",
+        "boundary_shape_changed"
+      ],
+      "properties": {
+        "target": { "type": "string" },
+        "change_kind": {
+          "enum": ["added", "removed", "changed"]
+        },
+        "baseline_policy_result": {
+          "type": ["string", "null"]
+        },
+        "current_policy_result": {
+          "type": ["string", "null"]
+        },
+        "policy_result_changed": { "type": "boolean" },
+        "baseline_finding_categories": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "current_finding_categories": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "finding_categories_changed": { "type": "boolean" },
+        "baseline_boundary_shape": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/boundary_node" }
+        },
+        "current_boundary_shape": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/boundary_node" }
+        },
+        "boundary_shape_changed": { "type": "boolean" }
+      }
+    }
+  }
+}
