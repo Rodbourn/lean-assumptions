@@ -1,0 +1,19 @@
+lean-assumptions cluster report
+tool_version: 0.1.0-dev
+schema_version: 1
+source_schema_version: 1
+source_lean_version: 4.30.0-rc2
+source_policy_identifier: strict
+source_transparency_mode: none
+declarations_scanned: 5
+failing_declarations: 4
+failure_findings: 4
+clusters: 3
+failure_clusters:
+- source=package kind=unapproved_package_with_prop_fields category=package_with_prop_fields type=Example.Package module=none lane=none declarations=2 findings=2
+  declarations: [Example.packageOne,Example.packageTwo]
+- source=direct_prop kind=unapproved_direct_prop category=direct_prop type=none module=none lane=none declarations=1 findings=1
+  declarations: [Example.direct]
+- source=typeclass kind=unapproved_typeclass_assumption category=typeclass_assumption type=Inhabited module=none lane=none declarations=1 findings=1
+  declarations: [Example.typeclass]
+limitations: clusters rendered audit artifacts only; does not re-run Lean elaboration, validate proof axioms, sandbox execution, prove theorem-statement equivalence, infer project-specific cleanup lanes, or suggest remediation.

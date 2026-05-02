@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lean-assumptions.local/schema/cluster-report-v1.schema.json",
+  "title": "lean-assumptions cluster report v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "tool_version",
+    "cluster_model_version",
+    "source",
+    "summary",
+    "clusters",
+    "limitations"
+  ],
+  "properties": {
+    "schema_version": { "const": "1" },
+    "tool_version": { "type": "string" },
+    "cluster_model_version": { "type": "string" },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "lean_version",
+        "policy_identifier",
+        "transparency_mode",
+        "declarations"
+      ],
+      "properties": {
+        "schema_version": { "type": "string" },
+        "lean_version": { "type": "string" },
+        "policy_identifier": { "type": "string" },
+        "transparency_mode": {
+          "enum": ["none", "reducible", "recursive_normalization", "unknown"]
+        },
+        "declarations": { "type": "number" }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "declarations_scanned",
+        "failing_declarations",
+        "failure_findings",
+        "clusters"
+      ],
+      "properties": {
+        "declarations_scanned": { "type": "number" },
+        "failing_declarations": { "type": "number" },
+        "failure_findings": { "type": "number" },
+        "clusters": { "type": "number" }
+      }
+    },
+    "clusters": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/failure_cluster" }
+    },
+    "limitations": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "$defs": {
+    "failure_cluster": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_class",
+        "finding_kind",
+        "category",
+        "type_name",
+        "module",
+        "lane",
+        "declaration_count",
+        "finding_count",
+        "declarations"
+      ],
+      "properties": {
+        "source_class": {
+          "enum": [
+            "direct_prop",
+            "package",
+            "proof_carrying_data",
+            "typeclass",
+            "alias",
+            "unknown",
+            "other"
+          ]
+        },
+        "finding_kind": { "type": "string" },
+        "category": { "type": "string" },
+        "type_name": { "type": ["string", "null"] },
+        "module": { "type": ["string", "null"] },
+        "lane": { "type": ["string", "null"] },
+        "declaration_count": { "type": "number" },
+        "finding_count": { "type": "number" },
+        "declarations": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    }
+  }
+}

@@ -4,6 +4,7 @@ import LeanAssumptionsTest.Unit.Policy.Phase2
 import LeanAssumptionsTest.Integration.Phase1
 import LeanAssumptionsTest.Golden.Phase3
 import LeanAssumptionsTest.Golden.Delta
+import LeanAssumptionsTest.Golden.Cluster
 import LeanAssumptionsTest.Integration.Commands
 
 /-!
