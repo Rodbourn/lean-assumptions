@@ -24,3 +24,4 @@
 - Harden GitHub Actions Lake steps to use Bash consistently after Lean toolchain setup.
 - Temporarily remove hosted Windows from the CI matrix while retaining identical Ubuntu and macOS gates.
 - Build the CLI executable and test fixture module before CI performance and release-readiness smoke checks.
+- Reduce CLI integration-test latency by reusing an imported Lean environment and suppressing repeated report output.

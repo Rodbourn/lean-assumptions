@@ -585,6 +585,12 @@
           ]
         },
         {
+          "name": "LeanAssumptions.Cli.runWithImportedEnv",
+          "tests": [
+            "LeanAssumptionsTest/Integration/Cli.lean"
+          ]
+        },
+        {
           "name": "LeanAssumptions.Cli.parsePolicyJson",
           "tests": [
             "LeanAssumptionsTest/Integration/Cli.lean",

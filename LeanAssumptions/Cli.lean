@@ -113,13 +113,15 @@ def runGenerated
     (format : OutputFormat)
     (policy : PolicyConfig)
     (declarations : Array Lean.Name)
-    (scanModules : Array Lean.Name) : CommandElabM Unit := do
+    (scanModules : Array Lean.Name)
+    (emitOutput : Bool := true) : CommandElabM Unit := do
   let artifacts ← inspectRequested policy declarations scanModules
   let output :=
     match format with
     | .text => Render.renderBatchText policy artifacts
     | .json => Render.renderBatchJsonString policy artifacts
-  IO.print output
+  if emitOutput then
+    IO.print output
   if artifacts.any (fun artifact => Render.policyResultIsFailure artifact.evaluation.result) then
     throwError "lean-assumptions policy failure"
 
@@ -337,6 +339,59 @@ private def runCommandInEnv
     IO.eprintln (← exception.toMessageData.toString)
     pure 1
 
+/-- Run an already parsed CLI configuration in an imported environment. -/
+private def runConfigInImportedEnv
+    (env : Lean.Environment)
+    (opts : Lean.Options)
+    (config : Config)
+    (emitOutput : Bool) : IO UInt32 := do
+  match config.delta?, config.cluster? with
+  | some deltaConfig, none =>
+    let report ← Delta.readDeltaReport deltaConfig.baselinePath deltaConfig.currentPath
+    let output :=
+      match config.format with
+      | .text => Delta.renderText report
+      | .json => Delta.renderJsonString report
+    if emitOutput then
+      IO.print output
+    pure 0
+  | none, some clusterConfig =>
+    let report ← Cluster.readClusterReport clusterConfig.artifactPath
+    let output :=
+      match config.format with
+      | .text => Cluster.renderText report
+      | .json => Cluster.renderJsonString report
+    if emitOutput then
+      IO.print output
+    pure 0
+  | some _, some _ =>
+    IO.eprintln s!"--diff cannot be combined with --cluster\n{usage}"
+    pure 2
+  | none, none =>
+    runCommandInEnv env opts
+      (runGenerated config.format config.policy config.declarations config.scanModules emitOutput)
+
+/--
+Run the CLI support path against an environment that has already imported the
+requested audit modules.
+
+This keeps embedding and integration tests from paying repeated module-import
+costs while preserving the normal argument parser, policy handling, renderers,
+and exit-code semantics. The ordinary executable path should use `run`, which
+constructs the imported environment from `--module` arguments.
+-/
+def runWithImportedEnv
+    (env : Lean.Environment)
+    (opts : Lean.Options)
+    (args : Array String)
+    (emitOutput : Bool := true) : IO UInt32 := do
+  try
+    let config ← parseArgs args
+    runConfigInImportedEnv env opts config emitOutput
+  catch error =>
+    IO.eprintln error.toString
+    pure 2
+
 /-- Run the CLI support path in-process and return a CI-friendly exit code. -/
 def run (args : Array String) : IO UInt32 := do
   try
@@ -367,7 +422,7 @@ def run (args : Array String) : IO UInt32 := do
       let opts : Lean.Options := {}
       Lean.initSearchPath (← Lean.findSysroot)
       let env ← Lean.importModules imports opts
-      runCommandInEnv env opts (runGenerated config.format config.policy config.declarations config.scanModules)
+      runConfigInImportedEnv env opts config true
   catch error =>
     IO.eprintln error.toString
     pure 2

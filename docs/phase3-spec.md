@@ -56,6 +56,9 @@ Implemented CLI behavior:
 - cluster mode supports `--format text` and `--format json`
 - cluster mode exits `0` for a successful clustering run and `2` for argument or artifact-parse failures
 - cluster mode rejects mixed audit, diff, and policy options instead of silently ignoring them
+- integration checks may run the CLI support path against an already imported
+  Lean environment to avoid repeated module-import cost; the executable path
+  still imports modules from `--module` arguments
 
 Examples:
 
