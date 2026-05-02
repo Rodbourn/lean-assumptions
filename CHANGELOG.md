@@ -19,6 +19,7 @@
 - Implement certified-path alias transparency semantics for `none`, `reducible`, and `recursive_normalization` modes, with strict policy failures for unsupported aliases.
 - Add repository-agnostic delta reporting for prior/current JSON audit artifacts, with CLI `--diff`, stable text/JSON output, schema validation, and golden tests.
 - Add repository-agnostic failure clustering for JSON audit artifacts, with CLI `--cluster`, stable text/JSON output, schema validation, and golden tests.
+- Add baseline mode over v1 batch JSON artifacts, with CLI `--baseline`, `--accept`, and `--update-baseline` support for freezing existing finding debt.
 - Add a runnable hidden-package example with checked output for `#print axioms`, `#print assumptions`, `#print assumption_tree`, and `#print assumption_json`.
 - Pin repository text files to LF line endings and validate them for cross-platform golden tests.
 - Harden GitHub Actions Lake steps to use Bash consistently after Lean toolchain setup.

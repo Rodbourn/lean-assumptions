@@ -132,6 +132,7 @@ For iterative cleanup work, compare or cluster prior audit artifacts:
 ```text
 lake env lean-assumptions --diff baseline-audit.json current-audit.json --format text
 lake env lean-assumptions --cluster current-audit.json --format text
+lake env lean-assumptions --module MyProject.Theorems --scan-module MyProject.Theorems --baseline .lean-assumptions-baseline.json
 ```
 
 ## What It Guarantees
@@ -144,6 +145,11 @@ policy.
 
 Unknown or unsupported cases are reported conservatively. They do not silently
 pass strict policy.
+
+Baseline mode preserves that contract for CI adoption. It compares the current
+finding-bearing batch artifact against a checked-in v1 batch JSON baseline and
+fails only when new finding identities appear. It does not reclassify the
+baseline file, migrate schemas, validate proof axioms, or infer remediation.
 
 ## What It Does Not Do
 
@@ -173,6 +179,7 @@ Implemented and locally verified:
 - versioned report, batch-report, delta-report, cluster-report, and policy schemas
 - delta reporting between prior/current JSON audit artifacts
 - failure clustering by report-derived finding signatures
+- baseline mode for freezing existing finding debt and failing CI on new findings
 - doc-gen4 API documentation configuration
 - cross-platform CI configuration, release-readiness checks, and a smoke-level performance baseline
 
@@ -187,8 +194,8 @@ The repository keeps its certified core in:
 - `LeanAssumptions/Core`
 - `LeanAssumptions/Policy`
 
-Rendering, commands, CLI, delta reporting, clustering, docs, scripts, and CI are
-support layers. They should not be able to silently change certified
+Rendering, commands, CLI, delta reporting, clustering, baseline comparison,
+docs, scripts, and CI are support layers. They should not be able to silently change certified
 classification or policy decisions.
 
 Implemented behavior, remaining gaps, and phase boundaries are documented here:
@@ -199,6 +206,7 @@ Implemented behavior, remaining gaps, and phase boundaries are documented here:
 - Phase 4 spec: [docs/phase4-spec.md](docs/phase4-spec.md)
 - Delta reporting spec: [docs/delta-spec.md](docs/delta-spec.md)
 - Failure clustering spec: [docs/clustering-spec.md](docs/clustering-spec.md)
+- Baseline mode spec: [docs/baseline-spec.md](docs/baseline-spec.md)
 - Requirement tracker: [docs/requirements-status.md](docs/requirements-status.md)
 - Lean API and tooling gaps: [docs/api-gaps.md](docs/api-gaps.md)
 
@@ -229,6 +237,9 @@ lake env lean-assumptions --diff baseline-audit.json current-audit.json --format
 lake env lean-assumptions --diff baseline-audit.json current-audit.json --format json
 lake env lean-assumptions --cluster current-audit.json --format text
 lake env lean-assumptions --cluster current-audit.json --format json
+lake env lean-assumptions --module MyProject.Theorems --scan-module MyProject.Theorems --baseline .lean-assumptions-baseline.json
+lake env lean-assumptions --module MyProject.Theorems --scan-module MyProject.Theorems --baseline .lean-assumptions-baseline.json --accept
+lake env lean-assumptions --module MyProject.Theorems --scan-module MyProject.Theorems --update-baseline .lean-assumptions-baseline.json
 ```
 
 Audit mode requires at least one `--module` import and at least one `--decl` or `--scan-module`. It exits `0` when all audited declarations pass or warn under policy, `1` when policy evaluation fails or an audit error occurs, and `2` for argument, import, or policy-file parse errors. Batch JSON includes counts for scanned, passed, warned, failed, and unknown-bearing declarations.
@@ -236,6 +247,14 @@ Audit mode requires at least one `--module` import and at least one `--decl` or 
 Delta mode uses `--diff <baseline.json> <current.json>` and compares JSON artifacts already emitted by `lean-assumptions`. It reports added or removed declarations, policy-result changes, finding-category changes, and top-level boundary-shape changes. Delta mode exits `0` for a successful comparison and `2` for argument or artifact-parse errors. It does not re-run Lean elaboration, validate proof axioms, sandbox execution, prove statement equivalence, or suggest remediation.
 
 Cluster mode uses `--cluster <audit.json>` and groups failing declarations from an existing single-report or batch JSON artifact. Cluster signatures use report-derived fields: finding kind, category, source class, `type_name`, and module/lane metadata only when such metadata is present in the artifact. It does not infer project-specific lanes from names and does not suggest remediation.
+
+Baseline mode uses `--baseline <audit.json>` while running an ordinary audit. It compares current finding identities against a checked-in v1 batch JSON artifact and exits `0` for pass or improvement, `1` for regression, and `2` for missing or invalid baseline artifacts, schema mismatches, argument errors, import errors, or audit failures before comparison. `--accept` rewrites the baseline only on improvement. `--update-baseline <audit.json>` writes a fresh debt-only baseline from the current run. Baseline mode emits text output and does not introduce a new schema.
+
+A typical downstream CI gate checks in `.lean-assumptions-baseline.json` and runs:
+
+```text
+lake env lean-assumptions --module MyProject.Theorems --scan-module MyProject.Theorems --baseline .lean-assumptions-baseline.json
+```
 
 Supported policy-related flags:
 

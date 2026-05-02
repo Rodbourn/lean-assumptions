@@ -14,9 +14,14 @@ Current snapshots:
 - `cluster-input.json`: batch JSON fixture used as the clustering input
 - `cluster-report.txt`: human-readable failure-cluster report for the fixture
 - `cluster-report.json`: JSON failure-cluster report for the fixture
+- `Baseline/empty-batch.json`: empty v1 batch artifact used for baseline pass,
+  regression, and improvement comparisons
+- `Baseline/pass-output.txt`: human-readable baseline pass report
+- `Baseline/regression-output.txt`: human-readable baseline regression report
+- `Baseline/improvement-output.txt`: human-readable baseline improvement report
 
 JSON snapshots are also validated against `schema/report-v1.schema.json` and
-`schema/batch-report-v1.schema.json`; delta snapshots are validated against
-`schema/delta-report-v1.schema.json`; cluster snapshots are validated against
-`schema/cluster-report-v1.schema.json` by
+`schema/batch-report-v1.schema.json`, including nested baseline fixtures; delta
+snapshots are validated against `schema/delta-report-v1.schema.json`; cluster
+snapshots are validated against `schema/cluster-report-v1.schema.json` by
 `python scripts/check_report_schema.py`.

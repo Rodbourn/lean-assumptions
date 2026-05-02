@@ -116,3 +116,46 @@ run_cmd do
     "--module", "LeanAssumptionsTest.Fixtures",
     "--format", "json"
   ]
+  assertCliExit env opts "CLI baseline pass exit" 0 #[
+    "--module", "LeanAssumptionsTest.Fixtures",
+    "--decl", "LeanAssumptionsTest.Fixtures.packageBinder",
+    "--baseline", "LeanAssumptionsTest/Golden/packageBinder-batch.json"
+  ]
+  assertCliExit env opts "CLI baseline regression exit" 1 #[
+    "--module", "LeanAssumptionsTest.Fixtures",
+    "--decl", "LeanAssumptionsTest.Fixtures.packageBinder",
+    "--baseline", "LeanAssumptionsTest/Golden/Baseline/empty-batch.json"
+  ]
+  assertCliExit env opts "CLI baseline improvement exit" 0 #[
+    "--module", "LeanAssumptionsTest.Fixtures",
+    "--decl", "LeanAssumptionsTest.Fixtures.noPropBearingAssumptions",
+    "--baseline", "LeanAssumptionsTest/Golden/packageBinder-batch.json"
+  ]
+  assertCliExit env opts "CLI baseline rejects JSON output" 2 #[
+    "--module", "LeanAssumptionsTest.Fixtures",
+    "--decl", "LeanAssumptionsTest.Fixtures.packageBinder",
+    "--baseline", "LeanAssumptionsTest/Golden/packageBinder-batch.json",
+    "--format", "json"
+  ]
+  IO.FS.createDirAll ".lake/build/lean-assumptions-test"
+  let updatePath := ".lake/build/lean-assumptions-test/baseline-update.json"
+  let updateExit ← LeanAssumptions.Cli.runWithImportedEnv env opts #[
+    "--module", "LeanAssumptionsTest.Fixtures",
+    "--decl", "LeanAssumptionsTest.Fixtures.packageBinder",
+    "--update-baseline", updatePath
+  ] false
+  assertEq "CLI update-baseline exit" (0 : UInt32) updateExit
+  let updatedArtifact ← LeanAssumptions.Baseline.readAuditArtifact updatePath
+  assertEq "CLI update-baseline writes current findings" 1 updatedArtifact.findings.size
+  let acceptPath := ".lake/build/lean-assumptions-test/baseline-accept.json"
+  let debtText ← IO.FS.readFile "LeanAssumptionsTest/Golden/packageBinder-batch.json"
+  IO.FS.writeFile acceptPath debtText
+  let acceptExit ← LeanAssumptions.Cli.runWithImportedEnv env opts #[
+    "--module", "LeanAssumptionsTest.Fixtures",
+    "--decl", "LeanAssumptionsTest.Fixtures.noPropBearingAssumptions",
+    "--baseline", acceptPath,
+    "--accept"
+  ] false
+  assertEq "CLI baseline accept exit" (0 : UInt32) acceptExit
+  let acceptedArtifact ← LeanAssumptions.Baseline.readAuditArtifact acceptPath
+  assertEq "CLI baseline accept updates on improvement" 0 acceptedArtifact.findings.size

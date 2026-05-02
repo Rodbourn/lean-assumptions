@@ -87,7 +87,7 @@ def main() -> int:
     batch_schema = json.loads(BATCH_SCHEMA_PATH.read_text(encoding="utf-8"))
     delta_schema = json.loads(DELTA_SCHEMA_PATH.read_text(encoding="utf-8"))
     cluster_schema = json.loads(CLUSTER_SCHEMA_PATH.read_text(encoding="utf-8"))
-    json_files = sorted(GOLDEN_DIR.glob("*.json"))
+    json_files = sorted(GOLDEN_DIR.rglob("*.json"))
     errors: list[str] = []
 
     if not json_files:

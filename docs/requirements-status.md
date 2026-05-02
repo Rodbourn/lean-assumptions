@@ -81,7 +81,7 @@ The project is not finished while any requirement or verification gate below is
 | --- | --- | --- |
 | docstrings on public definitions and major theorems | done | Current public definitions and fixture declarations are documented, and `doc-gen4` API docs build locally. |
 | source-file module docstrings | done | Current Lean source files have module docstrings. |
-| command docs with examples | done | README, `docs/phase3-spec.md`, and command module docs include examples for the public command surface and CLI. |
+| command docs with examples | done | README, `docs/phase3-spec.md`, `docs/baseline-spec.md`, and command module docs include examples for the public command surface and CLI. |
 | README problem/limits/tool comparisons/policy/CI sections | done | README covers the problem, explicit non-goals, relation to `#print axioms`/`leanchecker`/`comparator`, policy files, and CI commands. |
 | doc-gen4 API docs build | done | Configured in `docbuild/` and locally validated with `DOCGEN_SRC=file lake build LeanAssumptions:docs`. |
 
@@ -89,27 +89,27 @@ The project is not finished while any requirement or verification gate below is
 
 | Requirement | Status | Notes |
 | --- | --- | --- |
-| TD-001 test-first rule | partial | Phase 1, Phase 2, implemented Phase 3, FR-016 delta, and FR-017 cluster behaviors landed with tests in the same change set. The rule remains active for later features and bug fixes. |
+| TD-001 test-first rule | partial | Phase 1, Phase 2, implemented Phase 3, FR-016 delta, FR-017 cluster, and baseline-mode behaviors landed with tests in the same change set. The rule remains active for later features and bug fixes. |
 | TD-002 regression rule | tracked | No bug-fix changes exist yet; the rule remains in force for future changes. |
 | TD-003 layered test suite | done | Core unit, policy unit, integration, command/CLI integration, renderer golden tests, fixture tests, and a smoke-level performance baseline validator run. |
 | TD-004 coverage obligation | partial | The repository maintains a machine-readable coverage ledger and validator because Lean line coverage is a tooling gap. Line-level enforcement remains tracked. |
 | TD-005 required fixture corpus | done | Required fixture declarations are present and core/policy/public-interface behaviors are exercised, including reducible alias coverage under `none`, `reducible`, and `recursive_normalization`. |
-| TD-006 golden output stability | done | Golden text, single-report JSON, batch JSON, delta text/JSON, and cluster text/JSON snapshots cover the renderer contract and are schema-validated. |
+| TD-006 golden output stability | done | Golden text, single-report JSON, batch JSON, delta text/JSON, cluster text/JSON, and baseline text snapshots cover the renderer/support-layer contract and are schema-validated where JSON is emitted. |
 
 ## Verification Gates
 
 | Gate | Status | Notes |
 | --- | --- | --- |
-| `lake build` | done | Verified in WSL on April 27, 2026 against Lean 4.30.0-rc2. |
-| `lake test` | done | Verified in WSL on April 27, 2026 against Lean 4.30.0-rc2 using the configured Lake test driver. |
-| `lake lint` | done | Verified in WSL on April 27, 2026 against Lean 4.30.0-rc2. The lint driver runs `lake --wfail build LeanAssumptions LeanAssumptionsTest lean-assumptions-test lean-assumptions`. |
-| `leanchecker --fresh` | done | `lake env leanchecker --fresh LeanAssumptions` passes in WSL on April 27, 2026 against Lean 4.30.0-rc2. |
-| JSON schema validation tests | done | `python scripts/check_report_schema.py` validates single-report, batch, delta, and cluster golden JSON; `python scripts/check_policy_schema.py` validates policy fixtures. Both pass locally. |
-| golden output tests | done | `LeanAssumptionsTest/Golden/Phase3.lean`, `LeanAssumptionsTest/Golden/Delta.lean`, and `LeanAssumptionsTest/Golden/Cluster.lean` pass and cover text, single JSON, batch JSON, delta, and cluster snapshots. |
+| `lake build` | done | Verified in WSL on May 2, 2026 against Lean 4.30.0-rc2. |
+| `lake test` | done | Verified in WSL on May 2, 2026 against Lean 4.30.0-rc2 using the configured Lake test driver. |
+| `lake lint` | done | Verified in WSL on May 2, 2026 against Lean 4.30.0-rc2. The lint driver runs `lake --wfail build LeanAssumptions LeanAssumptionsTest lean-assumptions-test lean-assumptions`. |
+| `leanchecker --fresh` | done | `lake env leanchecker --fresh LeanAssumptions` passes in WSL on May 2, 2026 against Lean 4.30.0-rc2. |
+| JSON schema validation tests | done | `python scripts/check_report_schema.py` validates single-report, batch, nested baseline batch, delta, and cluster golden JSON; `python scripts/check_policy_schema.py` validates policy fixtures. Both pass locally. |
+| golden output tests | done | `LeanAssumptionsTest/Golden/Phase3.lean`, `LeanAssumptionsTest/Golden/Delta.lean`, `LeanAssumptionsTest/Golden/Cluster.lean`, and `LeanAssumptionsTest/Golden/Baseline.lean` pass and cover text, single JSON, batch JSON, delta, cluster, and baseline snapshots. |
 | coverage-ledger validation | done | `python scripts/check_coverage_ledger.py` validates the current Lean file ledger. Stronger line-level coverage remains tracked under TD-004. |
 | performance baseline validation | done | `python scripts/check_performance_baseline.py` validates the current two-case CLI smoke baseline locally; the local Windows workspace requires WSL execution for Lake. |
 | local release-readiness validation | done | `python scripts/check_release_readiness.py` validates local Lake/Reservoir metadata, schema/changelog consistency, governance files, and a JSON CLI artifact smoke test. `--release` remains blocked while partial/tracked requirements exist. |
-| docs build | done | `cd docbuild && DOCGEN_SRC=file lake build LeanAssumptions:docs` passes locally on April 27, 2026 against Lean 4.30.0-rc2. |
+| docs build | done | `cd docbuild && DOCGEN_SRC=file lake build LeanAssumptions:docs` passes locally on May 2, 2026 against Lean 4.30.0-rc2. |
 | cross-platform CI | partial | Configured as an Ubuntu/macOS GitHub Actions matrix and checked by `python scripts/check_ci_workflow.py`. Native Windows hosted CI is intentionally deferred; Windows users should run the package under WSL2 for now. |
 
 ## CI and Release Requirements

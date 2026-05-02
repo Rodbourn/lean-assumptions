@@ -4,6 +4,7 @@ import LeanAssumptions.Policy
 import LeanAssumptions.Render
 import LeanAssumptions.Delta
 import LeanAssumptions.Cluster
+import LeanAssumptions.Baseline
 import LeanAssumptions.Command
 import LeanAssumptions.Cli
 
@@ -12,7 +13,7 @@ import LeanAssumptions.Cli
 
 This root exposes package metadata, certified classification/policy entry
 points, stable report rendering, artifact delta reporting, failure clustering,
-the Lean command surface, and CLI support.
+baseline comparison, the Lean command surface, and CLI support.
 -/
 
 open Lean Elab Command

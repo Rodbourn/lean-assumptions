@@ -1,5 +1,6 @@
 import Lean
 import Lean.Data.Json.Parser
+import LeanAssumptions.Baseline
 import LeanAssumptions.Cluster
 import LeanAssumptions.Delta
 import LeanAssumptions.Render
@@ -12,7 +13,9 @@ requested modules, and runs a generated command-elaboration action that delegate
 inspection to `LeanAssumptions.Core`, policy evaluation to
 `LeanAssumptions.Policy`, audit output to `LeanAssumptions.Render`, and
 artifact comparison and clustering to `LeanAssumptions.Delta` and
-`LeanAssumptions.Cluster`.
+`LeanAssumptions.Cluster`. Baseline comparison remains a support-layer check
+over rendered artifacts and does not change certified classification or policy
+semantics.
 -/
 
 open Lean Elab Command
@@ -39,6 +42,12 @@ structure ClusterConfig where
   artifactPath : System.FilePath
   deriving Repr
 
+/-- Parsed baseline comparison/update configuration. -/
+structure BaselineConfig where
+  path : System.FilePath
+  update : Bool := false
+  deriving Repr
+
 /-- Parsed CLI configuration. -/
 structure Config where
   modules : Array Lean.Name := #[]
@@ -46,6 +55,8 @@ structure Config where
   scanModules : Array Lean.Name := #[]
   delta? : Option DeltaConfig := none
   cluster? : Option ClusterConfig := none
+  baseline? : Option BaselineConfig := none
+  acceptBaseline : Bool := false
   format : OutputFormat := .text
   policy : PolicyConfig := Policy.strictPolicy
   policyConfigured : Bool := false
@@ -54,6 +65,8 @@ structure Config where
 /-- Usage text for invalid invocations. -/
 def usage : String :=
   "usage: lean-assumptions --module <Module> (--decl <Name> | --scan-module <Module>) [--format text|json] [--policy <file>] [--allow-direct <Name>] [--allow-package <Name>] [--allow-typeclasses] [--allow-unknowns]\n" ++
+  "   or: lean-assumptions --module <Module> (--decl <Name> | --scan-module <Module>) --baseline <audit.json> [--accept]\n" ++
+  "   or: lean-assumptions --module <Module> (--decl <Name> | --scan-module <Module>) --update-baseline <audit.json>\n" ++
   "   or: lean-assumptions --diff <baseline.json> <current.json> [--format text|json]\n" ++
   "   or: lean-assumptions --cluster <audit.json> [--format text|json]"
 
@@ -124,6 +137,80 @@ def runGenerated
     IO.print output
   if artifacts.any (fun artifact => Render.policyResultIsFailure artifact.evaluation.result) then
     throwError "lean-assumptions policy failure"
+
+/-- Keep only reports with policy findings for a compact debt baseline artifact. -/
+private def baselineArtifacts (artifacts : Array Render.ReportArtifact) : Array Render.ReportArtifact :=
+  artifacts.foldl (fun kept artifact =>
+    if artifact.evaluation.findings.isEmpty then kept else kept.push artifact) #[]
+
+/-- Render the current baseline artifact as ordinary batch JSON. -/
+private def renderBaselineArtifactJson
+    (policy : PolicyConfig)
+    (artifacts : Array Render.ReportArtifact) : String :=
+  Render.renderBatchJsonString policy (baselineArtifacts artifacts)
+
+/-- Run a command-elaboration action in an imported environment and return its value. -/
+private def runCommandInEnvWithResult
+    (env : Lean.Environment)
+    (opts : Lean.Options)
+    (action : CommandElabM α) : IO (Except UInt32 α) := do
+  let inputCtx := Parser.mkInputContext "" "<lean-assumptions-cli>"
+  let context : Command.Context := {
+    fileName := inputCtx.fileName
+    fileMap := inputCtx.fileMap
+    snap? := none
+    cancelTk? := none
+  }
+  let state := Command.mkState env {} opts
+  match ← EIO.toIO' ((action context).run state) with
+  | .ok (value, newState) =>
+    if Lean.MessageLog.hasErrors newState.messages then
+      for message in Lean.MessageLog.toList newState.messages do
+        if message.severity == MessageSeverity.error then
+          IO.eprintln (← message.toString)
+      pure (.error 2)
+    else
+      pure (.ok value)
+  | .error exception =>
+    IO.eprintln (← exception.toMessageData.toString)
+    pure (.error 2)
+
+/-- Compare or update a baseline after collecting current audit artifacts. -/
+private def runBaselineMode
+    (policy : PolicyConfig)
+    (baselineConfig : BaselineConfig)
+    (accept : Bool)
+    (artifacts : Array Render.ReportArtifact)
+    (emitOutput : Bool) : IO UInt32 := do
+  let currentText := renderBaselineArtifactJson policy artifacts
+  let currentArtifact ←
+    match Baseline.parseAuditArtifactString currentText with
+    | .ok artifact => pure artifact
+    | .error error =>
+      IO.eprintln s!"invalid generated current baseline artifact: {error}"
+      return (2 : UInt32)
+  if baselineConfig.update then
+    IO.FS.writeFile baselineConfig.path currentText
+    if emitOutput then
+      IO.print (Baseline.renderUpdateText baselineConfig.path currentArtifact)
+    return (0 : UInt32)
+  let baselineArtifact ←
+    try
+      Baseline.readAuditArtifact baselineConfig.path
+    catch error =>
+      IO.eprintln s!"invalid baseline JSON: {error}"
+      return (2 : UInt32)
+  let comparison ←
+    match Baseline.compareArtifacts baselineArtifact currentArtifact with
+    | .ok comparison => pure comparison
+    | .error error =>
+      IO.eprintln error
+      return (2 : UInt32)
+  if accept && comparison.status == .improvement then
+    IO.FS.writeFile baselineConfig.path currentText
+  if emitOutput then
+    IO.print (Baseline.renderText comparison)
+  pure comparison.exitCode
 
 /-- Parse an output-format string. -/
 private def parseOutputFormat (value : String) : Except String OutputFormat :=
@@ -235,6 +322,8 @@ private def parseArgsAux : List String -> Config -> IO Config
       throw (IO.userError s!"multiple --diff options are not supported\n{usage}")
     else if config.cluster?.isSome then
       throw (IO.userError s!"--diff cannot be combined with --cluster\n{usage}")
+    else if config.baseline?.isSome then
+      throw (IO.userError s!"--diff cannot be combined with baseline mode\n{usage}")
     else
       parseArgsAux rest {
         config with
@@ -245,10 +334,39 @@ private def parseArgsAux : List String -> Config -> IO Config
       throw (IO.userError s!"multiple --cluster options are not supported\n{usage}")
     else if config.delta?.isSome then
       throw (IO.userError s!"--cluster cannot be combined with --diff\n{usage}")
+    else if config.baseline?.isSome then
+      throw (IO.userError s!"--cluster cannot be combined with baseline mode\n{usage}")
     else
       parseArgsAux rest {
         config with
         cluster? := some { artifactPath := artifact }
+      }
+  | "--baseline" :: artifact :: rest, config =>
+    if config.baseline?.isSome then
+      throw (IO.userError s!"multiple baseline options are not supported\n{usage}")
+    else if config.delta?.isSome then
+      throw (IO.userError s!"--baseline cannot be combined with --diff\n{usage}")
+    else if config.cluster?.isSome then
+      throw (IO.userError s!"--baseline cannot be combined with --cluster\n{usage}")
+    else
+      parseArgsAux rest {
+        config with
+        baseline? := some { path := artifact }
+      }
+  | "--accept" :: rest, config =>
+    parseArgsAux rest { config with acceptBaseline := true }
+  | "--update-baseline" :: artifact :: rest, config =>
+    if config.baseline?.isSome then
+      throw (IO.userError s!"multiple baseline options are not supported\n{usage}")
+    else if config.delta?.isSome then
+      throw (IO.userError s!"--update-baseline cannot be combined with --diff\n{usage}")
+    else if config.cluster?.isSome then
+      throw (IO.userError s!"--update-baseline cannot be combined with --cluster\n{usage}")
+    else
+      parseArgsAux rest {
+        config with
+        baseline? := some { path := artifact, update := true }
+        acceptBaseline := true
       }
   | "--format" :: value :: rest, config =>
     match parseOutputFormat value with
@@ -293,24 +411,32 @@ private def parseArgsAux : List String -> Config -> IO Config
 /-- Parse CLI arguments and validate that there is work to do. -/
 def parseArgs (args : Array String) : IO Config := do
   let config ← parseArgsAux args.toList {}
-  match config.delta?, config.cluster? with
-  | some _, some _ =>
+  match config.delta?, config.cluster?, config.baseline? with
+  | some _, some _, _ =>
     throw (IO.userError s!"--diff cannot be combined with --cluster\n{usage}")
-  | some _, none =>
+  | some _, _, some _ =>
+    throw (IO.userError s!"--diff cannot be combined with baseline mode\n{usage}")
+  | _, some _, some _ =>
+    throw (IO.userError s!"--cluster cannot be combined with baseline mode\n{usage}")
+  | some _, none, none =>
     if !config.modules.isEmpty || !config.declarations.isEmpty || !config.scanModules.isEmpty ||
-        config.policyConfigured then
-      throw (IO.userError s!"--diff cannot be combined with audit modules, declarations, scans, or policy options\n{usage}")
+        config.policyConfigured || config.acceptBaseline then
+      throw (IO.userError s!"--diff cannot be combined with audit modules, declarations, scans, policy options, or --accept\n{usage}")
     pure config
-  | none, some _ =>
+  | none, some _, none =>
     if !config.modules.isEmpty || !config.declarations.isEmpty || !config.scanModules.isEmpty ||
-        config.policyConfigured then
-      throw (IO.userError s!"--cluster cannot be combined with audit modules, declarations, scans, or policy options\n{usage}")
+        config.policyConfigured || config.acceptBaseline then
+      throw (IO.userError s!"--cluster cannot be combined with audit modules, declarations, scans, policy options, or --accept\n{usage}")
     pure config
-  | none, none =>
+  | none, none, _ =>
     if config.modules.isEmpty then
       throw (IO.userError s!"at least one --module is required\n{usage}")
     if config.declarations.isEmpty && config.scanModules.isEmpty then
       throw (IO.userError s!"at least one --decl or --scan-module is required\n{usage}")
+    if config.acceptBaseline && config.baseline?.isNone then
+      throw (IO.userError s!"--accept requires --baseline or --update-baseline\n{usage}")
+    if config.baseline?.isSome && config.format != .text then
+      throw (IO.userError s!"baseline mode currently supports text output only\n{usage}")
     pure config
 
 /-- Run a command-elaboration action in an imported environment. -/
@@ -345,8 +471,8 @@ private def runConfigInImportedEnv
     (opts : Lean.Options)
     (config : Config)
     (emitOutput : Bool) : IO UInt32 := do
-  match config.delta?, config.cluster? with
-  | some deltaConfig, none =>
+  match config.delta?, config.cluster?, config.baseline? with
+  | some deltaConfig, none, none =>
     let report ← Delta.readDeltaReport deltaConfig.baselinePath deltaConfig.currentPath
     let output :=
       match config.format with
@@ -355,7 +481,7 @@ private def runConfigInImportedEnv
     if emitOutput then
       IO.print output
     pure 0
-  | none, some clusterConfig =>
+  | none, some clusterConfig, none =>
     let report ← Cluster.readClusterReport clusterConfig.artifactPath
     let output :=
       match config.format with
@@ -364,10 +490,22 @@ private def runConfigInImportedEnv
     if emitOutput then
       IO.print output
     pure 0
-  | some _, some _ =>
+  | none, none, some baselineConfig =>
+    match ← runCommandInEnvWithResult env opts
+        (inspectRequested config.policy config.declarations config.scanModules) with
+    | .ok artifacts =>
+      runBaselineMode config.policy baselineConfig config.acceptBaseline artifacts emitOutput
+    | .error exitCode => pure exitCode
+  | some _, some _, _ =>
     IO.eprintln s!"--diff cannot be combined with --cluster\n{usage}"
     pure 2
-  | none, none =>
+  | some _, _, some _ =>
+    IO.eprintln s!"--diff cannot be combined with baseline mode\n{usage}"
+    pure 2
+  | _, some _, some _ =>
+    IO.eprintln s!"--cluster cannot be combined with baseline mode\n{usage}"
+    pure 2
+  | none, none, none =>
     runCommandInEnv env opts
       (runGenerated config.format config.policy config.declarations config.scanModules emitOutput)
 

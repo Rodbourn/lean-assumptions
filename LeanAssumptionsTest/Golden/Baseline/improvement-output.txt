@@ -1,0 +1,19 @@
+lean-assumptions baseline report
+tool_version: 0.1.0-dev
+schema_version: 1
+baseline_schema_version: 1
+current_schema_version: 1
+baseline_policy_identifier: strict
+current_policy_identifier: strict
+baseline_transparency_mode: none
+current_transparency_mode: none
+baseline_findings: 1
+current_findings: 0
+baseline_result: improvement
+new_findings: 0
+removed_findings: 1
+new:
+- none
+removed:
+- LeanAssumptionsTest.Fixtures.packageBinder kind=unapproved_package_with_prop_fields category=package_with_prop_fields path=pkg type=LeanAssumptionsTest.Fixtures.ProofPackage
+limitations: compares rendered audit artifacts only; does not re-run Lean elaboration, validate proof axioms, sandbox execution, or change policy semantics.

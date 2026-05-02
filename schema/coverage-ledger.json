@@ -39,6 +39,7 @@
         "LeanAssumptionsTest/Unit/Core/Phase2.lean",
         "LeanAssumptionsTest/Unit/Policy/Phase2.lean",
         "LeanAssumptionsTest/Golden/Phase3.lean",
+        "LeanAssumptionsTest/Golden/Baseline.lean",
         "LeanAssumptionsTest/Integration/Commands.lean",
         "LeanAssumptionsTest/Integration/Cli.lean"
       ],
@@ -544,6 +545,116 @@
       ]
     },
     {
+      "path": "LeanAssumptions/Baseline.lean",
+      "tests": [
+        "LeanAssumptionsTest/Unit/Baseline/Phase4.lean",
+        "LeanAssumptionsTest/Golden/Baseline.lean",
+        "LeanAssumptionsTest/Integration/Cli.lean",
+        "scripts/check_report_schema.py"
+      ],
+      "publicDefinitions": [
+        {
+          "name": "LeanAssumptions.Baseline.FindingIdentity",
+          "tests": [
+            "LeanAssumptionsTest/Unit/Baseline/Phase4.lean",
+            "LeanAssumptionsTest/Golden/Baseline.lean"
+          ]
+        },
+        {
+          "name": "LeanAssumptions.Baseline.ArtifactMetadata",
+          "tests": [
+            "LeanAssumptionsTest/Golden/Baseline.lean"
+          ]
+        },
+        {
+          "name": "LeanAssumptions.Baseline.AuditArtifact",
+          "tests": [
+            "LeanAssumptionsTest/Golden/Baseline.lean",
+            "LeanAssumptionsTest/Integration/Cli.lean"
+          ]
+        },
+        {
+          "name": "LeanAssumptions.Baseline.BaselineComparison",
+          "tests": [
+            "LeanAssumptionsTest/Golden/Baseline.lean"
+          ]
+        },
+        {
+          "name": "LeanAssumptions.Baseline.BaselineStatus",
+          "tests": [
+            "LeanAssumptionsTest/Golden/Baseline.lean"
+          ]
+        },
+        {
+          "name": "LeanAssumptions.Baseline.parseFindingIdentity",
+          "tests": [
+            "LeanAssumptionsTest/Unit/Baseline/Phase4.lean"
+          ]
+        },
+        {
+          "name": "LeanAssumptions.Baseline.sortUniqueFindings",
+          "tests": [
+            "LeanAssumptionsTest/Golden/Baseline.lean"
+          ]
+        },
+        {
+          "name": "LeanAssumptions.Baseline.parseAuditArtifact",
+          "tests": [
+            "LeanAssumptionsTest/Golden/Baseline.lean"
+          ]
+        },
+        {
+          "name": "LeanAssumptions.Baseline.parseAuditArtifactString",
+          "tests": [
+            "LeanAssumptionsTest/Golden/Baseline.lean"
+          ]
+        },
+        {
+          "name": "LeanAssumptions.Baseline.readAuditArtifact",
+          "tests": [
+            "LeanAssumptionsTest/Integration/Cli.lean"
+          ]
+        },
+        {
+          "name": "LeanAssumptions.Baseline.compareArtifacts",
+          "tests": [
+            "LeanAssumptionsTest/Golden/Baseline.lean"
+          ]
+        },
+        {
+          "name": "LeanAssumptions.Baseline.compareArtifactStrings",
+          "tests": [
+            "LeanAssumptionsTest/Golden/Baseline.lean"
+          ]
+        },
+        {
+          "name": "LeanAssumptions.Baseline.BaselineComparison.status",
+          "tests": [
+            "LeanAssumptionsTest/Golden/Baseline.lean"
+          ]
+        },
+        {
+          "name": "LeanAssumptions.Baseline.BaselineComparison.exitCode",
+          "tests": [
+            "LeanAssumptionsTest/Golden/Baseline.lean"
+          ]
+        },
+        {
+          "name": "LeanAssumptions.Baseline.renderText",
+          "tests": [
+            "LeanAssumptionsTest/Golden/Baseline.lean",
+            "LeanAssumptionsTest/Integration/Cli.lean"
+          ]
+        },
+        {
+          "name": "LeanAssumptions.Baseline.renderUpdateText",
+          "tests": [
+            "LeanAssumptionsTest/Integration/Cli.lean"
+          ]
+        }
+      ]
+    },
+    {
       "path": "LeanAssumptions/Command.lean",
       "tests": [
         "LeanAssumptionsTest/Integration/Commands.lean",
@@ -572,6 +683,12 @@
         },
         {
           "name": "LeanAssumptions.Cli.ClusterConfig",
+          "tests": [
+            "LeanAssumptionsTest/Integration/Cli.lean"
+          ]
+        },
+        {
+          "name": "LeanAssumptions.Cli.BaselineConfig",
           "tests": [
             "LeanAssumptionsTest/Integration/Cli.lean"
           ]
@@ -677,6 +794,13 @@
     },
     {
       "path": "LeanAssumptionsTest/Unit/Render.lean",
+      "tests": [
+        "lake test"
+      ],
+      "publicDefinitions": []
+    },
+    {
+      "path": "LeanAssumptionsTest/Unit/Baseline/Phase4.lean",
       "tests": [
         "lake test"
       ],
@@ -805,6 +929,13 @@
     },
     {
       "path": "LeanAssumptionsTest/Golden/Cluster.lean",
+      "tests": [
+        "lake test"
+      ],
+      "publicDefinitions": []
+    },
+    {
+      "path": "LeanAssumptionsTest/Golden/Baseline.lean",
       "tests": [
         "lake test"
       ],

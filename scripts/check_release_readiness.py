@@ -26,6 +26,7 @@ REQUIRED_FILES = [
     "LeanAssumptions/Version.lean",
     "Examples/HiddenPackage.lean",
     "Examples/HiddenPackage.expected.txt",
+    "docs/baseline-spec.md",
     "schema/report-v1.schema.json",
     "schema/batch-report-v1.schema.json",
     "schema/delta-report-v1.schema.json",
