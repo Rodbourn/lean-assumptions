@@ -64,7 +64,7 @@ The project is not finished while any requirement or verification gate below is
 | HR-001 minimal trusted core | partial | The certified path is limited to `Core` and `Policy`; implemented certified modules use no `axiom`, `constant`, `opaque`, `unsafe`, `extern`, `@[implemented_by]`, or `native_decide`. Fixture-only suspicious constructs remain confined to `LeanAssumptionsTest/Fixtures`. |
 | HR-002 no silent fallback | done | Core, policy, command, CLI, and schema validators do not silently fall back from stricter modes; parse/import/policy errors are explicit failures. |
 | HR-003 no network dependence | done | The runtime audit path is local-only. |
-| HR-004 reproducible reports | partial | Internal report order and renderer output are deterministic and erase generated local fvar IDs. Cross-platform byte stability is not yet validated in hosted CI. |
+| HR-004 reproducible reports | partial | Internal report order and renderer output are deterministic and erase generated local fvar IDs. Repository text files are pinned to LF line endings and checked locally; cross-platform byte stability is still awaiting hosted CI validation. |
 | HR-005 honest limitations | done | README, specs, tracker, and renderer/command/CLI output document that the tool audits declaration types only and does not replace proof-axiom validation, sandboxing, or statement-equivalence checking. |
 
 ## Performance Requirements
@@ -117,7 +117,7 @@ The project is not finished while any requirement or verification gate below is
 | Requirement | Status | Notes |
 | --- | --- | --- |
 | GitHub Actions with `leanprover/lean-action` | done | CI skeleton is present and uses `leanprover/lean-action` on `ubuntu-latest`. |
-| explicit build/test/lint/leanchecker jobs | done | Build, test, lint, leanchecker, coverage-ledger validation, report schema validation, policy schema validation, runnable-example validation, performance baseline validation, release-readiness validation, CI workflow validation, CLI smoke test, and doc-gen4 docs build jobs are configured. Hosted CI execution is not locally validated. |
+| explicit build/test/lint/leanchecker jobs | done | Build, test, lint, leanchecker, coverage-ledger validation, report schema validation, policy schema validation, line-ending validation, runnable-example validation, performance baseline validation, release-readiness validation, CI workflow validation, CLI smoke test, and doc-gen4 docs build jobs are configured. Hosted CI execution is not locally validated. |
 | `ubuntu-latest` | done | Configured in `.github/workflows/ci.yml`; hosted CI execution is not locally validated. |
 | `macos-latest` and `windows-latest` once CLI exists | partial | Configured in the GitHub Actions matrix. Hosted runner execution is not locally validated. |
 | scheduled Lean RC compatibility job | partial | `.github/workflows/compatibility.yml` is configured for weekly/manual runs against `leanprover/lean4:v4.30.0-rc2` and is checked by `python scripts/check_ci_workflow.py`. Hosted scheduled execution is not locally observable. |

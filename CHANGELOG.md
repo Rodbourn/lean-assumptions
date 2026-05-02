@@ -20,3 +20,4 @@
 - Add repository-agnostic delta reporting for prior/current JSON audit artifacts, with CLI `--diff`, stable text/JSON output, schema validation, and golden tests.
 - Add repository-agnostic failure clustering for JSON audit artifacts, with CLI `--cluster`, stable text/JSON output, schema validation, and golden tests.
 - Add a runnable hidden-package example with a validator for reproducing the README output.
+- Pin repository text files to LF line endings and validate them for cross-platform golden tests.

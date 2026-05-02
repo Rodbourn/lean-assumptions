@@ -12,7 +12,7 @@ jobs:
     env:
       LEAN_RC_TOOLCHAIN: leanprover/lean4:v4.30.0-rc2
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Select Lean release-candidate toolchain
         run: printf '%s\n' "$LEAN_RC_TOOLCHAIN" > lean-toolchain
       - uses: leanprover/lean-action@v1

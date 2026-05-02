@@ -13,7 +13,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: leanprover/lean-action@v1
       - name: Build package
         run: lake build
@@ -29,6 +29,8 @@ jobs:
         run: python scripts/check_report_schema.py
       - name: Validate policy JSON schema
         run: python scripts/check_policy_schema.py
+      - name: Validate line endings
+        run: python scripts/check_line_endings.py
       - name: Validate runnable examples
         run: python scripts/check_examples.py
       - name: Validate CI workflow
@@ -40,7 +42,7 @@ jobs:
     name: performance-baseline
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: leanprover/lean-action@v1
       - name: Validate performance baseline
         run: python scripts/check_performance_baseline.py
@@ -49,7 +51,7 @@ jobs:
     name: release-readiness
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: leanprover/lean-action@v1
       - name: Validate local release readiness
         run: python scripts/check_release_readiness.py
@@ -58,7 +60,7 @@ jobs:
     name: api-docs
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: leanprover/lean-action@v1
       - name: Build API docs
         working-directory: docbuild

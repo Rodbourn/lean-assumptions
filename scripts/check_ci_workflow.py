@@ -21,6 +21,8 @@ def main() -> int:
     text = WORKFLOW.read_text(encoding="utf-8")
     errors: list[str] = []
 
+    require("uses: actions/checkout@v5" in text, "CI must use actions/checkout@v5.", errors)
+    require("uses: actions/checkout@v4" not in text, "CI must not use deprecated actions/checkout@v4.", errors)
     require("uses: leanprover/lean-action@v1" in text, "CI must use leanprover/lean-action@v1.", errors)
     require("strategy:" in text and "matrix:" in text, "CI must use an OS matrix.", errors)
     for runner in ["ubuntu-latest", "macos-latest", "windows-latest"]:
@@ -34,6 +36,7 @@ def main() -> int:
         "python scripts/check_coverage_ledger.py",
         "python scripts/check_report_schema.py",
         "python scripts/check_policy_schema.py",
+        "python scripts/check_line_endings.py",
         "python scripts/check_examples.py",
         "python scripts/check_performance_baseline.py",
         "python scripts/check_release_readiness.py",
@@ -59,6 +62,16 @@ def main() -> int:
     require("schedule:" in compatibility, "Compatibility workflow must run on a schedule.", errors)
     require("workflow_dispatch:" in compatibility, "Compatibility workflow must be manually runnable.", errors)
     require(CURRENT_RC_TOOLCHAIN in compatibility, f"Compatibility workflow must test {CURRENT_RC_TOOLCHAIN}.", errors)
+    require(
+        "uses: actions/checkout@v5" in compatibility,
+        "Compatibility workflow must use actions/checkout@v5.",
+        errors,
+    )
+    require(
+        "uses: actions/checkout@v4" not in compatibility,
+        "Compatibility workflow must not use deprecated actions/checkout@v4.",
+        errors,
+    )
     require("uses: leanprover/lean-action@v1" in compatibility, "Compatibility workflow must use leanprover/lean-action@v1.", errors)
     for command in [
         "lake build",
@@ -76,6 +89,8 @@ def main() -> int:
 
     require("schedule:" in update, "Update workflow must run on a schedule.", errors)
     require("workflow_dispatch:" in update, "Update workflow must be manually runnable.", errors)
+    require("uses: actions/checkout@v5" in update, "Update workflow must use actions/checkout@v5.", errors)
+    require("uses: actions/checkout@v4" not in update, "Update workflow must not use deprecated actions/checkout@v4.", errors)
     require("contents: write" in update, "Update workflow must be allowed to write branch contents.", errors)
     require("pull-requests: write" in update, "Update workflow must be allowed to open pull requests.", errors)
     require("issues: write" in update, "Update workflow must be allowed to open failure issues.", errors)

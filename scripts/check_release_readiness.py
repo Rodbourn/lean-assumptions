@@ -18,6 +18,7 @@ REQUIRED_FILES = [
     "LICENSE",
     "SECURITY.md",
     "CHANGELOG.md",
+    ".gitattributes",
     "lean-toolchain",
     "lakefile.lean",
     "lake-manifest.json",
@@ -33,6 +34,7 @@ REQUIRED_FILES = [
     ".github/workflows/compatibility.yml",
     ".github/workflows/update.yml",
     ".github/ISSUE_TEMPLATE/bug_report.yml",
+    "scripts/check_line_endings.py",
     "scripts/check_examples.py",
 ]
 
@@ -215,6 +217,17 @@ def check_examples(errors: list[str]) -> None:
         errors.append(f"example validation failed with exit {completed.returncode}: {completed.stderr}")
 
 
+def check_line_endings(errors: list[str]) -> None:
+    command = [sys.executable, "scripts/check_line_endings.py"]
+    try:
+        completed = run_command(command)
+    except (FileNotFoundError, ValueError) as error:
+        errors.append(f"line-ending validation could not start: {error}")
+        return
+    if completed.returncode != 0:
+        errors.append(f"line-ending validation failed with exit {completed.returncode}: {completed.stderr}")
+
+
 def main() -> int:
     release_mode = "--release" in sys.argv[1:]
     unknown_args = [arg for arg in sys.argv[1:] if arg != "--release"]
@@ -227,6 +240,7 @@ def main() -> int:
     check_version_and_schema(package_version, errors)
     check_docs_and_governance(errors)
     check_artifact_smoke(errors)
+    check_line_endings(errors)
     check_examples(errors)
     blockers = tracked_release_blockers()
     if release_mode and blockers:

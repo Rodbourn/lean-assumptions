@@ -1,0 +1,24 @@
+# Keep checked-out text files byte-stable across platforms.
+* text=auto eol=lf
+
+# Source, docs, workflows, schemas, and golden snapshots are text artifacts.
+*.lean text eol=lf
+*.py text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+*.json text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.toml text eol=lf
+lakefile.lean text eol=lf
+lean-toolchain text eol=lf
+
+# Preserve binary assets if they are added later.
+*.bmp binary
+*.gif binary
+*.jpg binary
+*.jpeg binary
+*.pdf binary
+*.png binary
+*.svg text eol=lf
+*.zip binary

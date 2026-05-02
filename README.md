@@ -235,6 +235,7 @@ lake env leanchecker --fresh LeanAssumptions
 python scripts/check_coverage_ledger.py
 python scripts/check_report_schema.py
 python scripts/check_policy_schema.py
+python scripts/check_line_endings.py
 python scripts/check_examples.py
 python scripts/check_ci_workflow.py
 python scripts/check_performance_baseline.py
@@ -252,6 +253,7 @@ Current local verification:
 - `python scripts/check_coverage_ledger.py`
 - `python scripts/check_report_schema.py`
 - `python scripts/check_policy_schema.py`
+- `python scripts/check_line_endings.py`
 - `python scripts/check_examples.py`
 - `python scripts/check_ci_workflow.py`
 - `python scripts/check_performance_baseline.py`
