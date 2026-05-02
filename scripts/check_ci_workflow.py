@@ -32,8 +32,9 @@ def main() -> int:
             errors,
         )
     require("strategy:" in text and "matrix:" in text, "CI must use an OS matrix.", errors)
-    for runner in ["ubuntu-latest", "macos-latest", "windows-latest"]:
+    for runner in ["ubuntu-latest", "macos-latest"]:
         require(runner in text, f"CI matrix must include {runner}.", errors)
+    require("windows-latest" not in text, "Windows CI is intentionally disabled until native hosted-runner behavior is hardened.", errors)
 
     required_commands = [
         "lake build",

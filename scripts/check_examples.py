@@ -42,6 +42,10 @@ def run_command(command: list[str]) -> subprocess.CompletedProcess[str]:
     raise FileNotFoundError(f"{command[0]} was not found on PATH")
 
 
+def normalize_output(output: str) -> str:
+    return output.replace("\r\n", "\n").replace("\r", "\n")
+
+
 def main() -> int:
     source = (ROOT / EXAMPLE).read_text(encoding="utf-8")
     required_commands = [
@@ -63,13 +67,13 @@ def main() -> int:
     except (FileNotFoundError, ValueError) as error:
         print(f"example check could not start: {error}", file=sys.stderr)
         return 1
-    combined_output = (completed.stdout + completed.stderr).replace("\r\n", "\n")
+    combined_output = normalize_output(completed.stdout + completed.stderr)
     if completed.returncode != 0:
         print(f"example check failed with exit {completed.returncode}", file=sys.stderr)
         print(combined_output, file=sys.stderr)
         return 1
 
-    expected_output = EXPECTED_OUTPUT.read_text(encoding="utf-8").replace("\r\n", "\n")
+    expected_output = normalize_output(EXPECTED_OUTPUT.read_text(encoding="utf-8"))
     if combined_output.strip() != expected_output.strip():
         print(f"example output differs from {EXPECTED_OUTPUT.relative_to(ROOT)}", file=sys.stderr)
         return 1

@@ -7,7 +7,7 @@ Implemented CI hardening behavior:
 
 - `.github/workflows/ci.yml` uses `leanprover/lean-action`
 - the main build/test job runs on an explicit OS matrix:
-  `ubuntu-latest`, `macos-latest`, and `windows-latest`
+  `ubuntu-latest` and `macos-latest`
 - the matrix job runs `lake build`, `lake test`, `lake lint`, and
   `lake env leanchecker --fresh LeanAssumptions`
 - the matrix job validates the coverage ledger, report schema, policy schema,
@@ -47,6 +47,8 @@ Implemented CI hardening behavior:
 Current Phase 4 boundary:
 
 - hosted CI execution is not locally observable from this workspace
+- hosted Windows CI is temporarily disabled after native Windows runner
+  failures; this remains tracked and is not complete
 - local Reservoir metadata and release artifact sanity checks are implemented,
   but actual Reservoir publication is not
 - release mode remains blocked while partial/tracked requirements are present
