@@ -1,20 +1,65 @@
 # lean-assumptions
 
-`lean-assumptions` audits the assumption surface of elaborated Lean declaration types.
+`lean-assumptions` is a Lean 4 package and CLI for auditing assumptions that
+appear in theorem and declaration statements.
 
-Lean already answers a different question with `#print axioms`: which axioms a proof term transitively depends on. This repository is for the theorem-statement side: binders, packaged assumptions, typeclass arguments, aliases, and proof-carrying data that appear in the elaborated declaration type itself.
+Lean already has strong proof-validation tools. For example, `#print axioms`
+answers which axioms a proof term transitively depends on. This project answers
+a different question: what assumptions are present in the elaborated declaration
+type itself?
 
-Current status:
+That includes assumptions carried by:
 
-- Phase 0 package skeleton is present.
-- Phase 1 certified-path work is complete for its scoped behavior: the core report model, declaration inspection, binder peeling, direct proposition detection, Phase 1 metadata, and the fixture corpus are implemented and tested.
-- Phase 2 certified-path deliverables are implemented for recursive structure/class expansion, `Subtype`/`Sigma`/`PSigma` proof-carrying detection, cycle-safe unknown reporting, and strict policy evaluation.
-- Phase 3 deliverables are implemented and locally verified: deterministic text/JSON renderers, golden snapshots, versioned report and policy schemas, `#print` commands, a Lake executable, policy-file parsing, declaration-list inspection, module scanning, batch summaries, CI-oriented exit codes, and doc-gen4 API docs.
-- FR-016 delta reporting is implemented for comparing prior/current JSON audit artifacts, with stable text and JSON output.
-- FR-017 failure clustering is implemented for grouping failing declarations in JSON audit artifacts by report-derived signatures.
-- The current test driver runs through `lake test`.
-- Phase 4 has started with cross-platform CI matrix configuration for Ubuntu, macOS, and Windows, a scheduled Lean release-candidate compatibility workflow, an automated Lean upgrade workflow, a smoke-level performance baseline, and local release-hardening checks for Lake/Reservoir metadata, schema/changelog consistency, and CLI artifact sanity. Hosted CI results are not locally observable.
-- Actual release readiness, tagging, Reservoir publication, and any remaining `partial` requirements are tracked explicitly in [docs/requirements-status.md](docs/requirements-status.md).
+- direct `Prop` binders
+- implicit, strict-implicit, and instance-implicit binders
+- structures and classes with proposition-valued fields
+- proof-carrying data such as `Subtype`, `Sigma`, and `PSigma`
+- reducible aliases and wrapper types, subject to an explicit transparency mode
+
+The intended users are Lean developers, library maintainers, and reviewers who
+want a deterministic report of a theorem's statement-level assumption surface.
+The tool is especially useful when cleaning up APIs that accidentally hide
+logical assumptions inside packages, typeclasses, or aliases.
+
+## Quick Start
+
+In a Lean file:
+
+```lean
+import LeanAssumptions
+import MyProject.Theorems
+
+#print assumptions MyProject.Theorems.target
+#print assumption_tree MyProject.Theorems.target
+#print assumption_json MyProject.Theorems.target
+```
+
+From the CLI:
+
+```text
+lake env lean-assumptions --module MyProject.Theorems --decl MyProject.Theorems.target --format text
+lake env lean-assumptions --module MyProject.Theorems --scan-module MyProject.Theorems --format json
+```
+
+For iterative cleanup work, compare or cluster prior audit artifacts:
+
+```text
+lake env lean-assumptions --diff baseline-audit.json current-audit.json --format text
+lake env lean-assumptions --cluster current-audit.json --format text
+```
+
+## What It Guarantees
+
+For a chosen declaration, policy, and transparency mode, `lean-assumptions`
+inspects the elaborated declaration type visible in the current Lean
+environment, peels surface binders, expands supported packages recursively, emits
+a deterministic assumption tree, and evaluates that tree against a deterministic
+policy.
+
+Unknown or unsupported cases are reported conservatively. They do not silently
+pass strict policy.
+
+## What It Does Not Do
 
 This tool does not replace:
 
@@ -24,27 +69,56 @@ This tool does not replace:
 - theorem-statement equivalence checking
 - sandboxing or hostile-environment validation
 
-Implemented behavior, remaining gaps, and phase boundaries are documented rather than implied:
+It audits declaration statements. It does not prove that a theorem matches an
+informal claim, validate proof axioms, or certify imported libraries.
 
-- behavioral spec: [docs/phase1-spec.md](docs/phase1-spec.md)
-- Phase 2 spec: [docs/phase2-spec.md](docs/phase2-spec.md)
-- Phase 3 spec: [docs/phase3-spec.md](docs/phase3-spec.md)
-- Phase 4 spec: [docs/phase4-spec.md](docs/phase4-spec.md)
-- Delta reporting spec: [docs/delta-spec.md](docs/delta-spec.md)
-- Failure clustering spec: [docs/clustering-spec.md](docs/clustering-spec.md)
-- requirement tracker: [docs/requirements-status.md](docs/requirements-status.md)
-- Lean API and tooling gaps: [docs/api-gaps.md](docs/api-gaps.md)
+## Current Status
+
+This is an early public development checkpoint, not a finished release.
+
+Implemented and locally verified:
+
+- core report model, declaration inspection, binder peeling, and direct proposition detection
+- recursive structure/class expansion and proof-carrying data detection
+- cycle-safe unknown reporting and strict policy evaluation
+- deterministic text, JSON, and batch renderers with golden snapshots
+- `#print assumptions`, `#print assumption_tree`, and `#print assumption_json`
+- CLI declaration inspection, declaration lists, module scans, policy files, and CI-oriented exit codes
+- versioned report, batch-report, delta-report, cluster-report, and policy schemas
+- delta reporting between prior/current JSON audit artifacts
+- failure clustering by report-derived finding signatures
+- doc-gen4 API documentation configuration
+- cross-platform CI configuration, release-readiness checks, and a smoke-level performance baseline
+
+Remaining partial or tracked requirements are documented in
+[docs/requirements-status.md](docs/requirements-status.md). No release has been
+tagged yet, and Reservoir publication has not happened yet.
+
+## Design Boundary
 
 The repository keeps its certified core in:
 
 - `LeanAssumptions/Core`
 - `LeanAssumptions/Policy`
 
-All other modules are support layers or future scaffolding until later phases land.
+Rendering, commands, CLI, delta reporting, clustering, docs, scripts, and CI are
+support layers. They should not be able to silently change certified
+classification or policy decisions.
+
+Implemented behavior, remaining gaps, and phase boundaries are documented here:
+
+- Phase 1 spec: [docs/phase1-spec.md](docs/phase1-spec.md)
+- Phase 2 spec: [docs/phase2-spec.md](docs/phase2-spec.md)
+- Phase 3 spec: [docs/phase3-spec.md](docs/phase3-spec.md)
+- Phase 4 spec: [docs/phase4-spec.md](docs/phase4-spec.md)
+- Delta reporting spec: [docs/delta-spec.md](docs/delta-spec.md)
+- Failure clustering spec: [docs/clustering-spec.md](docs/clustering-spec.md)
+- Requirement tracker: [docs/requirements-status.md](docs/requirements-status.md)
+- Lean API and tooling gaps: [docs/api-gaps.md](docs/api-gaps.md)
 
 ## Lean Commands
 
-Import `LeanAssumptions` in a Lean file and use the Phase 3 command surface:
+Import `LeanAssumptions` in a Lean file and use the command surface:
 
 ```lean
 import LeanAssumptions
