@@ -17,3 +17,19 @@ lean_lib LeanAssumptionsTest where
 @[test_driver]
 lean_exe «lean-assumptions-test» where
   root := `LeanAssumptionsTest.Main
+
+lean_exe «lean-assumptions» where
+  root := `LeanAssumptions.Cli.Main
+
+/--
+Lint the current repository surface by building the package and test target
+with Lean warnings promoted to failures.
+-/
+@[lint_driver]
+script lint (_args) do
+  let child ← IO.Process.spawn {
+    cmd := "lake"
+    args := #["--wfail", "build", "LeanAssumptions", "LeanAssumptionsTest", "lean-assumptions-test",
+      "lean-assumptions"]
+  }
+  return ← child.wait

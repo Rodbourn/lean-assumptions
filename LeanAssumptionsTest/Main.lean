@@ -6,6 +6,7 @@ import LeanAssumptionsTest.Golden.Phase3
 import LeanAssumptionsTest.Golden.Delta
 import LeanAssumptionsTest.Golden.Cluster
 import LeanAssumptionsTest.Integration.Commands
+import LeanAssumptionsTest.Integration.Cli
 
 /-!
 Test executable root for `lean-assumptions`.

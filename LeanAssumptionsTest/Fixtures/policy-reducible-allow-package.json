@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "identifier": "reducible-allow-package-fixture",
+  "transparency_mode": "reducible",
+  "permit_package_types": ["LeanAssumptionsTest.Fixtures.ProofPackage"],
+  "typeclass_policy": "fail",
+  "unknown_policy": "fail"
+}

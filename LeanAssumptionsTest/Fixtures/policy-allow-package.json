@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "identifier": "allow-package-fixture",
+  "transparency_mode": "none",
+  "permit_direct_props": [],
+  "permit_package_types": [
+    "LeanAssumptionsTest.Fixtures.ProofPackage"
+  ],
+  "typeclass_policy": "fail",
+  "unknown_policy": "fail"
+}

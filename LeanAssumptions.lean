@@ -5,13 +5,14 @@ import LeanAssumptions.Render
 import LeanAssumptions.Delta
 import LeanAssumptions.Cluster
 import LeanAssumptions.Command
+import LeanAssumptions.Cli
 
 /-!
 `lean-assumptions` public root module.
 
 This root exposes package metadata, certified classification/policy entry
 points, stable report rendering, artifact delta reporting, failure clustering,
-and the Lean command surface.
+the Lean command surface, and CLI support.
 -/
 
 open Lean Elab Command
