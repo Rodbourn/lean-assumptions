@@ -6,7 +6,7 @@ import LeanAssumptionsTest.TestUtil
 Phase 2 unit tests for deterministic strict policy evaluation.
 
 These tests are written before the policy implementation. They specify the
-minimum certified policy behavior required by the charter for Phase 2.
+minimum certified policy behavior required by the project for Phase 2.
 -/
 
 open LeanAssumptions

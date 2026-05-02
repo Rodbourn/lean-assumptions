@@ -38,7 +38,7 @@ inductive SurfaceBinderKind where
   | instanceImplicit
   deriving DecidableEq, Repr, Inhabited
 
-/-- The mandatory public assumption categories from the charter. -/
+/-- The mandatory public assumption categories for stable reports. -/
 inductive AssumptionCategory where
   | pureData
   | directProp

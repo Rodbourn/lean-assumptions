@@ -1,5 +1,5 @@
 /-!
-Future-phase fixture corpus required by the charter.
+Fixture corpus for recursive assumption-surface coverage.
 
 These declarations intentionally cover package expansion, proof-carrying data,
 aliases, cycles, suspicious constructs, and examples that distinguish theorem
