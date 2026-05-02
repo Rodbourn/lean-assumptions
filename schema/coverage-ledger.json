@@ -94,6 +94,26 @@
       ]
     },
     {
+      "path": "LeanAssumptions/JsonUtil.lean",
+      "tests": [
+        "LeanAssumptionsTest/Unit/Render.lean"
+      ],
+      "publicDefinitions": [
+        {
+          "name": "LeanAssumptions.JsonUtil.escapeString",
+          "tests": [
+            "LeanAssumptionsTest/Unit/Render.lean"
+          ]
+        },
+        {
+          "name": "LeanAssumptions.JsonUtil.quoteString",
+          "tests": [
+            "LeanAssumptionsTest/Unit/Render.lean"
+          ]
+        }
+      ]
+    },
+    {
       "path": "LeanAssumptions/Core.lean",
       "tests": [
         "LeanAssumptionsTest/Unit/Core/Phase1.lean"
@@ -261,7 +281,8 @@
     {
       "path": "LeanAssumptions/Render.lean",
       "tests": [
-        "LeanAssumptionsTest/Golden/Phase3.lean"
+        "LeanAssumptionsTest/Golden/Phase3.lean",
+        "LeanAssumptionsTest/Unit/Render.lean"
       ],
       "publicDefinitions": [
         {
@@ -288,6 +309,7 @@
           "name": "LeanAssumptions.Render.renderJsonString",
           "tests": [
             "LeanAssumptionsTest/Golden/Phase3.lean",
+            "LeanAssumptionsTest/Unit/Render.lean",
             "scripts/check_report_schema.py"
           ]
         },
@@ -652,6 +674,13 @@
           ]
         }
       ]
+    },
+    {
+      "path": "LeanAssumptionsTest/Unit/Render.lean",
+      "tests": [
+        "lake test"
+      ],
+      "publicDefinitions": []
     },
     {
       "path": "LeanAssumptionsTest/TestUtil.lean",

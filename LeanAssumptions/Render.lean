@@ -1,5 +1,6 @@
 import LeanAssumptions.Policy
 import LeanAssumptions.Version
+import LeanAssumptions.JsonUtil
 
 /-!
 Deterministic rendering for assumption reports.
@@ -252,20 +253,9 @@ def renderText
     ]
   joinWith "\n" lines ++ "\n"
 
-/-- Escape a string for deterministic JSON output. -/
-private def jsonEscape (value : String) : String :=
-  value.foldl (init := "") fun acc char =>
-    match char with
-    | '"' => acc ++ "\\\""
-    | '\\' => acc ++ "\\\\"
-    | '\n' => acc ++ "\\n"
-    | '\r' => acc ++ "\\r"
-    | '\t' => acc ++ "\\t"
-    | _ => acc.push char
-
 /-- Quote a JSON string. -/
 private def jsonString (value : String) : String :=
-  "\"" ++ jsonEscape value ++ "\""
+  LeanAssumptions.JsonUtil.quoteString value
 
 /-- Render an optional name as JSON. -/
 private def jsonOptionalName : Option Lean.Name -> String
