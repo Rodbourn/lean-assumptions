@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "description": "Phase 4 smoke-level performance baseline for representative CLI audits. Thresholds are intentionally broad because hosted runner timing is not a correctness signal.",
+  "cases": [
+    {
+      "name": "single_pure_data_declaration",
+      "modules": ["LeanAssumptionsTest.Fixtures"],
+      "declarations": ["LeanAssumptionsTest.Fixtures.noPropBearingAssumptions"],
+      "format": "json",
+      "extra_args": ["--allow-unknowns"],
+      "max_ms": 30000
+    },
+    {
+      "name": "representative_assumption_surface_batch",
+      "modules": ["LeanAssumptionsTest.Fixtures"],
+      "declarations": [
+        "LeanAssumptionsTest.Fixtures.packageBinder",
+        "LeanAssumptionsTest.Fixtures.nestedPackageBinder",
+        "LeanAssumptionsTest.Fixtures.classBinder",
+        "LeanAssumptionsTest.Fixtures.subtypeBinder",
+        "LeanAssumptionsTest.Fixtures.sigmaBinder",
+        "LeanAssumptionsTest.Fixtures.psigmaBinder"
+      ],
+      "format": "json",
+      "extra_args": [
+        "--allow-package",
+        "LeanAssumptionsTest.Fixtures.ProofPackage",
+        "--allow-package",
+        "LeanAssumptionsTest.Fixtures.NestedPackage",
+        "--allow-package",
+        "Subtype",
+        "--allow-package",
+        "Sigma",
+        "--allow-package",
+        "PSigma",
+        "--allow-typeclasses",
+        "--allow-unknowns"
+      ],
+      "max_ms": 60000
+    }
+  ]
+}
