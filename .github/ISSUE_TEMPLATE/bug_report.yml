@@ -1,0 +1,41 @@
+name: Misclassification Report
+description: Report a correctness issue with a minimal Lean reproducer.
+title: "[bug] "
+labels:
+  - bug
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: State the suspected misclassification or incorrect guarantee.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Minimal Reproducer
+      description: Provide the smallest Lean example that demonstrates the issue.
+    validations:
+      required: true
+  - type: input
+    id: lean_version
+    attributes:
+      label: Lean Version
+      description: Include the exact Lean toolchain string.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Conservative Behavior
+      description: Describe the result that should have occurred.
+    validations:
+      required: true
+  - type: textarea
+    id: observed
+    attributes:
+      label: Observed Behavior
+      description: Include the actual report or failure.
+    validations:
+      required: true

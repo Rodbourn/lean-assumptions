@@ -1,0 +1,65 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-and-test:
+    name: build-test-${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: leanprover/lean-action@v1
+      - name: Build package
+        run: lake build
+      - name: Run tests
+        run: lake test
+      - name: Run lint
+        run: lake lint
+      - name: Run leanchecker
+        run: lake env leanchecker --fresh LeanAssumptions
+      - name: Validate coverage ledger
+        run: python scripts/check_coverage_ledger.py
+      - name: Validate report JSON schema
+        run: python scripts/check_report_schema.py
+      - name: Validate policy JSON schema
+        run: python scripts/check_policy_schema.py
+      - name: Validate CI workflow
+        run: python scripts/check_ci_workflow.py
+      - name: Smoke-test CLI executable
+        run: lake env lean-assumptions --module LeanAssumptionsTest.Fixtures --decl LeanAssumptionsTest.Fixtures.packageBinder --format json --allow-package LeanAssumptionsTest.Fixtures.ProofPackage
+
+  performance-baseline:
+    name: performance-baseline
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: leanprover/lean-action@v1
+      - name: Validate performance baseline
+        run: python scripts/check_performance_baseline.py
+
+  release-readiness:
+    name: release-readiness
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: leanprover/lean-action@v1
+      - name: Validate local release readiness
+        run: python scripts/check_release_readiness.py
+
+  api-docs:
+    name: api-docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: leanprover/lean-action@v1
+      - name: Build API docs
+        working-directory: docbuild
+        env:
+          DOCGEN_SRC: file
+        run: lake build LeanAssumptions:docs

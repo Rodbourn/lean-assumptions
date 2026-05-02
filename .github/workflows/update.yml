@@ -1,0 +1,29 @@
+name: update
+
+on:
+  schedule:
+    - cron: "37 9 * * 2"
+  workflow_dispatch:
+
+jobs:
+  update-lean:
+    name: update-lean
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    steps:
+      - uses: actions/checkout@v5
+      - name: Update Lean project
+        uses: leanprover-community/lean-update@main
+        with:
+          update_if_modified: lean-toolchain
+      - name: Validate coverage ledger
+        run: python scripts/check_coverage_ledger.py
+      - name: Validate report JSON schema
+        run: python scripts/check_report_schema.py
+      - name: Validate policy JSON schema
+        run: python scripts/check_policy_schema.py
+      - name: Validate CI workflow
+        run: python scripts/check_ci_workflow.py

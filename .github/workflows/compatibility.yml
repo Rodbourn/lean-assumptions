@@ -1,0 +1,26 @@
+name: compatibility
+
+on:
+  schedule:
+    - cron: "21 8 * * 1"
+  workflow_dispatch:
+
+jobs:
+  lean-release-candidate:
+    name: lean-release-candidate
+    runs-on: ubuntu-latest
+    env:
+      LEAN_RC_TOOLCHAIN: leanprover/lean4:v4.30.0-rc2
+    steps:
+      - uses: actions/checkout@v4
+      - name: Select Lean release-candidate toolchain
+        run: printf '%s\n' "$LEAN_RC_TOOLCHAIN" > lean-toolchain
+      - uses: leanprover/lean-action@v1
+      - name: Build package
+        run: lake build
+      - name: Run tests
+        run: lake test
+      - name: Run lint
+        run: lake lint
+      - name: Run leanchecker
+        run: lake env leanchecker --fresh LeanAssumptions
