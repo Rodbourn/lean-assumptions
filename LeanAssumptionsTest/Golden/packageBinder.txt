@@ -1,0 +1,22 @@
+lean-assumptions report
+tool_version: 0.1.0-dev
+lean_version: 4.30.0-rc2
+schema_version: 1
+report_model_version: 0.1.0-dev
+target: LeanAssumptionsTest.Fixtures.packageBinder
+declaration_kind: theorem
+transparency_mode: none
+policy_identifier: strict
+policy_result: fail
+unknowns_occurred: false
+cycles_truncated: false
+assumption_tree:
+- pkg : package_with_prop_fields [explicit]
+  - carrier : pure_data [explicit]
+  - certified : direct_prop [explicit] flags=[binder_type_is_prop]
+  - witness : direct_prop [explicit] flags=[binder_type_is_prop]
+policy_findings:
+- unapproved_package_with_prop_fields severity=failure path=pkg category=package_with_prop_fields type=LeanAssumptionsTest.Fixtures.ProofPackage
+raw_declaration_type_repr: forall(pkg,explicit,app(const(LeanAssumptionsTest.Fixtures.ProofPackage,[]),const(Nat,[])),app(app(app(const(Eq,[succ(0)]),const(Nat,[])),app(app(const(LeanAssumptionsTest.Fixtures.ProofPackage.carrier,[]),const(Nat,[])),bvar(0))),app(app(const(LeanAssumptionsTest.Fixtures.ProofPackage.carrier,[]),const(Nat,[])),bvar(0))))
+result_type_repr: app(app(app(const(Eq,[succ(0)]),const(Nat,[])),app(app(const(LeanAssumptionsTest.Fixtures.ProofPackage.carrier,[]),const(Nat,[])),fvar)),app(app(const(LeanAssumptionsTest.Fixtures.ProofPackage.carrier,[]),const(Nat,[])),fvar))
+limitations: audits elaborated declaration types only; does not validate proof axioms, sandbox execution, or theorem-statement equivalence.

@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lean-assumptions.local/schema/batch-report-v1.schema.json",
+  "title": "lean-assumptions batch report v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "tool_version",
+    "lean_version",
+    "policy_identifier",
+    "transparency_mode",
+    "summary",
+    "reports"
+  ],
+  "properties": {
+    "schema_version": { "const": "1" },
+    "tool_version": { "type": "string" },
+    "lean_version": { "type": "string" },
+    "policy_identifier": { "type": "string" },
+    "transparency_mode": {
+      "enum": ["none", "reducible", "recursive_normalization"]
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "declarations_scanned",
+        "declarations_passed",
+        "declarations_warned",
+        "declarations_failed",
+        "declarations_with_unknown_nodes",
+        "schema_version"
+      ],
+      "properties": {
+        "declarations_scanned": { "type": "number" },
+        "declarations_passed": { "type": "number" },
+        "declarations_warned": { "type": "number" },
+        "declarations_failed": { "type": "number" },
+        "declarations_with_unknown_nodes": { "type": "number" },
+        "schema_version": { "const": "1" }
+      }
+    },
+    "reports": {
+      "type": "array",
+      "items": { "type": "object" }
+    }
+  }
+}

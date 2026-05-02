@@ -1,12 +1,13 @@
 import LeanAssumptions.Version
 import LeanAssumptions.Core
 import LeanAssumptions.Policy
+import LeanAssumptions.Render
 
 /-!
 `lean-assumptions` public root module.
 
-This root exposes package metadata and the certified classification/policy entry
-points.
+This root exposes package metadata, certified classification/policy entry
+points, and stable report rendering.
 -/
 
 open Lean Elab Command
