@@ -1,5 +1,9 @@
 # lean-assumptions
 
+[![ci](https://github.com/Rodbourn/lean-assumptions/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Rodbourn/lean-assumptions/actions/workflows/ci.yml)
+[![compatibility](https://github.com/Rodbourn/lean-assumptions/actions/workflows/compatibility.yml/badge.svg?branch=main)](https://github.com/Rodbourn/lean-assumptions/actions/workflows/compatibility.yml)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](LICENSE)
+
 `lean-assumptions` is a Lean 4 package and CLI for auditing assumptions that
 appear in theorem and declaration statements.
 
