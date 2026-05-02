@@ -256,7 +256,7 @@ def main() -> int:
     else:
         print("No tracked or partial requirements remain in docs/requirements-status.md.")
     if not release_mode:
-        print("Run with --release to require zero tracked or partial requirements before tagging.")
+        print("Run with --release to require zero tracked or partial requirements before a final release tag.")
     return 0
 
 

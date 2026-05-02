@@ -51,12 +51,13 @@ Implemented CI hardening behavior:
 Current Phase 4 boundary:
 
 - hosted CI execution is not locally observable from this workspace
-- hosted Windows CI is temporarily disabled after native Windows runner
-  failures; this remains tracked and is not complete
+- native Windows hosted CI is intentionally unsupported for now after runner
+  failures; Windows users should run the package under WSL2
 - local Reservoir metadata and release artifact sanity checks are implemented,
   but actual Reservoir publication is not
 - release mode remains blocked while partial/tracked requirements are present
-- no tagged release has been cut
+- a `0.1.0` public prerelease tag has been cut; final release mode remains
+  blocked while partial/tracked requirements remain
 
 The corresponding local validators are:
 

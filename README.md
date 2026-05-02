@@ -269,9 +269,9 @@ Supported transparency spellings are `none`, `reducible`, and `recursive_normali
 The repository CI uses `leanprover/lean-action`. The main build/test job is
 configured as an OS matrix over `ubuntu-latest` and `macos-latest`; both targets
 run the same explicit build, test, lint, leanchecker, schema, example, workflow,
-and CLI smoke checks. The API-docs job runs on Ubuntu. Windows hosted CI is
-tracked but temporarily disabled until the native Windows path is hardened. A
-separate compatibility workflow runs weekly against
+and CLI smoke checks. The API-docs job runs on Ubuntu. Native Windows hosted CI
+is intentionally unsupported for now; Windows users should run the package under
+WSL2. A separate compatibility workflow runs weekly against
 `leanprover/lean4:v4.30.0-rc2`, the current Lean release-candidate toolchain
 used by this repository. A scheduled update workflow uses
 `leanprover-community/lean-update@main` with
