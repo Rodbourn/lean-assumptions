@@ -29,6 +29,8 @@ jobs:
         run: python scripts/check_report_schema.py
       - name: Validate policy JSON schema
         run: python scripts/check_policy_schema.py
+      - name: Validate runnable examples
+        run: python scripts/check_examples.py
       - name: Validate CI workflow
         run: python scripts/check_ci_workflow.py
       - name: Smoke-test CLI executable

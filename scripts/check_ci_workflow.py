@@ -34,6 +34,7 @@ def main() -> int:
         "python scripts/check_coverage_ledger.py",
         "python scripts/check_report_schema.py",
         "python scripts/check_policy_schema.py",
+        "python scripts/check_examples.py",
         "python scripts/check_performance_baseline.py",
         "python scripts/check_release_readiness.py",
         "lake env lean-assumptions --module LeanAssumptionsTest.Fixtures",

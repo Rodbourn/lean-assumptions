@@ -12,6 +12,27 @@
       "publicDefinitions": []
     },
     {
+      "path": "Examples/HiddenPackage.lean",
+      "tests": [
+        "python scripts/check_examples.py",
+        "lake env lean Examples/HiddenPackage.lean"
+      ],
+      "publicDefinitions": [
+        {
+          "name": "Examples.HiddenPackage.CertifiedValue",
+          "tests": [
+            "python scripts/check_examples.py"
+          ]
+        },
+        {
+          "name": "Examples.HiddenPackage.usesCertifiedValue",
+          "tests": [
+            "python scripts/check_examples.py"
+          ]
+        }
+      ]
+    },
+    {
       "path": "LeanAssumptions.lean",
       "tests": [
         "LeanAssumptionsTest/Integration/Phase1.lean",

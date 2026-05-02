@@ -23,6 +23,7 @@ REQUIRED_FILES = [
     "lake-manifest.json",
     "LeanAssumptions.lean",
     "LeanAssumptions/Version.lean",
+    "Examples/HiddenPackage.lean",
     "schema/report-v1.schema.json",
     "schema/batch-report-v1.schema.json",
     "schema/delta-report-v1.schema.json",
@@ -32,6 +33,7 @@ REQUIRED_FILES = [
     ".github/workflows/compatibility.yml",
     ".github/workflows/update.yml",
     ".github/ISSUE_TEMPLATE/bug_report.yml",
+    "scripts/check_examples.py",
 ]
 
 
@@ -202,6 +204,17 @@ def check_artifact_smoke(errors: list[str]) -> None:
     require(parsed.get("schema_version") == "1", "release artifact smoke test must emit schema_version 1.", errors)
 
 
+def check_examples(errors: list[str]) -> None:
+    command = [sys.executable, "scripts/check_examples.py"]
+    try:
+        completed = run_command(command)
+    except (FileNotFoundError, ValueError) as error:
+        errors.append(f"example validation could not start: {error}")
+        return
+    if completed.returncode != 0:
+        errors.append(f"example validation failed with exit {completed.returncode}: {completed.stderr}")
+
+
 def main() -> int:
     release_mode = "--release" in sys.argv[1:]
     unknown_args = [arg for arg in sys.argv[1:] if arg != "--release"]
@@ -214,6 +227,7 @@ def main() -> int:
     check_version_and_schema(package_version, errors)
     check_docs_and_governance(errors)
     check_artifact_smoke(errors)
+    check_examples(errors)
     blockers = tracked_release_blockers()
     if release_mode and blockers:
         errors.append(f"release mode is blocked by {len(blockers)} partial/tracked requirement(s).")

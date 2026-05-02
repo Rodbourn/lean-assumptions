@@ -19,3 +19,4 @@
 - Implement certified-path alias transparency semantics for `none`, `reducible`, and `recursive_normalization` modes, with strict policy failures for unsupported aliases.
 - Add repository-agnostic delta reporting for prior/current JSON audit artifacts, with CLI `--diff`, stable text/JSON output, schema validation, and golden tests.
 - Add repository-agnostic failure clustering for JSON audit artifacts, with CLI `--cluster`, stable text/JSON output, schema validation, and golden tests.
+- Add a runnable hidden-package example with a validator for reproducing the README output.

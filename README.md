@@ -53,6 +53,12 @@ policy_result: fail
 
 That is the core use case: make statement-level assumptions visible even when
 they are hidden behind packaging, typeclasses, aliases, or proof-carrying data.
+The complete runnable version is in
+[Examples/HiddenPackage.lean](Examples/HiddenPackage.lean):
+
+```text
+lake env lean Examples/HiddenPackage.lean
+```
 
 ## Quick Start
 
@@ -229,6 +235,7 @@ lake env leanchecker --fresh LeanAssumptions
 python scripts/check_coverage_ledger.py
 python scripts/check_report_schema.py
 python scripts/check_policy_schema.py
+python scripts/check_examples.py
 python scripts/check_ci_workflow.py
 python scripts/check_performance_baseline.py
 python scripts/check_release_readiness.py
@@ -245,6 +252,7 @@ Current local verification:
 - `python scripts/check_coverage_ledger.py`
 - `python scripts/check_report_schema.py`
 - `python scripts/check_policy_schema.py`
+- `python scripts/check_examples.py`
 - `python scripts/check_ci_workflow.py`
 - `python scripts/check_performance_baseline.py`
 - `python scripts/check_release_readiness.py`
