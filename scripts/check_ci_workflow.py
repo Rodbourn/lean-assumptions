@@ -60,6 +60,11 @@ def main() -> int:
         "CI build/test job must run on matrix.os.",
         errors,
     )
+    require(
+        len(re.findall(r"lake build lean-assumptions", text)) >= 2,
+        "Performance and release-readiness jobs must build the CLI executable before running CLI smoke checks.",
+        errors,
+    )
 
     if COMPATIBILITY_WORKFLOW.exists():
         compatibility = COMPATIBILITY_WORKFLOW.read_text(encoding="utf-8")

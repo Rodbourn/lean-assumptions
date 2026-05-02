@@ -31,6 +31,8 @@ Implemented CI hardening behavior:
 - `scripts/check_performance_baseline.py` validates each performance case by
   running the public CLI, requiring valid JSON output, requiring the expected
   declaration count, and checking a broad elapsed-time ceiling
+- the performance baseline job builds `lean-assumptions` before running CLI
+  smoke checks
 - the CI workflow includes a dedicated Ubuntu `performance-baseline` job
 - `lakefile.lean` includes local Reservoir-facing package metadata: version,
   description, keywords, Apache-2.0 license metadata, and `reservoir := true`
@@ -43,6 +45,8 @@ Implemented CI hardening behavior:
   `docs/requirements-status.md`
 - the CI workflow includes a dedicated Ubuntu `release-readiness` job running
   the non-release local validator
+- the release-readiness job builds `lean-assumptions` before running CLI smoke
+  checks
 
 Current Phase 4 boundary:
 
