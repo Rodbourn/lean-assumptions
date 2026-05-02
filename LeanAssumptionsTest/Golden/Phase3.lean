@@ -37,3 +37,17 @@ run_cmd do
   ]
   let expected ← IO.FS.readFile "LeanAssumptionsTest/Golden/packageBinder-batch.json"
   assertEq "packageBinder batch JSON golden" expected actual
+
+run_cmd do
+  let report ← LeanAssumptions.Core.inspectDeclaration `LeanAssumptionsTest.Fixtures.quantifierOverProp
+  let evaluation := Policy.evaluate Policy.strictPolicy report
+  let actual := Render.renderText Policy.strictPolicy report evaluation
+  let expected ← IO.FS.readFile "LeanAssumptionsTest/Golden/quantifierOverProp.txt"
+  assertEq "quantifierOverProp text golden" expected actual
+
+run_cmd do
+  let report ← LeanAssumptions.Core.inspectDeclaration `LeanAssumptionsTest.Fixtures.quantifierOverProp
+  let evaluation := Policy.evaluate Policy.strictPolicy report
+  let actual := Render.renderJsonString Policy.strictPolicy report evaluation
+  let expected ← IO.FS.readFile "LeanAssumptionsTest/Golden/quantifierOverProp.json"
+  assertEq "quantifierOverProp JSON golden" expected actual

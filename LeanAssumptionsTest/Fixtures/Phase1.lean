@@ -7,6 +7,14 @@ namespace LeanAssumptionsTest.Fixtures
 /-- A theorem with an explicit proposition binder and an explicit proof binder. -/
 theorem explicitProp (p : Prop) (h : p) : p := h
 
+/-- A theorem separating proposition quantification from proof hypotheses. -/
+theorem hypothesisBinder (P : Prop) (h : P) : P := h
+
+/-- A theorem whose only assumption surface is quantification over propositions. -/
+theorem quantifierOverProp (P : Prop) : True := by
+  let _ := P
+  trivial
+
 /-- A theorem with implicit proposition and proof binders. -/
 theorem implicitProp {p : Prop} {h : p} : p := h
 

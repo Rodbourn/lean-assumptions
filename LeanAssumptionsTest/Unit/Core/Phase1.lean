@@ -28,7 +28,7 @@ run_cmd do
   assertEq "explicitProp p category" AssumptionCategory.directProp pBinder.primaryCategory
   assertEq "explicitProp p flag count" 1 pBinder.secondaryFlags.size
   let pFlag ← requireAt "explicitProp p flag" pBinder.secondaryFlags 0
-  assertEq "explicitProp p direct-prop flag" AssumptionFlag.binderTypeIsProp pFlag
+  assertEq "explicitProp p direct-prop flag" AssumptionFlag.binderQuantifiesOverProp pFlag
   let hBinder ← requireAt "explicitProp h binder" report.binders 1
   assertEq "explicitProp h binder name" `h hBinder.userName
   assertEq "explicitProp h binder kind" SurfaceBinderKind.explicit hBinder.binderKind
@@ -37,6 +37,29 @@ run_cmd do
   let hFlag ← requireAt "explicitProp h flag" hBinder.secondaryFlags 0
   assertEq "explicitProp h direct-prop flag" AssumptionFlag.binderTypeIsProp hFlag
   assertTrue "explicitProp result type retained" report.resultType.isFVar
+
+run_cmd do
+  let report ← LeanAssumptions.Core.inspectDeclaration `LeanAssumptionsTest.Fixtures.hypothesisBinder
+  assertEq "hypothesisBinder binder count" 2 report.binders.size
+  let pBinder ← requireAt "hypothesisBinder P binder" report.binders 0
+  assertEq "hypothesisBinder P category" AssumptionCategory.directProp pBinder.primaryCategory
+  assertEq "hypothesisBinder P flag count" 1 pBinder.secondaryFlags.size
+  let pFlag ← requireAt "hypothesisBinder P flag" pBinder.secondaryFlags 0
+  assertEq "hypothesisBinder P quantifier flag" AssumptionFlag.binderQuantifiesOverProp pFlag
+  let hBinder ← requireAt "hypothesisBinder h binder" report.binders 1
+  assertEq "hypothesisBinder h category" AssumptionCategory.directProp hBinder.primaryCategory
+  assertEq "hypothesisBinder h flag count" 1 hBinder.secondaryFlags.size
+  let hFlag ← requireAt "hypothesisBinder h flag" hBinder.secondaryFlags 0
+  assertEq "hypothesisBinder h proof flag" AssumptionFlag.binderTypeIsProp hFlag
+
+run_cmd do
+  let report ← LeanAssumptions.Core.inspectDeclaration `LeanAssumptionsTest.Fixtures.quantifierOverProp
+  assertEq "quantifierOverProp binder count" 1 report.binders.size
+  let pBinder ← requireAt "quantifierOverProp P binder" report.binders 0
+  assertEq "quantifierOverProp P category" AssumptionCategory.directProp pBinder.primaryCategory
+  assertEq "quantifierOverProp P flag count" 1 pBinder.secondaryFlags.size
+  let pFlag ← requireAt "quantifierOverProp P flag" pBinder.secondaryFlags 0
+  assertEq "quantifierOverProp P quantifier flag" AssumptionFlag.binderQuantifiesOverProp pFlag
 
 run_cmd do
   let report ← LeanAssumptions.Core.inspectDeclaration `LeanAssumptionsTest.Fixtures.allBinderKinds
@@ -54,6 +77,8 @@ run_cmd do
   assertEq "allBinderKinds p binder kind" SurfaceBinderKind.strictImplicit pBinder.binderKind
   assertEq "allBinderKinds p category" AssumptionCategory.directProp pBinder.primaryCategory
   assertEq "allBinderKinds p flag count" 1 pBinder.secondaryFlags.size
+  let pFlag ← requireAt "allBinderKinds p flag" pBinder.secondaryFlags 0
+  assertEq "allBinderKinds p flag" AssumptionFlag.binderQuantifiesOverProp pFlag
   let instBinder ← requireAt "allBinderKinds inst binder" report.binders 2
   assertEq "allBinderKinds inst binder name" `inst instBinder.userName
   assertEq "allBinderKinds inst binder kind" SurfaceBinderKind.instanceImplicit instBinder.binderKind

@@ -87,7 +87,7 @@
         "secondary_flags": {
           "type": "array",
           "items": {
-            "enum": ["binder_type_is_prop", "instance_binder", "cycle_truncated"]
+            "enum": ["binder_type_is_prop", "binder_quantifies_over_prop", "instance_binder", "cycle_truncated"]
           }
         },
         "binder_type_repr": { "type": "string" },

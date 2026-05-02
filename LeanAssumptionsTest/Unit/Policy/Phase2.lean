@@ -25,6 +25,13 @@ run_cmd do
     (hasFindingKind evaluation PolicyFindingKind.unapprovedDirectProp)
 
 run_cmd do
+  let report ← LeanAssumptions.Core.inspectDeclaration `LeanAssumptionsTest.Fixtures.quantifierOverProp
+  let evaluation := evaluate strictPolicy report
+  assertEq "strict Prop quantifier result" PolicyResult.fail evaluation.result
+  assertTrue "strict Prop quantifier finding"
+    (hasFindingKind evaluation PolicyFindingKind.unapprovedDirectProp)
+
+run_cmd do
   let report ← LeanAssumptions.Core.inspectDeclaration `LeanAssumptionsTest.Fixtures.explicitProp
   let policy := {
     strictPolicy with

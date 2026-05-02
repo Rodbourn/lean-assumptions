@@ -141,6 +141,7 @@ private def renderAssumptionCategory : AssumptionCategory -> String
 /-- Render a secondary assumption flag using public schema spelling. -/
 private def renderAssumptionFlag : AssumptionFlag -> String
   | .binderTypeIsProp => "binder_type_is_prop"
+  | .binderQuantifiesOverProp => "binder_quantifies_over_prop"
   | .instanceBinder => "instance_binder"
   | .cycleTruncated => "cycle_truncated"
 

@@ -31,6 +31,15 @@ private structure ChildSummary where
   unknownsOccurred : Bool := false
   cyclesTruncated : Bool := false
 
+/-- Evidence that a binder contributes directly to the proposition surface. -/
+private structure DirectPropSurfaceEvidence where
+  binderTypeIsProp : Bool := false
+  binderQuantifiesOverProp : Bool := false
+
+/-- Return `true` when either direct-proposition diagnostic path was observed. -/
+private def DirectPropSurfaceEvidence.contributes (evidence : DirectPropSurfaceEvidence) : Bool :=
+  evidence.binderTypeIsProp || evidence.binderQuantifiesOverProp
+
 /-- Return the syntactic declaration head of a type without transparency expansion. -/
 private def rawTypeHeadName? (type : Lean.Expr) : Option Lean.Name :=
   match type.getAppFn with
@@ -116,16 +125,28 @@ private def isStructureApplication (type : Lean.Expr) : MetaM Bool := do
   pure (Lean.getStructureInfo? env headName).isSome
 
 /--
-Return `true` when the binder contributes directly to the proposition surface,
-either because its type is itself a proposition or because it ranges over
-propositions via `Prop`.
+Classify the two direct-proposition surface diagnostics separately.
+
+A binder such as `(h : P)` has a proposition as its type and binds proof data.
+A binder such as `(P : Prop)` ranges over propositions. Strict policy rejects
+both as `direct_prop`, but reports keep the two evidence paths distinct.
 -/
+private def directPropSurfaceEvidence (binderType : Lean.Expr) :
+    MetaM DirectPropSurfaceEvidence := do
+  let binderTypeIsProp ← Meta.isProp binderType
+  let binderQuantifiesOverProp ←
+    match (← whnf binderType) with
+    | .sort level => pure (level == .zero)
+    | _ => pure false
+  pure {
+    binderTypeIsProp := binderTypeIsProp
+    binderQuantifiesOverProp := binderQuantifiesOverProp
+  }
+
+/-- Return `true` when the binder contributes directly to the proposition surface. -/
 private def bindsDirectPropSurface (binderType : Lean.Expr) : MetaM Bool := do
-  if ← Meta.isProp binderType then
-    return true
-  match (← whnf binderType) with
-  | .sort level => pure (level == .zero)
-  | _ => pure false
+  let evidence ← directPropSurfaceEvidence binderType
+  pure evidence.contributes
 
 /-- Return `true` when an application argument is itself proposition-like. -/
 private def hasProofLikeArgument (type : Lean.Expr) : MetaM Bool := do
@@ -183,20 +204,23 @@ binders are `direct_prop`; mandatory proof-carrying wrappers are
 private def classifySurface
     (binderKind : SurfaceBinderKind)
     (binderType : Lean.Expr) : MetaM (AssumptionCategory × Array AssumptionFlag) := do
-  let binderTypeIsProp : Bool := ← bindsDirectPropSurface binderType
+  let directPropEvidence ← directPropSurfaceEvidence binderType
+  let bindsDirectPropSurface := directPropEvidence.contributes
   let proofCarryingData : Bool := ← isProofCarryingDataType binderType
   let primaryCategory :=
     if binderKind == .instanceImplicit then
       AssumptionCategory.typeclassAssumption
-    else if binderTypeIsProp then
+    else if bindsDirectPropSurface then
       AssumptionCategory.directProp
     else if proofCarryingData then
       AssumptionCategory.proofCarryingData
     else
       AssumptionCategory.pureData
   let mut secondaryFlags : Array AssumptionFlag := #[]
-  if binderTypeIsProp then
+  if directPropEvidence.binderTypeIsProp then
     secondaryFlags := secondaryFlags.push .binderTypeIsProp
+  if directPropEvidence.binderQuantifiesOverProp then
+    secondaryFlags := secondaryFlags.push .binderQuantifiesOverProp
   if binderKind == .instanceImplicit then
     secondaryFlags := secondaryFlags.push .instanceBinder
   pure (primaryCategory, secondaryFlags)

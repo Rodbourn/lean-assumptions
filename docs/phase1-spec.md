@@ -18,7 +18,8 @@ Implemented behavior:
   - `typeclass_assumption` if the binder is instance implicit
   - `direct_prop` if a non-instance binder type is itself a proposition or if the binder ranges over `Prop`
   - `pure_data` otherwise
-- emit `binderTypeIsProp` for direct proposition surface binders
+- emit `binderTypeIsProp` when the binder type is a proposition, as in `(h : P)`
+- emit `binderQuantifiesOverProp` when the binder ranges over propositions, as in `(P : Prop)`
 - emit `instanceBinder` for instance-implicit binders
 
 Phase 1 boundary at the time this milestone closed:

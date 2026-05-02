@@ -52,6 +52,7 @@ inductive AssumptionCategory where
 /-- Secondary classification flags preserved alongside the primary category. -/
 inductive AssumptionFlag where
   | binderTypeIsProp
+  | binderQuantifiesOverProp
   | instanceBinder
   | cycleTruncated
   deriving DecidableEq, Repr, Inhabited

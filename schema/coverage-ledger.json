@@ -709,6 +709,19 @@
           ]
         },
         {
+          "name": "LeanAssumptionsTest.Fixtures.hypothesisBinder",
+          "tests": [
+            "LeanAssumptionsTest/Unit/Core/Phase1.lean"
+          ]
+        },
+        {
+          "name": "LeanAssumptionsTest.Fixtures.quantifierOverProp",
+          "tests": [
+            "LeanAssumptionsTest/Unit/Core/Phase1.lean",
+            "LeanAssumptionsTest/Unit/Policy/Phase2.lean"
+          ]
+        },
+        {
           "name": "LeanAssumptionsTest.Fixtures.implicitProp",
           "tests": [
             "LeanAssumptionsTest/Integration/Phase1.lean"

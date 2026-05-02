@@ -1,0 +1,19 @@
+lean-assumptions report
+tool_version: 0.1.0-dev
+lean_version: 4.30.0-rc2
+schema_version: 1
+report_model_version: 0.1.0-dev
+target: LeanAssumptionsTest.Fixtures.quantifierOverProp
+declaration_kind: theorem
+transparency_mode: none
+policy_identifier: strict
+policy_result: fail
+unknowns_occurred: false
+cycles_truncated: false
+assumption_tree:
+- P : direct_prop [explicit] flags=[binder_quantifies_over_prop]
+policy_findings:
+- unapproved_direct_prop severity=failure path=P category=direct_prop type=none
+raw_declaration_type_repr: forall(P,explicit,sort(0),const(True,[]))
+result_type_repr: const(True,[])
+limitations: audits elaborated declaration types only; does not validate proof axioms, sandbox execution, or theorem-statement equivalence.

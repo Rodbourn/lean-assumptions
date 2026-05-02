@@ -25,7 +25,7 @@ The project is not finished while any requirement or verification gate below is
 | --- | --- | --- |
 | FR-001 declaration inspection | done | Implemented for named declarations visible in the current environment, with normalized declaration kinds. |
 | FR-002 binder peeling | done | Implemented for all outer `forall` binders with explicit, implicit, strict implicit, and instance-implicit kinds preserved in order. |
-| FR-003 direct proposition detection | done | Implemented conservatively for non-instance binders that are propositions or range over `Prop` at the outer surface. |
+| FR-003 direct proposition detection | done | Implemented conservatively for non-instance binders that are propositions or range over `Prop` at the outer surface, with separate secondary flags for proof hypotheses and `Prop` quantifiers. |
 | FR-004 structure and class expansion | done | Recursive structure/class expansion is implemented and tested for direct, nested, class, and cyclic package fixtures. |
 | FR-005 proof-carrying data detection | done | Required `Subtype`, `Sigma`, `PSigma`, and proposition-bearing structure package cases are implemented and tested. |
 | FR-006 alias transparency policy | done | `none` reports reducible aliases as `alias` nodes, `reducible` expands abbreviation heads enough to classify the exposed package, `recursive_normalization` applies the project normalizer at inspected nodes, and CLI/policy-file transparency drives the actual report mode. |
@@ -48,7 +48,7 @@ The project is not finished while any requirement or verification gate below is
 | Requirement | Status | Notes |
 | --- | --- | --- |
 | mandatory public categories | done | All mandatory categories are modeled and executable tests cover `pure_data`, `direct_prop`, `proof_carrying_data`, `package_with_prop_fields`, `typeclass_assumption`, `alias`, and `unknown`. |
-| primary plus secondary classification flags | done | Secondary flags are modeled and tested for direct proposition binders, instance binders, and cycle truncation. |
+| primary plus secondary classification flags | done | Secondary flags are modeled and tested for proof-hypothesis binders, `Prop` quantifier binders, instance binders, and cycle truncation. |
 
 ## Policy Semantics
 
