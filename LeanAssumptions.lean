@@ -1,12 +1,36 @@
 import LeanAssumptions.Version
+import LeanAssumptions.Core
 
 /-!
 `lean-assumptions` public root module.
 
-This initial root exposes package metadata. Certified classification, policy,
-rendering, command, and CLI modules are added in subsequent package layers.
+This root exposes package metadata and the certified classification entry
+points.
 -/
 
+open Lean Elab Command
+
 namespace LeanAssumptions
+
+/--
+Public certified inspection entry point.
+
+This thin adapter exposes certified-path declaration inspection without adding
+rendering or command syntax.
+-/
+def inspectDeclaration (declName : Lean.Name) : CommandElabM Core.AssumptionReport :=
+  Core.inspectDeclaration declName
+
+/--
+Public certified inspection entry point with explicit alias transparency.
+
+The default `inspectDeclaration` is equivalent to `.none`; callers that want
+reducible alias expansion must request it here so report artifacts can state
+the chosen mode.
+-/
+def inspectDeclarationWithTransparency
+    (transparencyMode : Core.TransparencyMode)
+    (declName : Lean.Name) : CommandElabM Core.AssumptionReport :=
+  Core.inspectDeclarationWithTransparency transparencyMode declName
 
 end LeanAssumptions

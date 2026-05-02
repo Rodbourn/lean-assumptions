@@ -1,0 +1,13 @@
+import LeanAssumptionsTest.Unit.Core.Phase1
+import LeanAssumptionsTest.Unit.Core.Phase2
+import LeanAssumptionsTest.Integration.Phase1
+
+/-!
+Test executable root for `lean-assumptions`.
+
+The imported modules contain compile-time assertions via `run_cmd`. If those
+assertions hold, this executable becomes a trivial runtime confirmation target.
+-/
+
+/-- Runtime confirmation entry point once compile-time test modules succeed. -/
+def main : IO Unit := IO.println "lean-assumptions tests passed"

@@ -11,3 +11,9 @@ package «lean-assumptions» where
 
 @[default_target]
 lean_lib LeanAssumptions where
+
+lean_lib LeanAssumptionsTest where
+
+@[test_driver]
+lean_exe «lean-assumptions-test» where
+  root := `LeanAssumptionsTest.Main
