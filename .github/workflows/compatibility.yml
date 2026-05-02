@@ -5,6 +5,10 @@ on:
     - cron: "21 8 * * 1"
   workflow_dispatch:
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
   lean-release-candidate:
     name: lean-release-candidate
@@ -16,6 +20,10 @@ jobs:
       - name: Select Lean release-candidate toolchain
         run: printf '%s\n' "$LEAN_RC_TOOLCHAIN" > lean-toolchain
       - uses: leanprover/lean-action@v1
+        with:
+          build: false
+          test: false
+          lint: false
       - name: Build package
         run: lake build
       - name: Run tests

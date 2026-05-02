@@ -21,3 +21,4 @@
 - Add repository-agnostic failure clustering for JSON audit artifacts, with CLI `--cluster`, stable text/JSON output, schema validation, and golden tests.
 - Add a runnable hidden-package example with checked output for `#print axioms`, `#print assumptions`, `#print assumption_tree`, and `#print assumption_json`.
 - Pin repository text files to LF line endings and validate them for cross-platform golden tests.
+- Harden GitHub Actions Lake steps to use Bash consistently after Lean toolchain setup.

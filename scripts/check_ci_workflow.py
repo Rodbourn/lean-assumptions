@@ -24,6 +24,13 @@ def main() -> int:
     require("uses: actions/checkout@v5" in text, "CI must use actions/checkout@v5.", errors)
     require("uses: actions/checkout@v4" not in text, "CI must not use deprecated actions/checkout@v4.", errors)
     require("uses: leanprover/lean-action@v1" in text, "CI must use leanprover/lean-action@v1.", errors)
+    require("shell: bash" in text, "CI run steps must use Bash for cross-platform Lean toolchain PATH consistency.", errors)
+    for lean_action_input in ["build: false", "test: false", "lint: false"]:
+        require(
+            lean_action_input in text,
+            f"CI must disable lean-action auto gate `{lean_action_input}` and run explicit gates instead.",
+            errors,
+        )
     require("strategy:" in text and "matrix:" in text, "CI must use an OS matrix.", errors)
     for runner in ["ubuntu-latest", "macos-latest", "windows-latest"]:
         require(runner in text, f"CI matrix must include {runner}.", errors)
@@ -73,6 +80,17 @@ def main() -> int:
         errors,
     )
     require("uses: leanprover/lean-action@v1" in compatibility, "Compatibility workflow must use leanprover/lean-action@v1.", errors)
+    require(
+        "shell: bash" in compatibility,
+        "Compatibility workflow run steps must use Bash for Lean toolchain PATH consistency.",
+        errors,
+    )
+    for lean_action_input in ["build: false", "test: false", "lint: false"]:
+        require(
+            lean_action_input in compatibility,
+            f"Compatibility workflow must disable lean-action auto gate `{lean_action_input}` and run explicit gates instead.",
+            errors,
+        )
     for command in [
         "lake build",
         "lake test",
