@@ -303,9 +303,13 @@ Children of inductive, function, and `Quot` nodes are retained only when they
 contribute assumptions or block classification. A child that remains an
 unexpanded `alias` or `unknown` blocks positive classification of its parent,
 so such parents report `unknown` rather than `pure_data`.
+
+Cycle detection compares normalized type instances, not head names, so nested
+applications of the same generic head such as `Nat × Nat × Nat` expand
+normally while genuinely cyclic package graphs still truncate explicitly.
 -/
 private def inspectNode :
-    TransparencyMode → Nat → Array Lean.Name → Lean.Name → Lean.Expr → SurfaceBinderKind →
+    TransparencyMode → Nat → Array Lean.Expr → Lean.Name → Lean.Expr → SurfaceBinderKind →
       MetaM InspectSummary
   | _, 0, _, userName, binderTypeRaw, binderKind => do
     pure {
@@ -339,7 +343,7 @@ private def inspectNode :
       headRecognized := true
       match binderType.getAppFn with
       | .const structName _ =>
-        if visited.contains structName then
+        if visited.any (· == binderType) then
           return {
             node := unknownNode userName binderType binderKind #[.cycleTruncated]
             unknownsOccurred := true
@@ -349,7 +353,7 @@ private def inspectNode :
         match Lean.getStructureInfo? env structName with
         | none => pure ()
         | some structInfo =>
-          let nextVisited := visited.push structName
+          let nextVisited := visited.push binderType
           let structSummary ← withLocalDeclD `packageValue binderType fun packageValue => do
             let mut summary : ChildSummary := {}
             for fieldName in structInfo.fieldNames do
@@ -398,7 +402,7 @@ private def inspectNode :
         let env ← getEnv
         match env.find? headName with
         | some (.inductInfo inductiveInfo) =>
-          if visited.contains headName then
+          if visited.any (· == binderType) then
             return {
               node := unknownNode userName binderType binderKind #[.cycleTruncated]
               unknownsOccurred := true
@@ -407,7 +411,7 @@ private def inspectNode :
           let typeArgs := binderType.getAppArgs
           if inductiveInfo.numParams ≤ typeArgs.size then
             let params := typeArgs.extract 0 inductiveInfo.numParams
-            let nextVisited := visited.push headName
+            let nextVisited := visited.push binderType
             try
               let mut acc : ChildSummary := {}
               for ctorName in inductiveInfo.ctors do

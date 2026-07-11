@@ -202,9 +202,6 @@ affect precision and artifact metadata, not conservative failure:
 - `transparency_mode: reducible` currently reduces at default transparency,
   unfolding more than documented, and `recursive_normalization` is not
   operationally distinct from it
-- nested applications of the same structure head, for example
-  `Nat × Nat × Nat`, are misreported as truncated cycles and fail strict
-  policy
 - CLI `--allow-*` flags weaken the effective policy without changing the
   `policy_identifier` carried by output artifacts
 

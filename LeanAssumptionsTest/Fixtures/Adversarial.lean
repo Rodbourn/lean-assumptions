@@ -89,6 +89,16 @@ abbrev HiddenStatementAlias : Prop := ∀ _ : 1 = 1, True
 /-- A theorem whose full statement hides behind an abbreviation. -/
 theorem aliasHiddenStatement : HiddenStatementAlias := fun _ => trivial
 
+/-- A theorem whose binder nests the same generic structure head. -/
+theorem nestedTupleBinder (p : Nat × Nat × Nat) : True := by
+  let _ := p
+  trivial
+
+/-- A theorem whose binder pairs two proof-carrying packages. -/
+theorem pairOfPackagesBinder (p : ProofPackage Nat × ProofPackage Nat) : True := by
+  let _ := p
+  trivial
+
 /-- A definition that hides an entire statement surface. -/
 def HiddenStatementDef : Prop := ∀ _ : 1 = 1, True
 

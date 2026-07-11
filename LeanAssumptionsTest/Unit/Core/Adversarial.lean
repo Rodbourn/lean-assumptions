@@ -126,6 +126,29 @@ run_cmd do
 
 run_cmd do
   let report ← LeanAssumptions.Core.inspectDeclaration
+    `LeanAssumptionsTest.Fixtures.nestedTupleBinder
+  let binder ← requireAt "nestedTupleBinder binder" report.binders 0
+  assertEq "nestedTupleBinder category" AssumptionCategory.pureData binder.primaryCategory
+  assertEq "nestedTupleBinder cycles" false report.cyclesTruncated
+  assertEq "nestedTupleBinder unknowns" false report.unknownsOccurred
+  assertEq "nestedTupleBinder child count" 2 binder.children.size
+  let snd ← requireAt "nestedTupleBinder snd field" binder.children 1
+  assertEq "nestedTupleBinder snd category" AssumptionCategory.pureData snd.primaryCategory
+  assertEq "nestedTupleBinder snd child count" 2 snd.children.size
+
+run_cmd do
+  let report ← LeanAssumptions.Core.inspectDeclaration
+    `LeanAssumptionsTest.Fixtures.pairOfPackagesBinder
+  let binder ← requireAt "pairOfPackagesBinder binder" report.binders 0
+  assertEq "pairOfPackagesBinder category"
+    AssumptionCategory.packageWithPropFields binder.primaryCategory
+  assertEq "pairOfPackagesBinder cycles" false report.cyclesTruncated
+  let fst ← requireAt "pairOfPackagesBinder fst field" binder.children 0
+  assertEq "pairOfPackagesBinder fst category"
+    AssumptionCategory.packageWithPropFields fst.primaryCategory
+
+run_cmd do
+  let report ← LeanAssumptions.Core.inspectDeclaration
     `LeanAssumptionsTest.Fixtures.aliasHiddenStatement
   assertEq "aliasHiddenStatement binder count" 0 report.binders.size
   match report.resultSurface? with
@@ -204,6 +227,10 @@ run_cmd do
     `LeanAssumptionsTest.Fixtures.propAliasBinder PolicyResult.fail
   assertStrictResult "defHiddenStatement strict result"
     `LeanAssumptionsTest.Fixtures.defHiddenStatement PolicyResult.fail
+  assertStrictResult "nestedTupleBinder strict result"
+    `LeanAssumptionsTest.Fixtures.nestedTupleBinder PolicyResult.pass
+  assertStrictResult "pairOfPackagesBinder strict result"
+    `LeanAssumptionsTest.Fixtures.pairOfPackagesBinder PolicyResult.fail
   assertStrictResult "functionIntoDataBinder strict result"
     `LeanAssumptionsTest.Fixtures.functionIntoDataBinder PolicyResult.pass
   assertStrictResult "listDataBinder strict result"
