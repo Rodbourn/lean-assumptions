@@ -126,6 +126,56 @@ run_cmd do
 
 run_cmd do
   let report ← LeanAssumptions.Core.inspectDeclaration
+    `LeanAssumptionsTest.Fixtures.aliasHiddenStatement
+  assertEq "aliasHiddenStatement binder count" 0 report.binders.size
+  match report.resultSurface? with
+  | some node =>
+    assertEq "aliasHiddenStatement result surface category"
+      AssumptionCategory.alias node.primaryCategory
+    assertEq "aliasHiddenStatement result surface name" `result node.userName
+  | none => throwError "aliasHiddenStatement expected a blocked result surface"
+
+run_cmd do
+  let report ← LeanAssumptions.Core.inspectDeclaration
+    `LeanAssumptionsTest.Fixtures.defHiddenStatement
+  assertEq "defHiddenStatement binder count" 0 report.binders.size
+  match report.resultSurface? with
+  | some node =>
+    assertEq "defHiddenStatement result surface category"
+      AssumptionCategory.alias node.primaryCategory
+  | none => throwError "defHiddenStatement expected a blocked result surface"
+
+run_cmd do
+  let report ← LeanAssumptions.Core.inspectDeclarationWithTransparency
+    TransparencyMode.reducible `LeanAssumptionsTest.Fixtures.aliasHiddenStatement
+  assertEq "aliasHiddenStatement reducible binder count" 1 report.binders.size
+  let binder ← requireAt "aliasHiddenStatement reducible binder" report.binders 0
+  assertEq "aliasHiddenStatement reducible binder category"
+    AssumptionCategory.directProp binder.primaryCategory
+  match report.resultSurface? with
+  | some _ => throwError "aliasHiddenStatement reducible expected a fully peeled result"
+  | none => pure ()
+
+run_cmd do
+  let report ← LeanAssumptions.Core.inspectDeclaration
+    `LeanAssumptionsTest.Fixtures.packageBinder
+  match report.resultSurface? with
+  | some _ => throwError "packageBinder expected no blocked result surface"
+  | none => pure ()
+
+run_cmd do
+  let report ← LeanAssumptions.Core.inspectDeclaration
+    `LeanAssumptionsTest.Fixtures.aliasHiddenStatement
+  let evaluation := Policy.evaluate Policy.strictPolicy report
+  assertEq "aliasHiddenStatement strict result" PolicyResult.fail evaluation.result
+  let finding ← requireAt "aliasHiddenStatement strict finding" evaluation.findings 0
+  assertEq "aliasHiddenStatement finding kind"
+    PolicyFindingKind.unsupportedAlias finding.kind
+  let pathHead ← requireAt "aliasHiddenStatement finding path" finding.path 0
+  assertEq "aliasHiddenStatement finding path head" `result pathHead
+
+run_cmd do
+  let report ← LeanAssumptions.Core.inspectDeclaration
     `LeanAssumptionsTest.Fixtures.propAliasBinder
   let binder ← requireAt "propAliasBinder binder" report.binders 0
   assertEq "propAliasBinder category"
@@ -152,6 +202,8 @@ run_cmd do
     `LeanAssumptionsTest.Fixtures.reducibleDefAliasPackageBinder PolicyResult.fail
   assertStrictResult "propAliasBinder strict result"
     `LeanAssumptionsTest.Fixtures.propAliasBinder PolicyResult.fail
+  assertStrictResult "defHiddenStatement strict result"
+    `LeanAssumptionsTest.Fixtures.defHiddenStatement PolicyResult.fail
   assertStrictResult "functionIntoDataBinder strict result"
     `LeanAssumptionsTest.Fixtures.functionIntoDataBinder PolicyResult.pass
   assertStrictResult "listDataBinder strict result"

@@ -245,6 +245,9 @@ def renderText
       "cycles_truncated: " ++ renderBool report.cyclesTruncated,
       "assumption_tree:"
     ] ++ concatMap (renderNodeText renderTraversalBudget 0) report.binders.toList ++
+    (match report.resultSurface? with
+      | some node => "result_surface:" :: renderNodeText renderTraversalBudget 0 node
+      | none => []) ++
     ["policy_findings:"] ++ findingLines ++
     [
       "raw_declaration_type_repr: " ++ renderExpr report.declarationType,
@@ -323,6 +326,10 @@ private def renderJsonCore
     ("raw_declaration_type_repr", jsonString (renderExpr report.declarationType)),
     ("result_type_repr", jsonString (renderExpr report.resultType)),
     ("assumption_tree", jsonArray (report.binders.map (renderNodeJson renderTraversalBudget))),
+    ("result_surface",
+      match report.resultSurface? with
+      | some node => renderNodeJson renderTraversalBudget node
+      | none => "null"),
     ("policy_findings", jsonArray (evaluation.findings.map renderFindingJson)),
     ("limitations", jsonArray #[
       jsonString "audits elaborated declaration types only",

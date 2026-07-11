@@ -83,6 +83,18 @@ theorem reducibleDefAliasPackageBinder (pkg : ReducibleDefPackageAlias) : True :
 /-- A proposition abbreviation used to pin alias-versus-proposition precedence. -/
 abbrev TrivialHypAlias : Prop := 1 = 1
 
+/-- An abbreviation that hides an entire statement surface. -/
+abbrev HiddenStatementAlias : Prop := ∀ _ : 1 = 1, True
+
+/-- A theorem whose full statement hides behind an abbreviation. -/
+theorem aliasHiddenStatement : HiddenStatementAlias := fun _ => trivial
+
+/-- A definition that hides an entire statement surface. -/
+def HiddenStatementDef : Prop := ∀ _ : 1 = 1, True
+
+/-- A theorem whose full statement hides behind a definition. -/
+theorem defHiddenStatement : HiddenStatementDef := fun _ => trivial
+
 /-- A theorem whose proof binder spells its proposition through an alias. -/
 theorem propAliasBinder (h : TrivialHypAlias) : True := by
   let _ := h

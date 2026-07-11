@@ -1,143 +1,233 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://lean-assumptions.local/schema/report-v1.schema.json",
-  "title": "lean-assumptions report v1",
-  "type": "object",
-  "additionalProperties": false,
-  "required": [
-    "schema_version",
-    "tool_version",
-    "lean_version",
-    "report_model_version",
-    "target",
-    "declaration_kind",
-    "transparency_mode",
-    "policy_identifier",
-    "policy_result",
-    "unknowns_occurred",
-    "cycles_truncated",
-    "raw_declaration_type_repr",
-    "result_type_repr",
-    "assumption_tree",
-    "policy_findings",
-    "limitations"
-  ],
-  "properties": {
-    "schema_version": { "const": "1" },
-    "tool_version": { "type": "string" },
-    "lean_version": { "type": "string" },
-    "report_model_version": { "type": "string" },
-    "target": { "type": "string" },
-    "declaration_kind": {
-      "enum": ["theorem", "definition", "axiom", "opaque", "quotient", "inductive", "constructor", "recursor", "other"]
-    },
-    "transparency_mode": {
-      "enum": ["none", "reducible", "recursive_normalization"]
-    },
-    "policy_identifier": { "type": "string" },
-    "policy_result": {
-      "enum": ["pass", "warn", "fail", "audit_error"]
-    },
-    "unknowns_occurred": { "type": "boolean" },
-    "cycles_truncated": { "type": "boolean" },
-    "raw_declaration_type_repr": { "type": "string" },
-    "result_type_repr": { "type": "string" },
-    "assumption_tree": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/assumption_node" }
-    },
-    "policy_findings": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/policy_finding" }
-    },
-    "limitations": {
-      "type": "array",
-      "items": { "type": "string" }
-    }
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "https://lean-assumptions.local/schema/report-v1.schema.json",
+ "title": "lean-assumptions report v1",
+ "type": "object",
+ "additionalProperties": false,
+ "required": [
+  "schema_version",
+  "tool_version",
+  "lean_version",
+  "report_model_version",
+  "target",
+  "declaration_kind",
+  "transparency_mode",
+  "policy_identifier",
+  "policy_result",
+  "unknowns_occurred",
+  "cycles_truncated",
+  "raw_declaration_type_repr",
+  "result_type_repr",
+  "assumption_tree",
+  "result_surface",
+  "policy_findings",
+  "limitations"
+ ],
+ "properties": {
+  "schema_version": {
+   "const": "1"
   },
-  "$defs": {
-    "assumption_node": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "name",
-        "binder_kind",
-        "primary_category",
-        "secondary_flags",
-        "binder_type_repr",
-        "children",
-        "renderer_children_truncated"
-      ],
-      "properties": {
-        "name": { "type": "string" },
-        "binder_kind": {
-          "enum": ["explicit", "implicit", "strict_implicit", "instance_implicit"]
-        },
-        "primary_category": {
-          "enum": [
-            "pure_data",
-            "direct_prop",
-            "proof_carrying_data",
-            "package_with_prop_fields",
-            "typeclass_assumption",
-            "alias",
-            "unknown"
-          ]
-        },
-        "secondary_flags": {
-          "type": "array",
-          "items": {
-            "enum": ["binder_type_is_prop", "binder_quantifies_over_prop", "instance_binder", "cycle_truncated"]
-          }
-        },
-        "binder_type_repr": { "type": "string" },
-        "children": {
-          "type": "array",
-          "items": { "$ref": "#/$defs/assumption_node" }
-        },
-        "renderer_children_truncated": { "type": "boolean" }
-      }
+  "tool_version": {
+   "type": "string"
+  },
+  "lean_version": {
+   "type": "string"
+  },
+  "report_model_version": {
+   "type": "string"
+  },
+  "target": {
+   "type": "string"
+  },
+  "declaration_kind": {
+   "enum": [
+    "theorem",
+    "definition",
+    "axiom",
+    "opaque",
+    "quotient",
+    "inductive",
+    "constructor",
+    "recursor",
+    "other"
+   ]
+  },
+  "transparency_mode": {
+   "enum": [
+    "none",
+    "reducible",
+    "recursive_normalization"
+   ]
+  },
+  "policy_identifier": {
+   "type": "string"
+  },
+  "policy_result": {
+   "enum": [
+    "pass",
+    "warn",
+    "fail",
+    "audit_error"
+   ]
+  },
+  "unknowns_occurred": {
+   "type": "boolean"
+  },
+  "cycles_truncated": {
+   "type": "boolean"
+  },
+  "raw_declaration_type_repr": {
+   "type": "string"
+  },
+  "result_type_repr": {
+   "type": "string"
+  },
+  "assumption_tree": {
+   "type": "array",
+   "items": {
+    "$ref": "#/$defs/assumption_node"
+   }
+  },
+  "result_surface": {
+   "description": "Blocked result surface: present as a node when binder peeling stopped at an alias-headed or unpeelable remainder, null when the declaration surface was fully peeled.",
+   "oneOf": [
+    {
+     "type": "null"
     },
-    "policy_finding": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["kind", "severity", "path", "category", "type_name"],
-      "properties": {
-        "kind": {
-          "enum": [
-            "unknown_node",
-            "cycle_truncated",
-            "unapproved_direct_prop",
-            "unapproved_package_with_prop_fields",
-            "unapproved_proof_carrying_data",
-            "unapproved_typeclass_assumption",
-            "unsupported_alias",
-            "transparency_mismatch",
-            "policy_traversal_budget_exceeded"
-          ]
-        },
-        "severity": {
-          "enum": ["warning", "failure", "audit_error"]
-        },
-        "path": {
-          "type": "array",
-          "items": { "type": "string" }
-        },
-        "category": {
-          "enum": [
-            "pure_data",
-            "direct_prop",
-            "proof_carrying_data",
-            "package_with_prop_fields",
-            "typeclass_assumption",
-            "alias",
-            "unknown"
-          ]
-        },
-        "type_name": {
-          "type": ["string", "null"]
-        }
-      }
+    {
+     "$ref": "#/$defs/assumption_node"
     }
+   ]
+  },
+  "policy_findings": {
+   "type": "array",
+   "items": {
+    "$ref": "#/$defs/policy_finding"
+   }
+  },
+  "limitations": {
+   "type": "array",
+   "items": {
+    "type": "string"
+   }
   }
+ },
+ "$defs": {
+  "assumption_node": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "name",
+    "binder_kind",
+    "primary_category",
+    "secondary_flags",
+    "binder_type_repr",
+    "children",
+    "renderer_children_truncated"
+   ],
+   "properties": {
+    "name": {
+     "type": "string"
+    },
+    "binder_kind": {
+     "enum": [
+      "explicit",
+      "implicit",
+      "strict_implicit",
+      "instance_implicit"
+     ]
+    },
+    "primary_category": {
+     "enum": [
+      "pure_data",
+      "direct_prop",
+      "proof_carrying_data",
+      "package_with_prop_fields",
+      "typeclass_assumption",
+      "alias",
+      "unknown"
+     ]
+    },
+    "secondary_flags": {
+     "type": "array",
+     "items": {
+      "enum": [
+       "binder_type_is_prop",
+       "binder_quantifies_over_prop",
+       "instance_binder",
+       "cycle_truncated"
+      ]
+     }
+    },
+    "binder_type_repr": {
+     "type": "string"
+    },
+    "children": {
+     "type": "array",
+     "items": {
+      "$ref": "#/$defs/assumption_node"
+     }
+    },
+    "renderer_children_truncated": {
+     "type": "boolean"
+    }
+   }
+  },
+  "policy_finding": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "kind",
+    "severity",
+    "path",
+    "category",
+    "type_name"
+   ],
+   "properties": {
+    "kind": {
+     "enum": [
+      "unknown_node",
+      "cycle_truncated",
+      "unapproved_direct_prop",
+      "unapproved_package_with_prop_fields",
+      "unapproved_proof_carrying_data",
+      "unapproved_typeclass_assumption",
+      "unsupported_alias",
+      "transparency_mismatch",
+      "policy_traversal_budget_exceeded"
+     ]
+    },
+    "severity": {
+     "enum": [
+      "warning",
+      "failure",
+      "audit_error"
+     ]
+    },
+    "path": {
+     "type": "array",
+     "items": {
+      "type": "string"
+     }
+    },
+    "category": {
+     "enum": [
+      "pure_data",
+      "direct_prop",
+      "proof_carrying_data",
+      "package_with_prop_fields",
+      "typeclass_assumption",
+      "alias",
+      "unknown"
+     ]
+    },
+    "type_name": {
+     "type": [
+      "string",
+      "null"
+     ]
+    }
+   }
+  }
+ }
 }

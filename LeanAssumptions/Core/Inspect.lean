@@ -535,34 +535,89 @@ private def inspectNode :
       cyclesTruncated := cyclesTruncated
     }
 
+/-- Fuel for repeated binder-peeling rounds at the declaration surface. -/
+private def peelRoundFuel : Nat := 64
+
+/-- Accumulated state for declaration-surface binder peeling. -/
+private structure PeelSummary where
+  binders : Array BinderSurface
+  unknownsOccurred : Bool
+  cyclesTruncated : Bool
+  resultType : Lean.Expr
+  resultSurface? : Option BinderSurface
+
+/--
+Peel binder rounds under the report transparency mode.
+
+Each round normalizes the remaining type and telescopes any revealed `forall`
+binders. Under `none` transparency an alias-headed remainder stops peeling and
+is reported as an explicit `result` alias surface, because an unfoldable head
+can hide further binders from the audit; under the other modes normalization
+unfolds such heads and peeling continues. Fuel exhaustion reports an unknown
+result surface.
+-/
+private def peelDeclarationBinders (transparencyMode : TransparencyMode) :
+    Nat → Array BinderSurface → Bool → Bool → Lean.Expr → MetaM PeelSummary
+  | 0, binders, _, cycles, remaining => do
+    pure {
+      binders := binders
+      unknownsOccurred := true
+      cyclesTruncated := cycles
+      resultType := remaining
+      resultSurface? := some (unknownNode `result remaining .explicit)
+    }
+  | fuel + 1, binders, unknowns, cycles, remaining => do
+    let normalized ← normalizeTypeForMode transparencyMode remaining
+    if normalized.isForall then
+      forallTelescope normalized fun binderFVars body => do
+        let mut binders := binders
+        let mut unknowns := unknowns
+        let mut cycles := cycles
+        for binderFVar in binderFVars do
+          let localDecl ← binderFVar.fvarId!.getDecl
+          let binderKind := surfaceBinderKindOf localDecl.binderInfo
+          let summary ← inspectNode transparencyMode maxExpansionDepth #[] localDecl.userName
+            localDecl.type binderKind
+          binders := binders.push summary.node
+          unknowns := unknowns || summary.unknownsOccurred
+          cycles := cycles || summary.cyclesTruncated
+        peelDeclarationBinders transparencyMode fuel binders unknowns cycles body
+    else if transparencyMode == .none && (← isAliasHeadedType normalized) then
+      pure {
+        binders := binders
+        unknownsOccurred := unknowns
+        cyclesTruncated := cycles
+        resultType := normalized
+        resultSurface? := some (aliasNode `result normalized .explicit)
+      }
+    else
+      pure {
+        binders := binders
+        unknownsOccurred := unknowns
+        cyclesTruncated := cycles
+        resultType := normalized
+        resultSurface? := none
+      }
+
 /-- Inspect a declaration from the current environment inside `MetaM`. -/
 private def inspectDeclarationMeta
     (transparencyMode : TransparencyMode)
     (declName : Lean.Name) : MetaM AssumptionReport := do
   let constantInfo ← getConstInfo declName
   let declarationType := constantInfo.type
-  forallTelescope declarationType fun binderFVars resultType => do
-    let mut binders : Array BinderSurface := #[]
-    let mut unknownsOccurred := false
-    let mut cyclesTruncated := false
-    for binderFVar in binderFVars do
-      let localDecl ← binderFVar.fvarId!.getDecl
-      let binderKind := surfaceBinderKindOf localDecl.binderInfo
-      let summary ← inspectNode transparencyMode maxExpansionDepth #[] localDecl.userName
-        localDecl.type binderKind
-      binders := binders.push summary.node
-      unknownsOccurred := unknownsOccurred || summary.unknownsOccurred
-      cyclesTruncated := cyclesTruncated || summary.cyclesTruncated
-    pure {
-      declarationName := declName
-      declarationKind := declarationKindOf constantInfo
-      declarationType := declarationType
-      binders := binders
-      resultType := resultType
-      transparencyMode := transparencyMode
-      unknownsOccurred := unknownsOccurred
-      cyclesTruncated := cyclesTruncated
-    }
+  let summary ← peelDeclarationBinders transparencyMode peelRoundFuel #[] false false
+    declarationType
+  pure {
+    declarationName := declName
+    declarationKind := declarationKindOf constantInfo
+    declarationType := declarationType
+    binders := summary.binders
+    resultType := summary.resultType
+    transparencyMode := transparencyMode
+    unknownsOccurred := summary.unknownsOccurred
+    cyclesTruncated := summary.cyclesTruncated
+    resultSurface? := summary.resultSurface?
+  }
 
 /--
 Inspect a declaration visible in the current command-elaboration environment.

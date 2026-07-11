@@ -74,6 +74,11 @@ This report includes declaration lookup, binder peeling, result-type recovery,
 recursive structure/class field expansion, proof-carrying-data wrapper
 detection, and explicit cycle/unknown flags. Policy evaluation is kept in the
 separate certified policy layer.
+
+`resultSurface?` is present only when binder peeling stopped at a blocked
+result surface: an alias-headed remainder that could hide further binders
+under the report transparency mode, or a peeling-fuel exhaustion. A fully
+peeled result carries `none`.
 -/
 structure AssumptionReport where
   declarationName : Lean.Name
@@ -84,6 +89,7 @@ structure AssumptionReport where
   transparencyMode : TransparencyMode
   unknownsOccurred : Bool := false
   cyclesTruncated : Bool := false
+  resultSurface? : Option BinderSurface := none
   deriving Repr
 
 end LeanAssumptions.Core

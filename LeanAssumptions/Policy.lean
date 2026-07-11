@@ -273,8 +273,16 @@ def evaluate (policy : PolicyConfig) (report : AssumptionReport) : PolicyEvaluat
       node := binder
       path := #[binder.userName]
       insidePackagedAssumption := false
+      : WorkItem
     }
-  let findings := evaluateWork policy policyTraversalBudget initialWork findings
+  -- A blocked result surface participates in policy evaluation like a binder:
+  -- an alias-headed or unpeelable declaration surface must not pass silently.
+  let resultWork :=
+    match report.resultSurface? with
+    | some node =>
+      [{ node := node, path := #[node.userName], insidePackagedAssumption := false : WorkItem }]
+    | none => []
+  let findings := evaluateWork policy policyTraversalBudget (initialWork ++ resultWork) findings
   {
     result := resultOfFindings findings
     findings := findings

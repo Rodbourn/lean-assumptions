@@ -143,13 +143,13 @@ environment, peels surface binders, expands supported packages recursively, emit
 a deterministic assumption tree, and evaluates that tree against a deterministic
 policy.
 
-For positively recognized statement shapes, unknown and unsupported cases are
-reported conservatively rather than passed. That conservatism guarantee
-currently has confirmed exceptions, listed under
-[Known Soundness Gaps](#known-soundness-gaps): some unrecognized statement
-shapes are misclassified as `pure_data` and can pass strict policy silently.
-Until those gaps are closed, a strict-policy `pass` must not be treated as
-conservative for adversarial inputs.
+Classification is by positive recognition of normalized head shapes. Unknown
+or unsupported cases — including unrecognized heads, unfoldable alias heads,
+and declaration surfaces that cannot be fully peeled — are reported
+conservatively and do not silently pass strict policy. All false-pass classes
+confirmed by the 2026-07-11 audit are closed with regression tests; the
+remaining known gaps, listed under [Known Gaps](#known-gaps), affect precision
+and artifact metadata rather than conservative failure.
 
 Baseline mode preserves that contract for CI adoption. It compares the current
 finding-bearing batch artifact against a checked-in v1 batch JSON baseline and
@@ -193,14 +193,12 @@ Remaining partial or tracked requirements are documented in
 prerelease tag exists as a development checkpoint. No public release has been
 published, and Reservoir publication has not happened yet.
 
-### Known Soundness Gaps
+### Known Gaps
 
-An internal audit on 2026-07-11 confirmed certified-path misclassification
-bugs. Until they are fixed, strict-policy `pass` results must not be treated
-as conservative for the following statement shapes:
+An internal audit on 2026-07-11 confirmed certified-path bugs. The false-pass
+classes it found are fixed with regression tests. The remaining known gaps
+affect precision and artifact metadata, not conservative failure:
 
-- a declaration type hidden entirely behind an alias is peeled to zero binders
-  and passes strict policy; the result surface is not audited
 - `transparency_mode: reducible` currently reduces at default transparency,
   unfolding more than documented, and `recursive_normalization` is not
   operationally distinct from it
