@@ -65,22 +65,26 @@ private def isProjectionFunction (declName : Lean.Name) : MetaM Bool := do
       structInfo.parentInfo.any (fun parentInfo => parentInfo.projFn == declName))
   | _ => pure false
 
-/-- Return `true` when a declaration head is a reducible abbreviation. -/
-private def isReducibleAliasHead (name : Lean.Name) : MetaM Bool := do
+/--
+Return `true` when a declaration head is an unfoldable definition alias.
+
+Every definition head counts, not only `abbrev` hints: a package hidden
+behind a plain `def` or `@[reducible] def` blocks analysis under `none`
+transparency exactly like an abbreviation does. Generated structure
+projections are excluded because they are field accessors, not aliases.
+-/
+private def isUnfoldableAliasHead (name : Lean.Name) : MetaM Bool := do
   if ← isProjectionFunction name then
     return false
   let env ← getEnv
   match env.find? name with
-  | some (.defnInfo info) =>
-    match info.hints with
-    | .abbrev => pure true
-    | _ => pure false
+  | some (.defnInfo _) => pure true
   | _ => pure false
 
-/-- Return `true` when a type's syntactic head is a reducible alias. -/
-private def isReducibleAliasType (type : Lean.Expr) : MetaM Bool := do
+/-- Return `true` when a type's syntactic head is an unfoldable alias. -/
+private def isAliasHeadedType (type : Lean.Expr) : MetaM Bool := do
   match rawTypeHeadName? type with
-  | some name => isReducibleAliasHead name
+  | some name => isUnfoldableAliasHead name
   | none => pure false
 
 /-- Fuel for project-defined recursive normalization. -/
@@ -310,14 +314,19 @@ private def inspectNode :
       cyclesTruncated := false
     }
   | transparencyMode, fuel + 1, visited, userName, binderTypeRaw, binderKind => do
-    if transparencyMode == .none && (← isReducibleAliasType binderTypeRaw) then
+    let binderType ← normalizeTypeForMode transparencyMode binderTypeRaw
+    let evidence ← directPropSurfaceEvidence binderType
+    -- Proposition evidence is transparency-independent, so a proof binder
+    -- whose proposition happens to be spelled through an alias still reports
+    -- `direct_prop`. Every other alias-headed type under `none` transparency
+    -- is reported as an explicit `alias` node instead of being analyzed.
+    if transparencyMode == .none && !evidence.contributes &&
+        (← isAliasHeadedType binderType) then
       return {
-        node := aliasNode userName binderTypeRaw binderKind
+        node := aliasNode userName binderType binderKind
         unknownsOccurred := false
         cyclesTruncated := false
       }
-    let binderType ← normalizeTypeForMode transparencyMode binderTypeRaw
-    let evidence ← directPropSurfaceEvidence binderType
     let proofCarryingWrapper ← isProofCarryingDataType binderType
     let isStructApp ← isStructureApplication binderType
     let mut children : Array BinderSurface := #[]

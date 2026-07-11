@@ -80,4 +80,12 @@ theorem reducibleDefAliasPackageBinder (pkg : ReducibleDefPackageAlias) : True :
   let _ := pkg
   trivial
 
+/-- A proposition abbreviation used to pin alias-versus-proposition precedence. -/
+abbrev TrivialHypAlias : Prop := 1 = 1
+
+/-- A theorem whose proof binder spells its proposition through an alias. -/
+theorem propAliasBinder (h : TrivialHypAlias) : True := by
+  let _ := h
+  trivial
+
 end LeanAssumptionsTest.Fixtures

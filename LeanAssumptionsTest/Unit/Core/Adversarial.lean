@@ -108,16 +108,30 @@ run_cmd do
     `LeanAssumptionsTest.Fixtures.defAliasPackageBinder
   let binder ← requireAt "defAliasPackageBinder binder" report.binders 0
   assertEq "defAliasPackageBinder category"
-    AssumptionCategory.unknown binder.primaryCategory
-  assertEq "defAliasPackageBinder unknowns" true report.unknownsOccurred
+    AssumptionCategory.alias binder.primaryCategory
+  assertEq "defAliasPackageBinder unknowns" false report.unknownsOccurred
+  match binder.binderType.getAppFn with
+  | .const name _ =>
+    assertEq "defAliasPackageBinder keeps alias head"
+      `LeanAssumptionsTest.Fixtures.PlainDefPackageAlias name
+  | _ => throwError "defAliasPackageBinder binder type has no constant head"
 
 run_cmd do
   let report ← LeanAssumptions.Core.inspectDeclaration
     `LeanAssumptionsTest.Fixtures.reducibleDefAliasPackageBinder
   let binder ← requireAt "reducibleDefAliasPackageBinder binder" report.binders 0
   assertEq "reducibleDefAliasPackageBinder category"
-    AssumptionCategory.unknown binder.primaryCategory
-  assertEq "reducibleDefAliasPackageBinder unknowns" true report.unknownsOccurred
+    AssumptionCategory.alias binder.primaryCategory
+  assertEq "reducibleDefAliasPackageBinder unknowns" false report.unknownsOccurred
+
+run_cmd do
+  let report ← LeanAssumptions.Core.inspectDeclaration
+    `LeanAssumptionsTest.Fixtures.propAliasBinder
+  let binder ← requireAt "propAliasBinder binder" report.binders 0
+  assertEq "propAliasBinder category"
+    AssumptionCategory.directProp binder.primaryCategory
+  let flag ← requireAt "propAliasBinder flag" binder.secondaryFlags 0
+  assertEq "propAliasBinder proof flag" AssumptionFlag.binderTypeIsProp flag
 
 run_cmd do
   assertStrictResult "letWrappedPackageBinder strict result"
@@ -136,6 +150,8 @@ run_cmd do
     `LeanAssumptionsTest.Fixtures.defAliasPackageBinder PolicyResult.fail
   assertStrictResult "reducibleDefAliasPackageBinder strict result"
     `LeanAssumptionsTest.Fixtures.reducibleDefAliasPackageBinder PolicyResult.fail
+  assertStrictResult "propAliasBinder strict result"
+    `LeanAssumptionsTest.Fixtures.propAliasBinder PolicyResult.fail
   assertStrictResult "functionIntoDataBinder strict result"
     `LeanAssumptionsTest.Fixtures.functionIntoDataBinder PolicyResult.pass
   assertStrictResult "listDataBinder strict result"
