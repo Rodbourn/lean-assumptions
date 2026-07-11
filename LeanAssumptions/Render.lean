@@ -40,6 +40,17 @@ private def joinWith (separator : String) : List String -> String
 private def renderName (name : Lean.Name) : String :=
   toString name
 
+/--
+Escape a fragment for single-line text output.
+
+Names and string literals can contain newlines and control characters, which
+would otherwise let a hostile declaration forge report lines such as a fake
+`policy_result:` entry. Text output uses the same escaping as JSON strings so
+one line in the artifact is always one logical field.
+-/
+private def sanitizeText (value : String) : String :=
+  LeanAssumptions.JsonUtil.escapeString value
+
 /-- Render a boolean using JSON-compatible spelling. -/
 private def renderBool (value : Bool) : String :=
   if value then "true" else "false"
@@ -63,10 +74,10 @@ private def renderLeanBinderInfo : Lean.BinderInfo -> String
   | .strictImplicit => "strict_implicit"
   | .instImplicit => "instance_implicit"
 
-/-- Render a Lean literal deterministically. -/
+/-- Render a Lean literal deterministically, escaping embedded control text. -/
 private def renderLiteral : Lean.Literal -> String
   | .natVal value => "nat(" ++ toString value ++ ")"
-  | .strVal value => "str(" ++ value ++ ")"
+  | .strVal value => "str(" ++ LeanAssumptions.JsonUtil.escapeString value ++ ")"
 
 /--
 Render a Lean expression into a deterministic notation-resistant form.
@@ -193,14 +204,16 @@ private def renderNodeText : Nat -> Nat -> BinderSurface -> List String
   | 0, indent, node =>
     let indentText := repeatString indent "  " ++ "- "
     [
-      indentText ++ renderName node.userName ++ " : " ++ renderAssumptionCategory node.primaryCategory ++
+      indentText ++ sanitizeText (renderName node.userName) ++ " : " ++
+        renderAssumptionCategory node.primaryCategory ++
         " [" ++ renderBinderKind node.binderKind ++ "]" ++ renderFlagSuffix node.secondaryFlags ++
         " children_truncated_by_renderer"
     ]
   | fuel + 1, indent, node =>
     let indentText := repeatString indent "  " ++ "- "
     let line :=
-      indentText ++ renderName node.userName ++ " : " ++ renderAssumptionCategory node.primaryCategory ++
+      indentText ++ sanitizeText (renderName node.userName) ++ " : " ++
+        renderAssumptionCategory node.primaryCategory ++
         " [" ++ renderBinderKind node.binderKind ++ "]" ++ renderFlagSuffix node.secondaryFlags
     line :: concatMap (renderNodeText fuel (indent + 1)) node.children.toList
 
@@ -211,11 +224,11 @@ private def renderTraversalBudget : Nat := 10000
 private def renderFindingText (finding : PolicyFinding) : String :=
   let typeName :=
     match finding.typeName? with
-    | some name => renderName name
+    | some name => sanitizeText (renderName name)
     | none => "none"
   "- " ++ renderPolicyFindingKind finding.kind ++
     " severity=" ++ renderPolicySeverity finding.severity ++
-    " path=" ++ joinWith "." (finding.path.toList.map renderName) ++
+    " path=" ++ sanitizeText (joinWith "." (finding.path.toList.map renderName)) ++
     " category=" ++ renderAssumptionCategory finding.category ++
     " type=" ++ typeName
 
@@ -236,10 +249,10 @@ def renderText
       "lean_version: " ++ Lean.versionString,
       "schema_version: " ++ jsonSchemaVersion,
       "report_model_version: " ++ reportModelVersion,
-      "target: " ++ renderName report.declarationName,
+      "target: " ++ sanitizeText (renderName report.declarationName),
       "declaration_kind: " ++ renderDeclarationKind report.declarationKind,
       "transparency_mode: " ++ renderTransparencyMode report.transparencyMode,
-      "policy_identifier: " ++ policy.identifier,
+      "policy_identifier: " ++ sanitizeText policy.identifier,
       "policy_digest: " ++ policy.digest,
       "policy_result: " ++ renderPolicyResult evaluation.result,
       "unknowns_occurred: " ++ renderBool report.unknownsOccurred,

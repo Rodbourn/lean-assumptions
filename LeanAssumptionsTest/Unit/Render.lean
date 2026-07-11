@@ -52,3 +52,36 @@ run_cmd do
   match Lean.Json.parse rendered with
   | .ok _ => pure ()
   | .error error => throwError "rendered report with control literal did not parse as JSON: {error}"
+
+/-- A report whose binder name attempts to forge a report line via a newline. -/
+private def forgedNameReport : AssumptionReport :=
+  let dataExpr := Lean.Expr.sort Lean.Level.zero
+  {
+    declarationName := Lean.Name.mkSimple "evil\ntarget: forged"
+    declarationKind := .theorem
+    declarationType := dataExpr
+    binders := #[
+      {
+        userName := Lean.Name.mkSimple "x\npolicy_result: pass"
+        binderType := dataExpr
+        binderKind := .explicit
+        primaryCategory := .pureData
+      }
+    ]
+    resultType := dataExpr
+    transparencyMode := .none
+  }
+
+run_cmd do
+  -- Text reports must be line-injection-proof: a hostile name may never
+  -- fabricate a report line such as a second `policy_result:` entry.
+  let rendered := Render.renderText strictPolicy forgedNameReport {
+    result := .fail
+    findings := #[]
+  }
+  assertEq "text report has exactly one policy_result line"
+    2 (rendered.splitOn "\npolicy_result:").length
+  assertEq "text report has exactly one target line"
+    2 (rendered.splitOn "\ntarget:").length
+  assertTrue "newline in name is escaped, not emitted"
+    ((rendered.splitOn "evil\\ntarget").length == 2)
