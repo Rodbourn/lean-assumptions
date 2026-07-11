@@ -1,0 +1,53 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+# Release gate: a version tag must pass every merge gate plus the strict
+# release-readiness check, which refuses to release while any requirement is
+# partial or tracked. This workflow verifies; publication remains a human act.
+jobs:
+  release-gates:
+    name: release-gates
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+      - name: Install validator dependencies
+        run: python3 -m pip install jsonschema
+      - uses: leanprover/lean-action@38fbc41a8c28c4cbaec22d7f7de508ec2e7c0dd9 # v1
+        with:
+          build: false
+          test: false
+          lint: false
+      - name: Build package
+        run: lake build
+      - name: Run tests
+        run: lake test
+      - name: Run lint
+        run: lake lint
+      - name: Run leanchecker
+        run: lake env leanchecker --fresh LeanAssumptions
+      - name: Validate coverage ledger
+        run: python3 scripts/check_coverage_ledger.py
+      - name: Validate report JSON schema
+        run: python3 scripts/check_report_schema.py
+      - name: Validate policy JSON schema
+        run: python3 scripts/check_policy_schema.py
+      - name: Validate release readiness (release mode)
+        run: python3 scripts/check_release_readiness.py --release

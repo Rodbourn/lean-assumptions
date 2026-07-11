@@ -16,6 +16,7 @@ UPLOAD_ARTIFACT_SHA = "ea165f8d65b6e75b540449e92b4886f43607fa02"  # actions/uplo
 WORKFLOW = ROOT / ".github" / "workflows" / "ci.yml"
 COMPATIBILITY_WORKFLOW = ROOT / ".github" / "workflows" / "compatibility.yml"
 UPDATE_WORKFLOW = ROOT / ".github" / "workflows" / "update.yml"
+RELEASE_WORKFLOW = ROOT / ".github" / "workflows" / "release.yml"
 
 
 def require(condition: bool, message: str, errors: list[str]) -> None:
@@ -175,6 +176,26 @@ def main() -> int:
             f"{workflow_name} workflow must install jsonschema before running schema validators.",
             errors,
         )
+
+    if RELEASE_WORKFLOW.exists():
+        release = RELEASE_WORKFLOW.read_text(encoding="utf-8")
+    else:
+        release = ""
+        errors.append("Tag-triggered release workflow is missing.")
+    require('- "v*"' in release, "Release workflow must trigger on v-prefixed tags.", errors)
+    require(
+        "python3 scripts/check_release_readiness.py --release" in release,
+        "Release workflow must run release-readiness in --release mode.",
+        errors,
+    )
+    require(
+        f"uses: actions/checkout@{CHECKOUT_SHA}" in release,
+        "Release workflow must pin actions/checkout by commit SHA.",
+        errors,
+    )
+    for command in ["lake build", "lake test", "lake lint",
+                    "lake env leanchecker --fresh LeanAssumptions"]:
+        require(command in release, f"Release workflow must run `{command}`.", errors)
 
     if errors:
         print("\n".join(f"- {error}" for error in errors), file=sys.stderr)
