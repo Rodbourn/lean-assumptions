@@ -66,13 +66,6 @@
    ],
    "publicDefinitions": [
     {
-     "name": "LeanAssumptions.Baseline.FindingIdentity",
-     "tests": [
-      "LeanAssumptionsTest/Unit/Baseline/Phase4.lean",
-      "LeanAssumptionsTest/Golden/Baseline.lean"
-     ]
-    },
-    {
      "name": "LeanAssumptions.Baseline.ArtifactMetadata",
      "tests": [
       "LeanAssumptionsTest/Golden/Baseline.lean"
@@ -92,19 +85,38 @@
      ]
     },
     {
+     "name": "LeanAssumptions.Baseline.BaselineComparison.exitCode",
+     "tests": [
+      "LeanAssumptionsTest/Golden/Baseline.lean"
+     ]
+    },
+    {
+     "name": "LeanAssumptions.Baseline.BaselineComparison.status",
+     "tests": [
+      "LeanAssumptionsTest/Golden/Baseline.lean"
+     ]
+    },
+    {
      "name": "LeanAssumptions.Baseline.BaselineStatus",
      "tests": [
       "LeanAssumptionsTest/Golden/Baseline.lean"
      ]
     },
     {
-     "name": "LeanAssumptions.Baseline.parseFindingIdentity",
+     "name": "LeanAssumptions.Baseline.FindingIdentity",
      "tests": [
-      "LeanAssumptionsTest/Unit/Baseline/Phase4.lean"
+      "LeanAssumptionsTest/Unit/Baseline/Phase4.lean",
+      "LeanAssumptionsTest/Golden/Baseline.lean"
      ]
     },
     {
-     "name": "LeanAssumptions.Baseline.sortUniqueFindings",
+     "name": "LeanAssumptions.Baseline.compareArtifactStrings",
+     "tests": [
+      "LeanAssumptionsTest/Golden/Baseline.lean"
+     ]
+    },
+    {
+     "name": "LeanAssumptions.Baseline.compareArtifacts",
      "tests": [
       "LeanAssumptionsTest/Golden/Baseline.lean"
      ]
@@ -122,33 +134,15 @@
      ]
     },
     {
+     "name": "LeanAssumptions.Baseline.parseFindingIdentity",
+     "tests": [
+      "LeanAssumptionsTest/Unit/Baseline/Phase4.lean"
+     ]
+    },
+    {
      "name": "LeanAssumptions.Baseline.readAuditArtifact",
      "tests": [
       "LeanAssumptionsTest/Integration/Cli.lean"
-     ]
-    },
-    {
-     "name": "LeanAssumptions.Baseline.compareArtifacts",
-     "tests": [
-      "LeanAssumptionsTest/Golden/Baseline.lean"
-     ]
-    },
-    {
-     "name": "LeanAssumptions.Baseline.compareArtifactStrings",
-     "tests": [
-      "LeanAssumptionsTest/Golden/Baseline.lean"
-     ]
-    },
-    {
-     "name": "LeanAssumptions.Baseline.BaselineComparison.status",
-     "tests": [
-      "LeanAssumptionsTest/Golden/Baseline.lean"
-     ]
-    },
-    {
-     "name": "LeanAssumptions.Baseline.BaselineComparison.exitCode",
-     "tests": [
-      "LeanAssumptionsTest/Golden/Baseline.lean"
      ]
     },
     {
@@ -163,6 +157,12 @@
      "tests": [
       "LeanAssumptionsTest/Integration/Cli.lean"
      ]
+    },
+    {
+     "name": "LeanAssumptions.Baseline.sortUniqueFindings",
+     "tests": [
+      "LeanAssumptionsTest/Golden/Baseline.lean"
+     ]
     }
    ]
   },
@@ -174,13 +174,7 @@
    ],
    "publicDefinitions": [
     {
-     "name": "LeanAssumptions.Cli.OutputFormat",
-     "tests": [
-      "LeanAssumptionsTest/Integration/Cli.lean"
-     ]
-    },
-    {
-     "name": "LeanAssumptions.Cli.DeltaConfig",
+     "name": "LeanAssumptions.Cli.BaselineConfig",
      "tests": [
       "LeanAssumptionsTest/Integration/Cli.lean"
      ]
@@ -192,21 +186,37 @@
      ]
     },
     {
-     "name": "LeanAssumptions.Cli.BaselineConfig",
-     "tests": [
-      "LeanAssumptionsTest/Integration/Cli.lean"
-     ]
-    },
-    {
      "name": "LeanAssumptions.Cli.Config",
      "tests": [
       "LeanAssumptionsTest/Integration/Cli.lean"
      ]
     },
     {
-     "name": "LeanAssumptions.Cli.usage",
+     "name": "LeanAssumptions.Cli.DeltaConfig",
      "tests": [
       "LeanAssumptionsTest/Integration/Cli.lean"
+     ]
+    },
+    {
+     "name": "LeanAssumptions.Cli.OutputFormat",
+     "tests": [
+      "LeanAssumptionsTest/Integration/Cli.lean"
+     ]
+    },
+    {
+     "name": "LeanAssumptions.Cli.PolicyModifier",
+     "tests": [
+      "LeanAssumptionsTest/Integration/Cli.lean",
+      "LeanAssumptionsTest/Unit/Policy/Digest.lean",
+      "lake test"
+     ]
+    },
+    {
+     "name": "LeanAssumptions.Cli.applyPolicyModifiers",
+     "tests": [
+      "LeanAssumptionsTest/Integration/Cli.lean",
+      "LeanAssumptionsTest/Unit/Policy/Digest.lean",
+      "lake test"
      ]
     },
     {
@@ -217,6 +227,33 @@
     },
     {
      "name": "LeanAssumptions.Cli.inspectRequested",
+     "tests": [
+      "LeanAssumptionsTest/Integration/Cli.lean"
+     ]
+    },
+    {
+     "name": "LeanAssumptions.Cli.parseArgs",
+     "tests": [
+      "LeanAssumptionsTest/Integration/Cli.lean"
+     ]
+    },
+    {
+     "name": "LeanAssumptions.Cli.parsePolicyJson",
+     "tests": [
+      "LeanAssumptionsTest/Integration/Cli.lean",
+      "scripts/check_policy_schema.py"
+     ]
+    },
+    {
+     "name": "LeanAssumptions.Cli.renderPolicyModifier",
+     "tests": [
+      "LeanAssumptionsTest/Integration/Cli.lean",
+      "LeanAssumptionsTest/Unit/Policy/Digest.lean",
+      "lake test"
+     ]
+    },
+    {
+     "name": "LeanAssumptions.Cli.run",
      "tests": [
       "LeanAssumptionsTest/Integration/Cli.lean"
      ]
@@ -234,20 +271,7 @@
      ]
     },
     {
-     "name": "LeanAssumptions.Cli.parsePolicyJson",
-     "tests": [
-      "LeanAssumptionsTest/Integration/Cli.lean",
-      "scripts/check_policy_schema.py"
-     ]
-    },
-    {
-     "name": "LeanAssumptions.Cli.parseArgs",
-     "tests": [
-      "LeanAssumptionsTest/Integration/Cli.lean"
-     ]
-    },
-    {
-     "name": "LeanAssumptions.Cli.run",
+     "name": "LeanAssumptions.Cli.usage",
      "tests": [
       "LeanAssumptionsTest/Integration/Cli.lean"
      ]
@@ -279,24 +303,6 @@
    ],
    "publicDefinitions": [
     {
-     "name": "LeanAssumptions.Cluster.SourceMetadata",
-     "tests": [
-      "LeanAssumptionsTest/Golden/Cluster.lean"
-     ]
-    },
-    {
-     "name": "LeanAssumptions.Cluster.FindingSnapshot",
-     "tests": [
-      "LeanAssumptionsTest/Golden/Cluster.lean"
-     ]
-    },
-    {
-     "name": "LeanAssumptions.Cluster.DeclarationSnapshot",
-     "tests": [
-      "LeanAssumptionsTest/Golden/Cluster.lean"
-     ]
-    },
-    {
      "name": "LeanAssumptions.Cluster.AuditArtifact",
      "tests": [
       "LeanAssumptionsTest/Golden/Cluster.lean"
@@ -309,7 +315,7 @@
      ]
     },
     {
-     "name": "LeanAssumptions.Cluster.FailureCluster",
+     "name": "LeanAssumptions.Cluster.ClusterReport",
      "tests": [
       "LeanAssumptionsTest/Golden/Cluster.lean"
      ]
@@ -321,13 +327,25 @@
      ]
     },
     {
-     "name": "LeanAssumptions.Cluster.ClusterReport",
+     "name": "LeanAssumptions.Cluster.DeclarationSnapshot",
      "tests": [
       "LeanAssumptionsTest/Golden/Cluster.lean"
      ]
     },
     {
-     "name": "LeanAssumptions.Cluster.parseAuditArtifact",
+     "name": "LeanAssumptions.Cluster.FailureCluster",
+     "tests": [
+      "LeanAssumptionsTest/Golden/Cluster.lean"
+     ]
+    },
+    {
+     "name": "LeanAssumptions.Cluster.FindingSnapshot",
+     "tests": [
+      "LeanAssumptionsTest/Golden/Cluster.lean"
+     ]
+    },
+    {
+     "name": "LeanAssumptions.Cluster.SourceMetadata",
      "tests": [
       "LeanAssumptionsTest/Golden/Cluster.lean"
      ]
@@ -345,14 +363,13 @@
      ]
     },
     {
-     "name": "LeanAssumptions.Cluster.readClusterReport",
+     "name": "LeanAssumptions.Cluster.parseAuditArtifact",
      "tests": [
-      "LeanAssumptionsTest/Golden/Cluster.lean",
-      "LeanAssumptionsTest/Integration/Cli.lean"
+      "LeanAssumptionsTest/Golden/Cluster.lean"
      ]
     },
     {
-     "name": "LeanAssumptions.Cluster.renderText",
+     "name": "LeanAssumptions.Cluster.readClusterReport",
      "tests": [
       "LeanAssumptionsTest/Golden/Cluster.lean",
       "LeanAssumptionsTest/Integration/Cli.lean"
@@ -365,6 +382,13 @@
       "LeanAssumptionsTest/Integration/Cli.lean",
       "scripts/check_report_schema.py"
      ]
+    },
+    {
+     "name": "LeanAssumptions.Cluster.renderText",
+     "tests": [
+      "LeanAssumptionsTest/Golden/Cluster.lean",
+      "LeanAssumptionsTest/Integration/Cli.lean"
+     ]
     }
    ]
   },
@@ -374,7 +398,32 @@
     "LeanAssumptionsTest/Integration/Commands.lean",
     "lake build"
    ],
-   "publicDefinitions": []
+   "publicDefinitions": [
+    {
+     "name": "LeanAssumptions.Command.printAssumptionJson",
+     "tests": [
+      "LeanAssumptionsTest/Integration/Commands.lean",
+      "python3 scripts/check_examples.py",
+      "lake test"
+     ]
+    },
+    {
+     "name": "LeanAssumptions.Command.printAssumptionTree",
+     "tests": [
+      "LeanAssumptionsTest/Integration/Commands.lean",
+      "python3 scripts/check_examples.py",
+      "lake test"
+     ]
+    },
+    {
+     "name": "LeanAssumptions.Command.printAssumptions",
+     "tests": [
+      "LeanAssumptionsTest/Integration/Commands.lean",
+      "python3 scripts/check_examples.py",
+      "lake test"
+     ]
+    }
+   ]
   },
   {
    "path": "LeanAssumptions/Core.lean",
@@ -416,9 +465,34 @@
    ],
    "publicDefinitions": [
     {
-     "name": "LeanAssumptions.Core.TransparencyMode",
+     "name": "LeanAssumptions.Core.AssumptionCategory",
      "tests": [
-      "LeanAssumptionsTest/Unit/Core/Phase1.lean"
+      "LeanAssumptionsTest/Unit/Core/Phase1.lean",
+      "LeanAssumptionsTest/Integration/Phase1.lean"
+     ]
+    },
+    {
+     "name": "LeanAssumptions.Core.AssumptionFlag",
+     "tests": [
+      "LeanAssumptionsTest/Unit/Core/Phase1.lean",
+      "LeanAssumptionsTest/Unit/Core/Phase2.lean"
+     ]
+    },
+    {
+     "name": "LeanAssumptions.Core.AssumptionReport",
+     "tests": [
+      "LeanAssumptionsTest/Unit/Core/Phase1.lean",
+      "LeanAssumptionsTest/Integration/Phase1.lean",
+      "LeanAssumptionsTest/Unit/Core/Phase2.lean",
+      "LeanAssumptionsTest/Unit/Policy/Phase2.lean"
+     ]
+    },
+    {
+     "name": "LeanAssumptions.Core.BinderSurface",
+     "tests": [
+      "LeanAssumptionsTest/Unit/Core/Phase1.lean",
+      "LeanAssumptionsTest/Integration/Phase1.lean",
+      "LeanAssumptionsTest/Unit/Core/Phase2.lean"
      ]
     },
     {
@@ -435,34 +509,9 @@
      ]
     },
     {
-     "name": "LeanAssumptions.Core.AssumptionCategory",
+     "name": "LeanAssumptions.Core.TransparencyMode",
      "tests": [
-      "LeanAssumptionsTest/Unit/Core/Phase1.lean",
-      "LeanAssumptionsTest/Integration/Phase1.lean"
-     ]
-    },
-    {
-     "name": "LeanAssumptions.Core.AssumptionFlag",
-     "tests": [
-      "LeanAssumptionsTest/Unit/Core/Phase1.lean",
-      "LeanAssumptionsTest/Unit/Core/Phase2.lean"
-     ]
-    },
-    {
-     "name": "LeanAssumptions.Core.BinderSurface",
-     "tests": [
-      "LeanAssumptionsTest/Unit/Core/Phase1.lean",
-      "LeanAssumptionsTest/Integration/Phase1.lean",
-      "LeanAssumptionsTest/Unit/Core/Phase2.lean"
-     ]
-    },
-    {
-     "name": "LeanAssumptions.Core.AssumptionReport",
-     "tests": [
-      "LeanAssumptionsTest/Unit/Core/Phase1.lean",
-      "LeanAssumptionsTest/Integration/Phase1.lean",
-      "LeanAssumptionsTest/Unit/Core/Phase2.lean",
-      "LeanAssumptionsTest/Unit/Policy/Phase2.lean"
+      "LeanAssumptionsTest/Unit/Core/Phase1.lean"
      ]
     }
    ]
@@ -476,31 +525,25 @@
    ],
    "publicDefinitions": [
     {
-     "name": "LeanAssumptions.Delta.ArtifactRole",
-     "tests": [
-      "LeanAssumptionsTest/Golden/Delta.lean"
-     ]
-    },
-    {
-     "name": "LeanAssumptions.Delta.BoundaryNode",
-     "tests": [
-      "LeanAssumptionsTest/Golden/Delta.lean"
-     ]
-    },
-    {
-     "name": "LeanAssumptions.Delta.DeclarationSnapshot",
-     "tests": [
-      "LeanAssumptionsTest/Golden/Delta.lean"
-     ]
-    },
-    {
      "name": "LeanAssumptions.Delta.ArtifactMetadata",
      "tests": [
       "LeanAssumptionsTest/Golden/Delta.lean"
      ]
     },
     {
+     "name": "LeanAssumptions.Delta.ArtifactRole",
+     "tests": [
+      "LeanAssumptionsTest/Golden/Delta.lean"
+     ]
+    },
+    {
      "name": "LeanAssumptions.Delta.AuditArtifact",
+     "tests": [
+      "LeanAssumptionsTest/Golden/Delta.lean"
+     ]
+    },
+    {
+     "name": "LeanAssumptions.Delta.BoundaryNode",
      "tests": [
       "LeanAssumptionsTest/Golden/Delta.lean"
      ]
@@ -518,7 +561,7 @@
      ]
     },
     {
-     "name": "LeanAssumptions.Delta.DeltaSummary",
+     "name": "LeanAssumptions.Delta.DeclarationSnapshot",
      "tests": [
       "LeanAssumptionsTest/Golden/Delta.lean"
      ]
@@ -530,7 +573,7 @@
      ]
     },
     {
-     "name": "LeanAssumptions.Delta.parseAuditArtifact",
+     "name": "LeanAssumptions.Delta.DeltaSummary",
      "tests": [
       "LeanAssumptionsTest/Golden/Delta.lean"
      ]
@@ -548,14 +591,13 @@
      ]
     },
     {
-     "name": "LeanAssumptions.Delta.readDeltaReport",
+     "name": "LeanAssumptions.Delta.parseAuditArtifact",
      "tests": [
-      "LeanAssumptionsTest/Golden/Delta.lean",
-      "LeanAssumptionsTest/Integration/Cli.lean"
+      "LeanAssumptionsTest/Golden/Delta.lean"
      ]
     },
     {
-     "name": "LeanAssumptions.Delta.renderText",
+     "name": "LeanAssumptions.Delta.readDeltaReport",
      "tests": [
       "LeanAssumptionsTest/Golden/Delta.lean",
       "LeanAssumptionsTest/Integration/Cli.lean"
@@ -567,6 +609,13 @@
       "LeanAssumptionsTest/Golden/Delta.lean",
       "LeanAssumptionsTest/Integration/Cli.lean",
       "scripts/check_report_schema.py"
+     ]
+    },
+    {
+     "name": "LeanAssumptions.Delta.renderText",
+     "tests": [
+      "LeanAssumptionsTest/Golden/Delta.lean",
+      "LeanAssumptionsTest/Integration/Cli.lean"
      ]
     }
    ]
@@ -598,13 +647,67 @@
    ],
    "publicDefinitions": [
     {
+     "name": "LeanAssumptions.Policy.AssumptionTreatment",
+     "tests": [
+      "LeanAssumptionsTest/Unit/Policy/Phase2.lean"
+     ]
+    },
+    {
      "name": "LeanAssumptions.Policy.NamePattern",
      "tests": [
       "LeanAssumptionsTest/Unit/Policy/Phase2.lean"
      ]
     },
     {
-     "name": "LeanAssumptions.Policy.AssumptionTreatment",
+     "name": "LeanAssumptions.Policy.NamePattern.canonical",
+     "tests": [
+      "LeanAssumptionsTest/Unit/Policy/Phase2.lean",
+      "LeanAssumptionsTest/Unit/Policy/Digest.lean",
+      "lake test"
+     ]
+    },
+    {
+     "name": "LeanAssumptions.Policy.NamePattern.matches",
+     "tests": [
+      "LeanAssumptionsTest/Unit/Policy/Phase2.lean"
+     ]
+    },
+    {
+     "name": "LeanAssumptions.Policy.PolicyConfig",
+     "tests": [
+      "LeanAssumptionsTest/Unit/Policy/Phase2.lean"
+     ]
+    },
+    {
+     "name": "LeanAssumptions.Policy.PolicyConfig.canonicalDescription",
+     "tests": [
+      "LeanAssumptionsTest/Unit/Policy/Phase2.lean",
+      "LeanAssumptionsTest/Unit/Policy/Digest.lean",
+      "lake test"
+     ]
+    },
+    {
+     "name": "LeanAssumptions.Policy.PolicyConfig.digest",
+     "tests": [
+      "LeanAssumptionsTest/Unit/Policy/Phase2.lean",
+      "LeanAssumptionsTest/Unit/Policy/Digest.lean",
+      "lake test"
+     ]
+    },
+    {
+     "name": "LeanAssumptions.Policy.PolicyEvaluation",
+     "tests": [
+      "LeanAssumptionsTest/Unit/Policy/Phase2.lean"
+     ]
+    },
+    {
+     "name": "LeanAssumptions.Policy.PolicyFinding",
+     "tests": [
+      "LeanAssumptionsTest/Unit/Policy/Phase2.lean"
+     ]
+    },
+    {
+     "name": "LeanAssumptions.Policy.PolicyFindingKind",
      "tests": [
       "LeanAssumptionsTest/Unit/Policy/Phase2.lean"
      ]
@@ -622,43 +725,21 @@
      ]
     },
     {
-     "name": "LeanAssumptions.Policy.PolicyFindingKind",
+     "name": "LeanAssumptions.Policy.evaluate",
      "tests": [
       "LeanAssumptionsTest/Unit/Policy/Phase2.lean"
      ]
     },
     {
-     "name": "LeanAssumptions.Policy.PolicyFinding",
+     "name": "LeanAssumptions.Policy.fnv1a64Hex",
      "tests": [
-      "LeanAssumptionsTest/Unit/Policy/Phase2.lean"
-     ]
-    },
-    {
-     "name": "LeanAssumptions.Policy.PolicyConfig",
-     "tests": [
-      "LeanAssumptionsTest/Unit/Policy/Phase2.lean"
-     ]
-    },
-    {
-     "name": "LeanAssumptions.Policy.PolicyEvaluation",
-     "tests": [
-      "LeanAssumptionsTest/Unit/Policy/Phase2.lean"
+      "LeanAssumptionsTest/Unit/Policy/Phase2.lean",
+      "LeanAssumptionsTest/Unit/Policy/Digest.lean",
+      "lake test"
      ]
     },
     {
      "name": "LeanAssumptions.Policy.strictPolicy",
-     "tests": [
-      "LeanAssumptionsTest/Unit/Policy/Phase2.lean"
-     ]
-    },
-    {
-     "name": "LeanAssumptions.Policy.NamePattern.matches",
-     "tests": [
-      "LeanAssumptionsTest/Unit/Policy/Phase2.lean"
-     ]
-    },
-    {
-     "name": "LeanAssumptions.Policy.evaluate",
      "tests": [
       "LeanAssumptionsTest/Unit/Policy/Phase2.lean"
      ]
@@ -673,13 +754,6 @@
    ],
    "publicDefinitions": [
     {
-     "name": "LeanAssumptions.Render.ReportArtifact",
-     "tests": [
-      "LeanAssumptionsTest/Golden/Phase3.lean",
-      "LeanAssumptionsTest/Integration/Cli.lean"
-     ]
-    },
-    {
      "name": "LeanAssumptions.Render.BatchSummary",
      "tests": [
       "LeanAssumptionsTest/Golden/Phase3.lean",
@@ -687,9 +761,30 @@
      ]
     },
     {
-     "name": "LeanAssumptions.Render.renderText",
+     "name": "LeanAssumptions.Render.ReportArtifact",
      "tests": [
-      "LeanAssumptionsTest/Golden/Phase3.lean"
+      "LeanAssumptionsTest/Golden/Phase3.lean",
+      "LeanAssumptionsTest/Integration/Cli.lean"
+     ]
+    },
+    {
+     "name": "LeanAssumptions.Render.policyResultIsFailure",
+     "tests": [
+      "LeanAssumptionsTest/Integration/Cli.lean"
+     ]
+    },
+    {
+     "name": "LeanAssumptions.Render.renderBatchJsonString",
+     "tests": [
+      "LeanAssumptionsTest/Golden/Phase3.lean",
+      "LeanAssumptionsTest/Integration/Cli.lean",
+      "scripts/check_report_schema.py"
+     ]
+    },
+    {
+     "name": "LeanAssumptions.Render.renderBatchText",
+     "tests": [
+      "LeanAssumptionsTest/Integration/Cli.lean"
      ]
     },
     {
@@ -701,29 +796,15 @@
      ]
     },
     {
-     "name": "LeanAssumptions.Render.policyResultIsFailure",
+     "name": "LeanAssumptions.Render.renderText",
      "tests": [
-      "LeanAssumptionsTest/Integration/Cli.lean"
+      "LeanAssumptionsTest/Golden/Phase3.lean"
      ]
     },
     {
      "name": "LeanAssumptions.Render.summarizeBatch",
      "tests": [
       "LeanAssumptionsTest/Golden/Phase3.lean"
-     ]
-    },
-    {
-     "name": "LeanAssumptions.Render.renderBatchText",
-     "tests": [
-      "LeanAssumptionsTest/Integration/Cli.lean"
-     ]
-    },
-    {
-     "name": "LeanAssumptions.Render.renderBatchJsonString",
-     "tests": [
-      "LeanAssumptionsTest/Golden/Phase3.lean",
-      "LeanAssumptionsTest/Integration/Cli.lean",
-      "scripts/check_report_schema.py"
      ]
     }
    ]
@@ -737,9 +818,9 @@
    ],
    "publicDefinitions": [
     {
-     "name": "LeanAssumptions.toolVersion",
+     "name": "LeanAssumptions.jsonSchemaVersion",
      "tests": [
-      "LeanAssumptionsTest/Integration/Phase1.lean"
+      "LeanAssumptionsTest/Golden/Phase3.lean"
      ]
     },
     {
@@ -750,9 +831,9 @@
      ]
     },
     {
-     "name": "LeanAssumptions.jsonSchemaVersion",
+     "name": "LeanAssumptions.toolVersion",
      "tests": [
-      "LeanAssumptionsTest/Golden/Phase3.lean"
+      "LeanAssumptionsTest/Integration/Phase1.lean"
      ]
     }
    ]
@@ -766,6 +847,14 @@
     "LeanAssumptionsTest/Golden/Phase3.lean",
     "LeanAssumptionsTest/Integration/Commands.lean",
     "LeanAssumptionsTest/Integration/Cli.lean"
+   ],
+   "publicDefinitions": []
+  },
+  {
+   "path": "LeanAssumptionsTest/Coverage.lean",
+   "tests": [
+    "lake test",
+    "python3 scripts/check_coverage_ledger.py"
    ],
    "publicDefinitions": []
   },

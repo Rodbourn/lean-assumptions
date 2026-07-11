@@ -45,3 +45,29 @@ run_cmd do
   let renamedDeclaration := { original with declarationName := "Example.renamed" }
   assertTrue "baseline identity includes finding path" (!(original == reorderedPath))
   assertTrue "baseline identity includes declaration name" (!(original == renamedDeclaration))
+
+run_cmd do
+  let artifact : AuditArtifact := {
+    metadata := {
+      schemaVersion := "1"
+      leanVersion := "4.30.0-rc2"
+      policyIdentifier := "strict"
+      transparencyMode := "none"
+    }
+    findings := #[{
+      declarationName := "Example.failing"
+      kind := "unapproved_direct_prop"
+      category := "direct_prop"
+      path := #["h"]
+      typeName? := none
+    }]
+  }
+  let rendered := renderUpdateText "example-baseline.json" artifact
+  assertTrue "update text names the baseline path"
+    ((rendered.splitOn "baseline_path: example-baseline.json").length == 2)
+  assertTrue "update text reports the finding count"
+    ((rendered.splitOn "current_findings: 1").length == 2)
+  assertTrue "update text reports the updated result"
+    ((rendered.splitOn "baseline_result: updated").length == 2)
+  assertTrue "update text carries the policy identifier"
+    ((rendered.splitOn "current_policy_identifier: strict").length == 2)

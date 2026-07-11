@@ -12,6 +12,7 @@ import LeanAssumptionsTest.Golden.Cluster
 import LeanAssumptionsTest.Golden.Baseline
 import LeanAssumptionsTest.Integration.Commands
 import LeanAssumptionsTest.Integration.Cli
+import LeanAssumptionsTest.Coverage
 
 /-!
 Test executable root for `lean-assumptions`.
