@@ -29,3 +29,4 @@
 - Distinguish proof-hypothesis binders from binders that quantify over `Prop` by adding the `binder_quantifies_over_prop` secondary flag to report schema v1.
 - Escape all U+0000 through U+001F control characters in JSON string output across report, delta, and cluster renderers.
 - Document confirmed certified-path soundness gaps in the README and downgrade the affected requirement-tracker rows ahead of their fixes.
+- Classify unrecognized binder-type head shapes as `unknown` instead of `pure_data`: classification is now by positive recognition of sorts, bound type variables, structures, non-structure inductives (scanned constructor by constructor), function result types, and `Quot` payloads, with structural beta/zeta/projection reduction applied under every transparency mode. Packages whose fields remain unexpanded `alias` nodes now classify `unknown` instead of `pure_data`. Adds adversarial regression fixtures from the 2026-07-11 audit.

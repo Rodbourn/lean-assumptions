@@ -1,5 +1,6 @@
 import LeanAssumptionsTest.Fixtures.Phase1
 import LeanAssumptionsTest.Fixtures.Corpus
+import LeanAssumptionsTest.Fixtures.Adversarial
 
 /-!
 Fixture corpus entry point.

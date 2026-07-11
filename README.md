@@ -199,11 +199,9 @@ An internal audit on 2026-07-11 confirmed certified-path misclassification
 bugs. Until they are fixed, strict-policy `pass` results must not be treated
 as conservative for the following statement shapes:
 
-- binder types with unrecognized head shapes default to `pure_data` instead of
-  `unknown`, including `let`-wrapped types, non-structure inductive types that
-  carry proofs, and function types into proof-carrying data
 - aliases introduced with `def` or `@[reducible] def` are not detected as
-  aliases under `none` transparency and are classified `pure_data`
+  aliases under `none` transparency and are classified `unknown` rather than
+  `alias`
 - a declaration type hidden entirely behind an alias is peeled to zero binders
   and passes strict policy; the result surface is not audited
 - `transparency_mode: reducible` currently reduces at default transparency,
