@@ -159,6 +159,16 @@ run_cmd do
     "--diff", futureVersionPath,
     "LeanAssumptionsTest/Golden/delta-current.json"
   ]
+  assertCliExit env opts "CLI help exit" 0 #["--help"]
+  -- Usage-drift guard: every accepted flag must appear in the usage text.
+  for flag in [
+    "--module", "--decl", "--scan-module", "--format", "--policy",
+    "--allow-direct", "--allow-package", "--allow-typeclasses",
+    "--allow-unknowns", "--warn-unknowns", "--diff", "--cluster",
+    "--baseline", "--accept", "--update-baseline", "--help"
+  ] do
+    assertTrue s!"usage documents {flag}"
+      ((LeanAssumptions.Cli.usage.splitOn flag).length >= 2)
   assertCliExit env opts "CLI delta JSON exit" 0 #[
     "--diff",
     "LeanAssumptionsTest/Golden/delta-baseline.json",

@@ -147,9 +147,8 @@ Classification is by positive recognition of normalized head shapes. Unknown
 or unsupported cases — including unrecognized heads, unfoldable alias heads,
 and declaration surfaces that cannot be fully peeled — are reported
 conservatively and do not silently pass strict policy. All false-pass classes
-confirmed by the 2026-07-11 audit are closed with regression tests; the
-remaining known gaps, listed under [Known Gaps](#known-gaps), affect precision
-and artifact metadata rather than conservative failure.
+confirmed by the 2026-07-11 audit are closed with regression tests; see
+[Audit Status](#audit-status).
 
 Baseline mode preserves that contract for CI adoption. It compares the current
 finding-bearing batch artifact against a checked-in v1 batch JSON baseline and

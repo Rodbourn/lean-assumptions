@@ -106,15 +106,17 @@ structure Config where
   policyModifiers : Array PolicyModifier := #[]
   policyFileLoaded : Bool := false
   policyConfigured : Bool := false
+  helpRequested : Bool := false
   deriving Repr
 
-/-- Usage text for invalid invocations. -/
+/-- Usage text for `--help` and invalid invocations. -/
 def usage : String :=
-  "usage: lean-assumptions --module <Module> (--decl <Name> | --scan-module <Module>) [--format text|json] [--policy <file>] [--allow-direct <Name>] [--allow-package <Name>] [--allow-typeclasses] [--allow-unknowns]\n" ++
+  "usage: lean-assumptions --module <Module> (--decl <Name> | --scan-module <Module>) [--format text|json] [--policy <file>] [--allow-direct <Name>] [--allow-package <Name>] [--allow-typeclasses] [--allow-unknowns] [--warn-unknowns]\n" ++
   "   or: lean-assumptions --module <Module> (--decl <Name> | --scan-module <Module>) --baseline <audit.json> [--accept]\n" ++
   "   or: lean-assumptions --module <Module> (--decl <Name> | --scan-module <Module>) --update-baseline <audit.json>\n" ++
   "   or: lean-assumptions --diff <baseline.json> <current.json> [--format text|json]\n" ++
-  "   or: lean-assumptions --cluster <audit.json> [--format text|json]"
+  "   or: lean-assumptions --cluster <audit.json> [--format text|json]\n" ++
+  "   or: lean-assumptions --help"
 
 /-- Return whether `a` sorts before `b` in public dotted-name order. -/
 private def nameLt (a b : Lean.Name) : Bool :=
@@ -458,7 +460,7 @@ private def parseArgsAux : List String -> Config -> IO Config
       policyModifiers := config.policyModifiers.push .warnUnknowns
       policyConfigured := true
     }
-  | "--help" :: _, _ => throw (IO.userError usage)
+  | "--help" :: _, config => pure { config with helpRequested := true }
   | option :: _, _ => throw (IO.userError s!"unknown or incomplete option: {option}\n{usage}")
 
 /-- Parse CLI arguments and validate that there is work to do. -/
@@ -467,6 +469,8 @@ def parseArgs (args : Array String) : IO Config := do
   -- Modifiers compose after the base policy regardless of argument order,
   -- and the effective identifier records every modification.
   let config := { parsed with policy := applyPolicyModifiers parsed.policy parsed.policyModifiers }
+  if config.helpRequested then
+    return config
   match config.delta?, config.cluster?, config.baseline? with
   | some _, some _, _ =>
     throw (IO.userError s!"--diff cannot be combined with --cluster\n{usage}")
@@ -581,6 +585,10 @@ def runWithImportedEnv
     (emitOutput : Bool := true) : IO UInt32 := do
   try
     let config ← parseArgs args
+    if config.helpRequested then
+      if emitOutput then
+        IO.println usage
+      return (0 : UInt32)
     runConfigInImportedEnv env opts config emitOutput
   catch error =>
     IO.eprintln error.toString
@@ -590,6 +598,9 @@ def runWithImportedEnv
 def run (args : Array String) : IO UInt32 := do
   try
     let config ← parseArgs args
+    if config.helpRequested then
+      IO.println usage
+      return (0 : UInt32)
     match config.delta?, config.cluster? with
     | some deltaConfig, none =>
       let report ← Delta.readDeltaReport deltaConfig.baselinePath deltaConfig.currentPath
