@@ -15,7 +15,6 @@ LEAN_UPDATE_SHA = "6f7b598c3255645e06f5d31f9f77b7440fc16451"  # leanprover-commu
 WORKFLOW = ROOT / ".github" / "workflows" / "ci.yml"
 COMPATIBILITY_WORKFLOW = ROOT / ".github" / "workflows" / "compatibility.yml"
 UPDATE_WORKFLOW = ROOT / ".github" / "workflows" / "update.yml"
-CURRENT_RC_TOOLCHAIN = "leanprover/lean4:v4.30.0-rc2"
 
 
 def require(condition: bool, message: str, errors: list[str]) -> None:
@@ -86,7 +85,18 @@ def main() -> int:
 
     require("schedule:" in compatibility, "Compatibility workflow must run on a schedule.", errors)
     require("workflow_dispatch:" in compatibility, "Compatibility workflow must be manually runnable.", errors)
-    require(CURRENT_RC_TOOLCHAIN in compatibility, f"Compatibility workflow must test {CURRENT_RC_TOOLCHAIN}.", errors)
+    for channel in ["stable", "beta"]:
+        require(
+            channel in compatibility,
+            f"Compatibility workflow must test the Lean {channel} channel so the forward signal never goes stale.",
+            errors,
+        )
+    require(
+        "leanprover/lean4:%s" in compatibility or "leanprover/lean4:${{ matrix.channel }}" in compatibility
+            or "matrix.channel" in compatibility,
+        "Compatibility workflow must select toolchains through an elan channel matrix.",
+        errors,
+    )
     require(
         f"uses: actions/checkout@{CHECKOUT_SHA}" in compatibility,
         "Compatibility workflow must pin actions/checkout by commit SHA.",
@@ -110,7 +120,6 @@ def main() -> int:
         )
     for command in [
         "lake build",
-        "lake test",
         "lake lint",
         "lake env leanchecker --fresh LeanAssumptions",
     ]:

@@ -314,10 +314,11 @@ configured as an OS matrix over `ubuntu-latest` and `macos-latest`; both targets
 run the same explicit build, test, lint, leanchecker, schema, example, workflow,
 and CLI smoke checks. The API-docs job runs on Ubuntu. Native Windows hosted CI
 is intentionally unsupported for now; Windows users should run the package under
-WSL2. A separate compatibility workflow runs weekly against
-`leanprover/lean4:v4.30.0-rc2`, the toolchain currently pinned by this
-repository; it does not yet test any newer stable or release-candidate
-toolchain. A scheduled update workflow uses a commit-pinned
+WSL2. A separate compatibility workflow runs weekly against the current Lean
+`stable` and `beta` elan channels, building, linting, and kernel-replaying the
+package so toolchain drift surfaces without manual re-pinning; full test and
+golden certification applies only to the pinned toolchain in
+`lean-toolchain`. A scheduled update workflow uses a commit-pinned
 `leanprover-community/lean-update` with `update_if_modified:
 lean-toolchain`. All GitHub Actions are pinned by commit SHA, workflows
 declare least-privilege permissions, and concurrent runs per ref are

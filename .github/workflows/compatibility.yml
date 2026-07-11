@@ -16,16 +16,24 @@ defaults:
   run:
     shell: bash
 
+# Forward-compatibility signal: build, lint, and kernel-replay the package on
+# the current Lean stable release and the current release candidate (elan
+# channels, so this job never goes stale). `lake test` is intentionally not
+# run here: golden snapshots embed the pinned toolchain's version string, so
+# full behavioral certification applies only to the toolchain in
+# lean-toolchain, which the regular CI workflow tests.
 jobs:
-  lean-release-candidate:
-    name: lean-release-candidate
+  lean-channel:
+    name: lean-${{ matrix.channel }}
     runs-on: ubuntu-latest
-    env:
-      LEAN_RC_TOOLCHAIN: leanprover/lean4:v4.30.0-rc2
+    strategy:
+      fail-fast: false
+      matrix:
+        channel: [stable, beta]
     steps:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
-      - name: Select Lean release-candidate toolchain
-        run: printf '%s\n' "$LEAN_RC_TOOLCHAIN" > lean-toolchain
+      - name: Select Lean ${{ matrix.channel }} toolchain
+        run: printf 'leanprover/lean4:%s\n' "${{ matrix.channel }}" > lean-toolchain
       - uses: leanprover/lean-action@38fbc41a8c28c4cbaec22d7f7de508ec2e7c0dd9 # v1
         with:
           build: false
@@ -33,8 +41,6 @@ jobs:
           lint: false
       - name: Build package
         run: lake build
-      - name: Run tests
-        run: lake test
       - name: Run lint
         run: lake lint
       - name: Run leanchecker
