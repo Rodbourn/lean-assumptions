@@ -73,7 +73,7 @@ The project is not finished while any requirement or verification gate below is
 | --- | --- | --- |
 | interactive single-declaration inspection | partial | A Phase 4 smoke baseline validates a representative single-declaration CLI audit within a broad threshold. This is not yet a detailed latency benchmark across real projects. |
 | repository-scale scan behavior | partial | Module scanning is implemented, but incremental/chunked large-scan behavior remains tracked beyond the current baseline. |
-| dedicated performance regression tracking | partial | `LeanAssumptionsTest/Performance/baseline.json` and `python scripts/check_performance_baseline.py` validate representative CLI audit timing, valid JSON output, and scanned declaration counts, and CI includes a dedicated job. The check is a one-shot smoke test with broad 30/60-second ceilings against second-scale operations; it cannot detect realistic regressions and keeps no history. |
+| dedicated performance regression tracking | done | `python3 scripts/check_performance_baseline.py` runs each representative CLI case three times, checks the median against a recorded per-case reference times a regression factor (regression detection) plus an absolute ceiling, validates JSON output and scanned counts, and writes a machine-readable timing report that CI uploads as an artifact for history. Mathlib-scale benchmarks are planned with the conservatism-at-scale campaign. |
 
 ## Documentation Requirements
 

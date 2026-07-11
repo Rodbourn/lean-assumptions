@@ -12,6 +12,7 @@ CHECKOUT_SHA = "93cb6efe18208431cddfb8368fd83d5badbf9bfd"  # actions/checkout v5
 SETUP_PYTHON_SHA = "a26af69be951a213d495a4c3e4e4022e16d87065"  # actions/setup-python v5
 LEAN_ACTION_SHA = "38fbc41a8c28c4cbaec22d7f7de508ec2e7c0dd9"  # leanprover/lean-action v1
 LEAN_UPDATE_SHA = "6f7b598c3255645e06f5d31f9f77b7440fc16451"  # leanprover-community/lean-update v0.12.0
+UPLOAD_ARTIFACT_SHA = "ea165f8d65b6e75b540449e92b4886f43607fa02"  # actions/upload-artifact v4
 WORKFLOW = ROOT / ".github" / "workflows" / "ci.yml"
 COMPATIBILITY_WORKFLOW = ROOT / ".github" / "workflows" / "compatibility.yml"
 UPDATE_WORKFLOW = ROOT / ".github" / "workflows" / "update.yml"
@@ -66,6 +67,11 @@ def main() -> int:
         require(command in text, f"CI must run `{command}`.", errors)
 
     require("DOCGEN_SRC: file" in text, "CI docs build must set DOCGEN_SRC=file.", errors)
+    require(
+        f"uses: actions/upload-artifact@{UPLOAD_ARTIFACT_SHA}" in text,
+        "CI must upload the performance timing report as a pinned-artifact step.",
+        errors,
+    )
     require(
         re.search(r"runs-on:\s*\$\{\{\s*matrix\.os\s*\}\}", text) is not None,
         "CI build/test job must run on matrix.os.",

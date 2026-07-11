@@ -1,18 +1,27 @@
 {
-  "version": 1,
-  "description": "Phase 4 smoke-level performance baseline for representative CLI audits. Thresholds are intentionally broad because hosted runner timing is not a correctness signal.",
+  "version": 2,
+  "description": "Performance baseline for representative CLI audits: per-case medians over `runs` executions must stay under reference_ms x regression_factor (regression detection) and under max_ms (absolute ceiling). References are local medians with headroom; update them only with the change that justifies the shift.",
   "cases": [
     {
       "name": "single_pure_data_declaration",
-      "modules": ["LeanAssumptionsTest.Fixtures"],
-      "declarations": ["LeanAssumptionsTest.Fixtures.noPropBearingAssumptions"],
+      "modules": [
+        "LeanAssumptionsTest.Fixtures"
+      ],
+      "declarations": [
+        "LeanAssumptionsTest.Fixtures.noPropBearingAssumptions"
+      ],
       "format": "json",
-      "extra_args": ["--allow-unknowns"],
-      "max_ms": 30000
+      "extra_args": [
+        "--allow-unknowns"
+      ],
+      "max_ms": 30000,
+      "reference_ms": 3500
     },
     {
       "name": "representative_assumption_surface_batch",
-      "modules": ["LeanAssumptionsTest.Fixtures"],
+      "modules": [
+        "LeanAssumptionsTest.Fixtures"
+      ],
       "declarations": [
         "LeanAssumptionsTest.Fixtures.packageBinder",
         "LeanAssumptionsTest.Fixtures.nestedPackageBinder",
@@ -36,7 +45,10 @@
         "--allow-typeclasses",
         "--allow-unknowns"
       ],
-      "max_ms": 60000
+      "max_ms": 60000,
+      "reference_ms": 4500
     }
-  ]
+  ],
+  "runs": 3,
+  "regression_factor": 5
 }

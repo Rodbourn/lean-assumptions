@@ -72,6 +72,11 @@ jobs:
         run: lake build lean-assumptions LeanAssumptionsTest.Fixtures
       - name: Validate performance baseline
         run: python3 scripts/check_performance_baseline.py
+      - name: Upload timing report
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: performance-report
+          path: .lake/build/lean-assumptions-test/performance-report.json
 
   release-readiness:
     name: release-readiness
