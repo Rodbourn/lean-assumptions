@@ -15,13 +15,24 @@ import LeanAssumptionsTest.Golden.Baseline
 import LeanAssumptionsTest.Integration.Commands
 import LeanAssumptionsTest.Integration.Cli
 import LeanAssumptionsTest.Coverage
+import LeanAssumptionsTest.GoldenRuntime
 
 /-!
 Test executable root for `lean-assumptions`.
 
-The imported modules contain compile-time assertions via `run_cmd`. If those
-assertions hold, this executable becomes a trivial runtime confirmation target.
+The imported modules contain compile-time assertions via `run_cmd`. The
+runtime entry point then re-runs every golden comparison, because
+elaboration-time comparisons are skipped by build caching when only a golden
+file changed.
 -/
 
-/-- Runtime confirmation entry point once compile-time test modules succeed. -/
-def main : IO Unit := IO.println "lean-assumptions tests passed"
+/-- Re-verify goldens at runtime, then confirm the compile-time assertions. -/
+def main : IO UInt32 := do
+  let failures ← LeanAssumptionsTest.GoldenRuntime.goldenFailures
+  if failures.isEmpty then
+    IO.println "lean-assumptions tests passed"
+    pure 0
+  else
+    for failure in failures do
+      IO.eprintln s!"golden mismatch: {failure}"
+    pure 1

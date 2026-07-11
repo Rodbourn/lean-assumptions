@@ -966,6 +966,20 @@
    "publicDefinitions": []
   },
   {
+   "path": "LeanAssumptionsTest/GoldenRuntime.lean",
+   "tests": [
+    "lake test"
+   ],
+   "publicDefinitions": [
+    {
+     "name": "LeanAssumptionsTest.GoldenRuntime.goldenFailures",
+     "tests": [
+      "lake test"
+     ]
+    }
+   ]
+  },
+  {
    "path": "LeanAssumptionsTest/Integration/Cli.lean",
    "tests": [
     "lake test"
