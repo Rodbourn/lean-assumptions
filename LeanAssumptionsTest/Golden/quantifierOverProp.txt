@@ -10,6 +10,7 @@ policy_identifier: strict
 policy_result: fail
 unknowns_occurred: false
 cycles_truncated: false
+transparency_limited: false
 assumption_tree:
 - P : direct_prop [explicit] flags=[binder_quantifies_over_prop]
 policy_findings:

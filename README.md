@@ -196,12 +196,9 @@ published, and Reservoir publication has not happened yet.
 ### Known Gaps
 
 An internal audit on 2026-07-11 confirmed certified-path bugs. The false-pass
-classes it found are fixed with regression tests. The remaining known gaps
-affect precision and artifact metadata, not conservative failure:
+classes it found are fixed with regression tests. The remaining known gap
+affects artifact metadata, not conservative failure:
 
-- `transparency_mode: reducible` currently reduces at default transparency,
-  unfolding more than documented, and `recursive_normalization` is not
-  operationally distinct from it
 - CLI `--allow-*` flags weaken the effective policy without changing the
   `policy_identifier` carried by output artifacts
 
@@ -302,7 +299,7 @@ Policy files use `schema/policy-v1.schema.json`. Exact-name matching is the defa
 }
 ```
 
-Supported transparency spellings are `none`, `reducible`, and `recursive_normalization`. With `none`, reducible aliases are reported as `alias` nodes and fail strict policy unless aliases are explicitly allowed. With `reducible`, abbreviation heads are expanded enough to inspect the exposed package. With `recursive_normalization`, the project normalizer repeatedly applies reducible-head normalization at inspected nodes. Unknowns are not silently downgraded; they pass only when the policy explicitly allows or warns on them.
+Supported transparency spellings are `none`, `reducible`, and `recursive_normalization`. With `none`, no definition head is unfolded: every alias head is reported as an `alias` node and fails strict policy unless aliases are explicitly allowed. With `reducible`, `abbrev` and `@[reducible]` heads are expanded at reducible transparency; plain `def` heads stay folded and are reported as `alias` nodes. With `recursive_normalization`, heads are normalized at default transparency to a fixed point at every inspected node. Every report carries `transparency_limited`, which is `true` whenever unexpanded alias heads remain, meaning classification depends materially on the chosen mode. Unknowns are not silently downgraded; they pass only when the policy explicitly allows or warns on them.
 
 ## CI
 

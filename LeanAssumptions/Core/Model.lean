@@ -79,6 +79,11 @@ separate certified policy layer.
 result surface: an alias-headed remainder that could hide further binders
 under the report transparency mode, or a peeling-fuel exhaustion. A fully
 peeled result carries `none`.
+
+`transparencyLimited` is `true` when the report contains at least one
+unexpanded `alias` node, meaning classification depends materially on the
+chosen transparency mode: a more permissive mode would expand those heads and
+could classify them differently.
 -/
 structure AssumptionReport where
   declarationName : Lean.Name
@@ -90,6 +95,7 @@ structure AssumptionReport where
   unknownsOccurred : Bool := false
   cyclesTruncated : Bool := false
   resultSurface? : Option BinderSurface := none
+  transparencyLimited : Bool := false
   deriving Repr
 
 end LeanAssumptions.Core

@@ -90,7 +90,7 @@ private def isAliasHeadedType (type : Lean.Expr) : MetaM Bool := do
 /-- Fuel for project-defined recursive normalization. -/
 private def normalizationFuel : Nat := 64
 
-/-- Repeatedly normalize reducible heads until a fixed point or fuel exhaustion. -/
+/-- Repeatedly normalize heads at default transparency until a fixed point. -/
 private def recursivelyNormalizeType : Nat → Lean.Expr → MetaM Lean.Expr
   | 0, type => pure type
   | fuel + 1, type => do
@@ -104,14 +104,16 @@ private def recursivelyNormalizeType : Nat → Lean.Expr → MetaM Lean.Expr
 Normalize a type according to the requested report transparency mode.
 
 Every mode applies structural reduction (beta, zeta, projection) so that head
-recognition cannot be defeated by wrapping a type in a redex. Only the
-`reducible` and `recursive_normalization` modes additionally unfold constant
-heads.
+recognition cannot be defeated by wrapping a type in a redex. Constant heads
+unfold strictly per mode: `none` never unfolds, `reducible` unfolds only
+`abbrev` and `@[reducible]` heads at reducible transparency, and
+`recursive_normalization` unfolds at default transparency to a fixed point.
+Heads that survive normalization are reported as `alias` nodes.
 -/
 private def normalizeTypeForMode (mode : TransparencyMode) (type : Lean.Expr) : MetaM Lean.Expr := do
   match mode with
   | .none => whnfCore type
-  | .reducible => whnf type
+  | .reducible => withReducible <| whnf type
   | .recursiveNormalization => recursivelyNormalizeType normalizationFuel type
 
 /-- Convert Lean's binder-info representation into the public surface kind. -/
@@ -133,10 +135,6 @@ private def declarationKindOf (info : Lean.ConstantInfo) : DeclarationKind :=
   | .inductInfo _ => .inductive
   | .ctorInfo _ => .constructor
   | .recInfo _ => .recursor
-
-/-- Return the declaration name at the normalized head of a type, if one is present. -/
-private def typeHeadName? (type : Lean.Expr) : MetaM (Option Lean.Name) := do
-  pure (rawTypeHeadName? (← whnf type))
 
 /-- Return `true` when `type` is headed by a registered structure/class. -/
 private def isStructureApplication (type : Lean.Expr) : MetaM Bool := do
@@ -172,8 +170,8 @@ private def bindsDirectPropSurface (binderType : Lean.Expr) : MetaM Bool := do
   pure evidence.contributes
 
 /-- Return `true` when an application argument is itself proposition-like. -/
-private def hasProofLikeArgument (type : Lean.Expr) : MetaM Bool := do
-  for arg in (← whnf type).getAppArgs do
+private def hasProofLikeArgument (mode : TransparencyMode) (type : Lean.Expr) : MetaM Bool := do
+  for arg in (← normalizeTypeForMode mode type).getAppArgs do
     if ← bindsDirectPropSurface arg then
       return true
   return false
@@ -182,17 +180,22 @@ private def hasProofLikeArgument (type : Lean.Expr) : MetaM Bool := do
 Return `true` for Lean wrapper applications that carry proof data through one
 of their arguments, without claiming that the wrapper itself is a proposition.
 -/
-private def proofLikeWrapperApplication (type : Lean.Expr) : MetaM Bool := do
-  match ← typeHeadName? type with
-  | some ``PLift => hasProofLikeArgument type
+private def proofLikeWrapperApplication (mode : TransparencyMode) (type : Lean.Expr) :
+    MetaM Bool := do
+  match rawTypeHeadName? (← normalizeTypeForMode mode type) with
+  | some ``PLift => hasProofLikeArgument mode type
   | _ => pure false
 
 /--
 Return `true` when the type is one of the mandatory proof-carrying data patterns
 whose proof component is visible under the current conservative rules.
+
+All internal reductions run under the report transparency mode so that the
+wrapper check cannot unfold more than the mode permits.
 -/
-private def isProofCarryingDataType (type : Lean.Expr) : MetaM Bool := do
-  let type ← whnf type
+private def isProofCarryingDataType (mode : TransparencyMode) (type : Lean.Expr) :
+    MetaM Bool := do
+  let type ← normalizeTypeForMode mode type
   match type.getAppFn with
   | .const ``Subtype _ =>
     pure true
@@ -201,7 +204,7 @@ private def isProofCarryingDataType (type : Lean.Expr) : MetaM Bool := do
   | .const ``PSigma _ =>
     inspectDependentPayloadForProof type
   | _ =>
-    proofLikeWrapperApplication type
+    proofLikeWrapperApplication mode type
 where
   inspectDependentPayloadForProof (type : Lean.Expr) : MetaM Bool := do
     let args := type.getAppArgs
@@ -215,7 +218,7 @@ where
         if ← bindsDirectPropSurface payloadType then
           return true
         else
-          proofLikeWrapperApplication payloadType
+          proofLikeWrapperApplication mode payloadType
     else
       pure false
 
@@ -322,16 +325,16 @@ private def inspectNode :
     let evidence ← directPropSurfaceEvidence binderType
     -- Proposition evidence is transparency-independent, so a proof binder
     -- whose proposition happens to be spelled through an alias still reports
-    -- `direct_prop`. Every other alias-headed type under `none` transparency
-    -- is reported as an explicit `alias` node instead of being analyzed.
-    if transparencyMode == .none && !evidence.contributes &&
-        (← isAliasHeadedType binderType) then
+    -- `direct_prop`. Every other definition head that survived mode
+    -- normalization is reported as an explicit `alias` node instead of being
+    -- analyzed, because the current transparency mode blocks its expansion.
+    if !evidence.contributes && (← isAliasHeadedType binderType) then
       return {
         node := aliasNode userName binderType binderKind
         unknownsOccurred := false
         cyclesTruncated := false
       }
-    let proofCarryingWrapper ← isProofCarryingDataType binderType
+    let proofCarryingWrapper ← isProofCarryingDataType transparencyMode binderType
     let isStructApp ← isStructureApplication binderType
     let mut children : Array BinderSurface := #[]
     let mut unknownsOccurred := false
@@ -586,7 +589,7 @@ private def peelDeclarationBinders (transparencyMode : TransparencyMode) :
           unknowns := unknowns || summary.unknownsOccurred
           cycles := cycles || summary.cyclesTruncated
         peelDeclarationBinders transparencyMode fuel binders unknowns cycles body
-    else if transparencyMode == .none && (← isAliasHeadedType normalized) then
+    else if ← isAliasHeadedType normalized then
       pure {
         binders := binders
         unknownsOccurred := unknowns
@@ -603,6 +606,21 @@ private def peelDeclarationBinders (transparencyMode : TransparencyMode) :
         resultSurface? := none
       }
 
+/-- Traversal budget for report-level transparency-dependence detection. -/
+private def transparencySignalBudget : Nat := 10000
+
+/--
+Return `true` when any node in the worklist is an unexpanded `alias` head.
+
+Budget exhaustion conservatively returns `true`: an unscanned subtree may
+contain alias nodes, so the report must not claim transparency independence.
+-/
+private def anyAliasNode : Nat → List BinderSurface → Bool
+  | 0, _ => true
+  | _, [] => false
+  | fuel + 1, node :: rest =>
+    node.primaryCategory == .alias || anyAliasNode fuel (node.children.toList ++ rest)
+
 /-- Inspect a declaration from the current environment inside `MetaM`. -/
 private def inspectDeclarationMeta
     (transparencyMode : TransparencyMode)
@@ -611,6 +629,11 @@ private def inspectDeclarationMeta
   let declarationType := constantInfo.type
   let summary ← peelDeclarationBinders transparencyMode peelRoundFuel #[] false false
     declarationType
+  let reportedNodes :=
+    summary.binders.toList ++
+      (match summary.resultSurface? with
+        | some node => [node]
+        | none => [])
   pure {
     declarationName := declName
     declarationKind := declarationKindOf constantInfo
@@ -621,6 +644,7 @@ private def inspectDeclarationMeta
     unknownsOccurred := summary.unknownsOccurred
     cyclesTruncated := summary.cyclesTruncated
     resultSurface? := summary.resultSurface?
+    transparencyLimited := anyAliasNode transparencySignalBudget reportedNodes
   }
 
 /--

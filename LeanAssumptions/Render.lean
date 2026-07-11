@@ -243,6 +243,7 @@ def renderText
       "policy_result: " ++ renderPolicyResult evaluation.result,
       "unknowns_occurred: " ++ renderBool report.unknownsOccurred,
       "cycles_truncated: " ++ renderBool report.cyclesTruncated,
+      "transparency_limited: " ++ renderBool report.transparencyLimited,
       "assumption_tree:"
     ] ++ concatMap (renderNodeText renderTraversalBudget 0) report.binders.toList ++
     (match report.resultSurface? with
@@ -323,6 +324,7 @@ private def renderJsonCore
     ("policy_result", jsonString (renderPolicyResult evaluation.result)),
     ("unknowns_occurred", renderBool report.unknownsOccurred),
     ("cycles_truncated", renderBool report.cyclesTruncated),
+    ("transparency_limited", renderBool report.transparencyLimited),
     ("raw_declaration_type_repr", jsonString (renderExpr report.declarationType)),
     ("result_type_repr", jsonString (renderExpr report.resultType)),
     ("assumption_tree", jsonArray (report.binders.map (renderNodeJson renderTraversalBudget))),

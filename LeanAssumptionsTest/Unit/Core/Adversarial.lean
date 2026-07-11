@@ -198,6 +198,42 @@ run_cmd do
   assertEq "aliasHiddenStatement finding path head" `result pathHead
 
 run_cmd do
+  -- Under `reducible` transparency, a plain-def alias stays folded and is
+  -- reported as an alias, while a reducible-attribute alias unfolds; under
+  -- `recursive_normalization` both unfold. This pins the three modes as
+  -- operationally distinct.
+  let plainReducible ← LeanAssumptions.Core.inspectDeclarationWithTransparency
+    TransparencyMode.reducible `LeanAssumptionsTest.Fixtures.defAliasPackageBinder
+  let plainBinder ← requireAt "defAliasPackageBinder reducible binder" plainReducible.binders 0
+  assertEq "defAliasPackageBinder reducible category"
+    AssumptionCategory.alias plainBinder.primaryCategory
+  assertEq "defAliasPackageBinder reducible transparency-limited"
+    true plainReducible.transparencyLimited
+  let attrReducible ← LeanAssumptions.Core.inspectDeclarationWithTransparency
+    TransparencyMode.reducible `LeanAssumptionsTest.Fixtures.reducibleDefAliasPackageBinder
+  let attrBinder ← requireAt "reducibleDefAliasPackageBinder reducible binder" attrReducible.binders 0
+  assertEq "reducibleDefAliasPackageBinder reducible category"
+    AssumptionCategory.packageWithPropFields attrBinder.primaryCategory
+  assertEq "reducibleDefAliasPackageBinder reducible transparency-limited"
+    false attrReducible.transparencyLimited
+  let plainRecursive ← LeanAssumptions.Core.inspectDeclarationWithTransparency
+    TransparencyMode.recursiveNormalization `LeanAssumptionsTest.Fixtures.defAliasPackageBinder
+  let recursiveBinder ← requireAt "defAliasPackageBinder recursive binder" plainRecursive.binders 0
+  assertEq "defAliasPackageBinder recursive category"
+    AssumptionCategory.packageWithPropFields recursiveBinder.primaryCategory
+  assertEq "defAliasPackageBinder recursive transparency-limited"
+    false plainRecursive.transparencyLimited
+
+run_cmd do
+  let aliasReport ← LeanAssumptions.Core.inspectDeclaration
+    `LeanAssumptionsTest.Fixtures.aliasBinder
+  assertEq "aliasBinder none transparency-limited" true aliasReport.transparencyLimited
+  let dataReport ← LeanAssumptions.Core.inspectDeclaration
+    `LeanAssumptionsTest.Fixtures.noPropBearingAssumptions
+  assertEq "noPropBearingAssumptions transparency-limited"
+    false dataReport.transparencyLimited
+
+run_cmd do
   let report ← LeanAssumptions.Core.inspectDeclaration
     `LeanAssumptionsTest.Fixtures.propAliasBinder
   let binder ← requireAt "propAliasBinder binder" report.binders 0

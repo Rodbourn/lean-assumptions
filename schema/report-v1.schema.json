@@ -16,6 +16,7 @@
   "policy_result",
   "unknowns_occurred",
   "cycles_truncated",
+  "transparency_limited",
   "raw_declaration_type_repr",
   "result_type_repr",
   "assumption_tree",
@@ -74,6 +75,10 @@
    "type": "boolean"
   },
   "cycles_truncated": {
+   "type": "boolean"
+  },
+  "transparency_limited": {
+   "description": "True when the report contains at least one unexpanded alias node, i.e. classification depends materially on the chosen transparency mode.",
    "type": "boolean"
   },
   "raw_declaration_type_repr": {
