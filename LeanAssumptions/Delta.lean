@@ -206,10 +206,13 @@ def parseAuditArtifact (role : ArtifactRole) (json : Lean.Json) : Except String 
   let declarations := sortSnapshots declarations
   if hasDuplicateTargets declarations.toList then
     throw "delta artifacts must not contain duplicate target declarations"
+  let schemaVersion ← requiredString json "schema_version"
+  if schemaVersion != "1" then
+    throw s!"unsupported artifact schema_version for delta comparison: {schemaVersion}"
   pure {
     metadata := {
       artifactRole := role
-      schemaVersion := ← requiredString json "schema_version"
+      schemaVersion := schemaVersion
       leanVersion := ← requiredString json "lean_version"
       policyIdentifier := ← requiredString json "policy_identifier"
       transparencyMode := ← requiredString json "transparency_mode"

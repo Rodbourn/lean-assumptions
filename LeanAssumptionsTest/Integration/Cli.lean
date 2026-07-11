@@ -138,6 +138,27 @@ run_cmd do
     "--cluster",
     "LeanAssumptionsTest/Golden/packageBinder.txt"
   ]
+  IO.FS.createDirAll ".lake/build/lean-assumptions-test"
+  let unknownResultPath := ".lake/build/lean-assumptions-test/bad-result-spelling.json"
+  IO.FS.writeFile unknownResultPath <|
+    "{\"schema_version\":\"1\",\"lean_version\":\"x\",\"policy_identifier\":\"strict\"," ++
+    "\"transparency_mode\":\"none\",\"target\":\"Example.t\",\"policy_result\":\"FAILED\"," ++
+    "\"policy_findings\":[]}"
+  assertCliExit env opts "CLI cluster rejects unknown result spelling" 2 #[
+    "--cluster", unknownResultPath
+  ]
+  let futureVersionPath := ".lake/build/lean-assumptions-test/future-schema-version.json"
+  IO.FS.writeFile futureVersionPath <|
+    "{\"schema_version\":\"2\",\"lean_version\":\"x\",\"policy_identifier\":\"strict\"," ++
+    "\"transparency_mode\":\"none\",\"target\":\"Example.t\",\"policy_result\":\"pass\"," ++
+    "\"policy_findings\":[]}"
+  assertCliExit env opts "CLI cluster rejects future schema version" 2 #[
+    "--cluster", futureVersionPath
+  ]
+  assertCliExit env opts "CLI diff rejects future schema version" 2 #[
+    "--diff", futureVersionPath,
+    "LeanAssumptionsTest/Golden/delta-current.json"
+  ]
   assertCliExit env opts "CLI delta JSON exit" 0 #[
     "--diff",
     "LeanAssumptionsTest/Golden/delta-baseline.json",

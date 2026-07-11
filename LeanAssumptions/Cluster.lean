@@ -129,6 +129,28 @@ private def sourceClassOfCategory (category : String) : String :=
   | "unknown" => "unknown"
   | _ => "other"
 
+/-- The public policy-result spellings this schema version defines. -/
+private def knownPolicyResults : List String :=
+  ["pass", "warn", "fail", "audit_error"]
+
+/-- The public finding-severity spellings this schema version defines. -/
+private def knownSeverities : List String :=
+  ["warning", "failure", "audit_error"]
+
+/--
+Require a recognized spelling for a policy-relevant enumeration field.
+
+An unrecognized spelling must be a hard parse error: silently treating it as
+non-failing would let a malformed or future-versioned artifact drop failing
+declarations from the clustering.
+-/
+private def requireKnownSpelling
+    (field : String) (known : List String) (value : String) : Except String String :=
+  if known.contains value then
+    pure value
+  else
+    throw s!"unrecognized {field} spelling in artifact: {value}"
+
 /-- Parse one policy finding from a report object. -/
 private def parseFinding
     (declarationModule? declarationLane? : Option String)
@@ -137,7 +159,8 @@ private def parseFinding
   let findingLane? ← optionalString json "lane"
   pure {
     kind := ← requiredString json "kind"
-    severity := ← requiredString json "severity"
+    severity := ← requireKnownSpelling "severity" knownSeverities
+      (← requiredString json "severity")
     category := ← requiredString json "category"
     typeName? := ← optionalString json "type_name"
     module? := preferOption findingModule? declarationModule?
@@ -152,7 +175,8 @@ private def parseDeclarationSnapshot (json : Lean.Json) : Except String Declarat
   let findings ← findingJson.mapM (parseFinding declarationModule? declarationLane?)
   pure {
     target := ← requiredString json "target"
-    policyResult := ← requiredString json "policy_result"
+    policyResult := ← requireKnownSpelling "policy_result" knownPolicyResults
+      (← requiredString json "policy_result")
     findings := findings
     module? := declarationModule?
     lane? := declarationLane?
@@ -203,9 +227,12 @@ def parseAuditArtifact (json : Lean.Json) : Except String AuditArtifact := do
   let declarations := sortSnapshots declarations
   if hasDuplicateTargets declarations.toList then
     throw "cluster artifacts must not contain duplicate target declarations"
+  let schemaVersion ← requiredString json "schema_version"
+  if schemaVersion != "1" then
+    throw s!"unsupported artifact schema_version for clustering: {schemaVersion}"
   pure {
     metadata := {
-      schemaVersion := ← requiredString json "schema_version"
+      schemaVersion := schemaVersion
       leanVersion := ← requiredString json "lean_version"
       policyIdentifier := ← requiredString json "policy_identifier"
       transparencyMode := ← requiredString json "transparency_mode"
