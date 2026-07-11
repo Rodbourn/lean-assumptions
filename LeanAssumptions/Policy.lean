@@ -82,6 +82,82 @@ structure PolicyEvaluation where
 /-- Strict default policy: no direct, packaged, typeclass, alias, or unknown assumptions pass. -/
 def strictPolicy : PolicyConfig := {}
 
+/-- Render an assumption treatment canonically for policy digests. -/
+private def canonicalTreatment : AssumptionTreatment → String
+  | .allow => "allow"
+  | .warn => "warn"
+  | .fail => "fail"
+
+/-- Render a transparency mode canonically for policy digests. -/
+private def canonicalTransparency : TransparencyMode → String
+  | .none => "none"
+  | .reducible => "reducible"
+  | .recursiveNormalization => "recursive_normalization"
+
+/-- Render a name pattern canonically for policy digests. -/
+def NamePattern.canonical : NamePattern → String
+  | .exact name => s!"exact:{name}"
+  | .prefix name => s!"prefix:{name}"
+
+/-- Join strings with commas without depending on map iteration order. -/
+private def joinComma : List String → String
+  | [] => ""
+  | [item] => item
+  | item :: rest => item ++ "," ++ joinComma rest
+
+/--
+Canonical description of policy semantics.
+
+The description covers every semantic field, sorts allowlists so that
+equivalent policies agree, and excludes the human-facing identifier label.
+It is versioned so future semantic fields force a visible digest change.
+-/
+def PolicyConfig.canonicalDescription (policy : PolicyConfig) : String :=
+  let directs := (policy.permittedDirectProps.map NamePattern.canonical).qsort (· < ·)
+  let packages := (policy.permittedPackageTypes.map NamePattern.canonical).qsort (· < ·)
+  "policy-canonical-v1" ++
+    ";transparency=" ++ canonicalTransparency policy.transparencyMode ++
+    ";direct=[" ++ joinComma directs.toList ++ "]" ++
+    ";package=[" ++ joinComma packages.toList ++ "]" ++
+    ";typeclass=" ++ canonicalTreatment policy.typeclassPolicy ++
+    ";unknown=" ++ canonicalTreatment policy.unknownPolicy ++
+    ";alias=" ++ canonicalTreatment policy.aliasPolicy
+
+/-- Render one hexadecimal digit for the low four bits of a value. -/
+private def hexDigit (value : UInt64) : Char :=
+  let nibble := (value &&& 0xf).toNat
+  if nibble < 10 then
+    Char.ofNat ('0'.toNat + nibble)
+  else
+    Char.ofNat ('a'.toNat + nibble - 10)
+
+/-- Render a 64-bit value as 16 lowercase hexadecimal digits. -/
+private def uint64ToHex (value : UInt64) : String :=
+  String.ofList ((List.range 16).map fun index =>
+    hexDigit (value >>> (UInt64.ofNat ((15 - index) * 4))))
+
+/--
+FNV-1a 64-bit hash of a string, rendered as fixed-width lowercase hex.
+
+The hash is implemented locally so digests stay byte-stable across Lean
+versions and platforms and remain auditable without dependencies.
+-/
+def fnv1a64Hex (input : String) : String :=
+  let hash := input.toUTF8.foldl
+    (fun acc byte => (acc ^^^ UInt64.ofNat byte.toNat) * 0x100000001b3)
+    (0xcbf29ce484222325 : UInt64)
+  uint64ToHex hash
+
+/--
+Deterministic digest identifying the policy semantics.
+
+Two policies with the same semantic fields share a digest regardless of their
+identifier labels, so artifact consumers can detect relabeled or modified
+policies.
+-/
+def PolicyConfig.digest (policy : PolicyConfig) : String :=
+  "fnv1a64:" ++ fnv1a64Hex policy.canonicalDescription
+
 /-- Convert a Lean name into comparable path components for explicit prefix matching. -/
 private def nameComponents : Lean.Name → List String
   | .anonymous => []

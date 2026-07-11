@@ -240,6 +240,7 @@ def renderText
       "declaration_kind: " ++ renderDeclarationKind report.declarationKind,
       "transparency_mode: " ++ renderTransparencyMode report.transparencyMode,
       "policy_identifier: " ++ policy.identifier,
+      "policy_digest: " ++ policy.digest,
       "policy_result: " ++ renderPolicyResult evaluation.result,
       "unknowns_occurred: " ++ renderBool report.unknownsOccurred,
       "cycles_truncated: " ++ renderBool report.cyclesTruncated,
@@ -321,6 +322,7 @@ private def renderJsonCore
     ("declaration_kind", jsonString (renderDeclarationKind report.declarationKind)),
     ("transparency_mode", jsonString (renderTransparencyMode report.transparencyMode)),
     ("policy_identifier", jsonString policy.identifier),
+    ("policy_digest", jsonString policy.digest),
     ("policy_result", jsonString (renderPolicyResult evaluation.result)),
     ("unknowns_occurred", renderBool report.unknownsOccurred),
     ("cycles_truncated", renderBool report.cyclesTruncated),
@@ -408,6 +410,7 @@ def renderBatchJsonString (policy : PolicyConfig) (artifacts : Array ReportArtif
     ("tool_version", jsonString toolVersion),
     ("lean_version", jsonString Lean.versionString),
     ("policy_identifier", jsonString policy.identifier),
+    ("policy_digest", jsonString policy.digest),
     ("transparency_mode", jsonString (renderTransparencyMode policy.transparencyMode)),
     ("summary", renderBatchSummaryJson summary),
     ("reports", jsonArray (artifacts.map fun artifact =>

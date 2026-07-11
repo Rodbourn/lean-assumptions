@@ -81,6 +81,25 @@ run_cmd do
     "--format", "json",
     "--policy", "LeanAssumptionsTest/Fixtures/policy-reducible-allow-package.json"
   ]
+  assertCliExit env opts "CLI allow flags compose before --policy" 0 #[
+    "--allow-package", "LeanAssumptionsTest.Fixtures.ProofPackage",
+    "--policy", "LeanAssumptionsTest/Fixtures/policy-strict.json",
+    "--module", "LeanAssumptionsTest.Fixtures",
+    "--decl", "LeanAssumptionsTest.Fixtures.packageBinder",
+    "--format", "json"
+  ]
+  assertCliExit env opts "CLI strict policy file alone fails" 1 #[
+    "--policy", "LeanAssumptionsTest/Fixtures/policy-strict.json",
+    "--module", "LeanAssumptionsTest.Fixtures",
+    "--decl", "LeanAssumptionsTest.Fixtures.packageBinder",
+    "--format", "json"
+  ]
+  assertCliExit env opts "CLI duplicate --policy rejected" 2 #[
+    "--policy", "LeanAssumptionsTest/Fixtures/policy-strict.json",
+    "--policy", "LeanAssumptionsTest/Fixtures/policy-allow-package.json",
+    "--module", "LeanAssumptionsTest.Fixtures",
+    "--decl", "LeanAssumptionsTest.Fixtures.packageBinder"
+  ]
   assertCliExit env opts "CLI delta JSON exit" 0 #[
     "--diff",
     "LeanAssumptionsTest/Golden/delta-baseline.json",

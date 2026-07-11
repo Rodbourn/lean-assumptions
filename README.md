@@ -193,17 +193,16 @@ Remaining partial or tracked requirements are documented in
 prerelease tag exists as a development checkpoint. No public release has been
 published, and Reservoir publication has not happened yet.
 
-### Known Gaps
+### Audit Status
 
-An internal audit on 2026-07-11 confirmed certified-path bugs. The false-pass
-classes it found are fixed with regression tests. The remaining known gap
-affects artifact metadata, not conservative failure:
-
-- CLI `--allow-*` flags weaken the effective policy without changing the
-  `policy_identifier` carried by output artifacts
-
-Each gap is tracked in [docs/requirements-status.md](docs/requirements-status.md)
-and must be closed with a regression test before any release is published.
+An internal audit on 2026-07-11 confirmed certified-path bugs: silent
+`pure_data` false passes for unrecognized statement shapes, `abbrev`-only
+alias detection, an unaudited declaration surface, mislabeled transparency
+semantics, false cycle reports on nested generics, and artifacts that reported
+CLI-weakened policies under the unmodified `strict` label. Every confirmed
+finding is now fixed with a regression test in the same change, and remaining
+requirement-level work is tracked honestly in
+[docs/requirements-status.md](docs/requirements-status.md).
 
 ## Design Boundary
 
@@ -276,12 +275,20 @@ lake env lean-assumptions --module MyProject.Theorems --scan-module MyProject.Th
 
 Supported policy-related flags:
 
-- `--policy <file>` reads a versioned JSON policy file.
+- `--policy <file>` reads a versioned JSON policy file. At most one `--policy`
+  is accepted.
 - `--allow-direct <Name>` permits an exact direct proposition binder name.
 - `--allow-package <Name>` permits an exact package or proof-carrying type head.
 - `--allow-typeclasses` permits typeclass assumptions.
 - `--allow-unknowns` permits unknown nodes.
 - `--warn-unknowns` downgrades unknown nodes to warnings.
+
+Allow flags compose on top of the base policy regardless of argument order.
+Every modification is recorded in the reported `policy_identifier` (for
+example `strict+allow-package:MyProject.SafePackage`), and every artifact also
+carries a `policy_digest` that identifies the effective policy semantics
+independently of the label, so a weakened policy can never masquerade as the
+unmodified base policy.
 
 ## Policy Files
 

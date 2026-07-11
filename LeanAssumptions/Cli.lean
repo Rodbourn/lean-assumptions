@@ -48,6 +48,50 @@ structure BaselineConfig where
   update : Bool := false
   deriving Repr
 
+/-- One CLI policy modification applied on top of the base policy. -/
+inductive PolicyModifier where
+  | allowDirect (name : Lean.Name)
+  | allowPackage (name : Lean.Name)
+  | allowTypeclasses
+  | allowUnknowns
+  | warnUnknowns
+  deriving DecidableEq, Repr
+
+/-- Render one modifier as a deterministic policy-identifier segment. -/
+def renderPolicyModifier : PolicyModifier → String
+  | .allowDirect name => s!"allow-direct:{name}"
+  | .allowPackage name => s!"allow-package:{name}"
+  | .allowTypeclasses => "allow-typeclasses"
+  | .allowUnknowns => "allow-unknowns"
+  | .warnUnknowns => "warn-unknowns"
+
+/--
+Apply CLI policy modifiers on top of a base policy.
+
+Modifiers compose the same way regardless of their position relative to
+`--policy`, and the resulting identifier truthfully records the base
+identifier plus every modifier in sorted order, so artifacts can never
+report a weakened policy under the unmodified base label.
+-/
+def applyPolicyModifiers (base : PolicyConfig) (modifiers : Array PolicyModifier) : PolicyConfig :=
+  let composed := modifiers.foldl
+    (fun policy modifier =>
+      match modifier with
+      | .allowDirect name =>
+        { policy with permittedDirectProps := policy.permittedDirectProps.push (.exact name) }
+      | .allowPackage name =>
+        { policy with permittedPackageTypes := policy.permittedPackageTypes.push (.exact name) }
+      | .allowTypeclasses => { policy with typeclassPolicy := .allow }
+      | .allowUnknowns => { policy with unknownPolicy := .allow }
+      | .warnUnknowns => { policy with unknownPolicy := .warn })
+    base
+  if modifiers.isEmpty then
+    composed
+  else
+    let segments := (modifiers.map renderPolicyModifier).qsort (· < ·)
+    { composed with
+      identifier := segments.foldl (fun acc segment => acc ++ "+" ++ segment) base.identifier }
+
 /-- Parsed CLI configuration. -/
 structure Config where
   modules : Array Lean.Name := #[]
@@ -59,6 +103,8 @@ structure Config where
   acceptBaseline : Bool := false
   format : OutputFormat := .text
   policy : PolicyConfig := Policy.strictPolicy
+  policyModifiers : Array PolicyModifier := #[]
+  policyFileLoaded : Bool := false
   policyConfigured : Bool := false
   deriving Repr
 
@@ -373,36 +419,43 @@ private def parseArgsAux : List String -> Config -> IO Config
     | .ok format => parseArgsAux rest { config with format := format }
     | .error error => throw (IO.userError error)
   | "--policy" :: value :: rest, config => do
+    if config.policyFileLoaded then
+      throw (IO.userError s!"multiple --policy options are not supported\n{usage}")
     let policy ← readPolicyFile value
-    parseArgsAux rest { config with policy := policy, policyConfigured := true }
+    parseArgsAux rest {
+      config with
+      policy := policy
+      policyFileLoaded := true
+      policyConfigured := true
+    }
   | "--allow-direct" :: value :: rest, config =>
-    let policy := {
-      config.policy with
-      permittedDirectProps := config.policy.permittedDirectProps.push (.exact value.toName)
+    parseArgsAux rest {
+      config with
+      policyModifiers := config.policyModifiers.push (.allowDirect value.toName)
+      policyConfigured := true
     }
-    parseArgsAux rest { config with policy := policy, policyConfigured := true }
   | "--allow-package" :: value :: rest, config =>
-    let policy := {
-      config.policy with
-      permittedPackageTypes := config.policy.permittedPackageTypes.push (.exact value.toName)
+    parseArgsAux rest {
+      config with
+      policyModifiers := config.policyModifiers.push (.allowPackage value.toName)
+      policyConfigured := true
     }
-    parseArgsAux rest { config with policy := policy, policyConfigured := true }
   | "--allow-typeclasses" :: rest, config =>
     parseArgsAux rest {
       config with
-      policy := { config.policy with typeclassPolicy := .allow }
+      policyModifiers := config.policyModifiers.push .allowTypeclasses
       policyConfigured := true
     }
   | "--allow-unknowns" :: rest, config =>
     parseArgsAux rest {
       config with
-      policy := { config.policy with unknownPolicy := .allow }
+      policyModifiers := config.policyModifiers.push .allowUnknowns
       policyConfigured := true
     }
   | "--warn-unknowns" :: rest, config =>
     parseArgsAux rest {
       config with
-      policy := { config.policy with unknownPolicy := .warn }
+      policyModifiers := config.policyModifiers.push .warnUnknowns
       policyConfigured := true
     }
   | "--help" :: _, _ => throw (IO.userError usage)
@@ -410,7 +463,10 @@ private def parseArgsAux : List String -> Config -> IO Config
 
 /-- Parse CLI arguments and validate that there is work to do. -/
 def parseArgs (args : Array String) : IO Config := do
-  let config ← parseArgsAux args.toList {}
+  let parsed ← parseArgsAux args.toList {}
+  -- Modifiers compose after the base policy regardless of argument order,
+  -- and the effective identifier records every modification.
+  let config := { parsed with policy := applyPolicyModifiers parsed.policy parsed.policyModifiers }
   match config.delta?, config.cluster?, config.baseline? with
   | some _, some _, _ =>
     throw (IO.userError s!"--diff cannot be combined with --cluster\n{usage}")
