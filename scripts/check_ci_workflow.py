@@ -129,12 +129,22 @@ def main() -> int:
         errors,
     )
     for command in [
-        "python scripts/check_coverage_ledger.py",
         "python scripts/check_report_schema.py",
         "python scripts/check_policy_schema.py",
         "python scripts/check_ci_workflow.py",
     ]:
         require(command in update, f"Update workflow must run `{command}`.", errors)
+    require(
+        'CHECK_REPORT_SCHEMA_SKIP_FRESH: "1"' in update,
+        "Update workflow must explicitly skip fresh-artifact validation (no built CLI there); the skip must be visible in the workflow.",
+        errors,
+    )
+    for workflow_text, workflow_name in [(text, "CI"), (update, "Update")]:
+        require(
+            "pip install jsonschema" in workflow_text,
+            f"{workflow_name} workflow must install jsonschema before running schema validators.",
+            errors,
+        )
 
     if errors:
         print("\n".join(f"- {error}" for error in errors), file=sys.stderr)

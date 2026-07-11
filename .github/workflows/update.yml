@@ -15,13 +15,22 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install validator dependencies
+        run: python3 -m pip install jsonschema
       - name: Update Lean project
         uses: leanprover-community/lean-update@main
         with:
           update_if_modified: lean-toolchain
-      - name: Validate coverage ledger
-        run: python scripts/check_coverage_ledger.py
+      # Coverage-ledger validation needs the public-surface inventory that
+      # only `lake test` emits, and the fresh-artifact check needs a built
+      # CLI; this job builds neither. The full CI run on the update PR
+      # enforces both. The explicit skip below is announced in the log.
       - name: Validate report JSON schema
+        env:
+          CHECK_REPORT_SCHEMA_SKIP_FRESH: "1"
         run: python scripts/check_report_schema.py
       - name: Validate policy JSON schema
         run: python scripts/check_policy_schema.py

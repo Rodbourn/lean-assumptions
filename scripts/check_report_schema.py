@@ -1,9 +1,21 @@
 from __future__ import annotations
 
 import json
+import os
+import subprocess
 import sys
 from pathlib import Path
 from typing import Any
+
+try:
+    from jsonschema import Draft202012Validator
+except ImportError:  # pragma: no cover - fail closed with guidance
+    print(
+        "check_report_schema.py requires the 'jsonschema' package "
+        "(python3 -m pip install jsonschema). Refusing to validate without it.",
+        file=sys.stderr,
+    )
+    raise SystemExit(1)
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -13,80 +25,81 @@ DELTA_SCHEMA_PATH = ROOT / "schema" / "delta-report-v1.schema.json"
 CLUSTER_SCHEMA_PATH = ROOT / "schema" / "cluster-report-v1.schema.json"
 GOLDEN_DIR = ROOT / "LeanAssumptionsTest" / "Golden"
 
-
-def json_type(value: Any) -> str:
-    if value is None:
-        return "null"
-    if isinstance(value, bool):
-        return "boolean"
-    if isinstance(value, str):
-        return "string"
-    if isinstance(value, list):
-        return "array"
-    if isinstance(value, dict):
-        return "object"
-    if isinstance(value, (int, float)):
-        return "number"
-    return type(value).__name__
+# A freshly emitted artifact is validated on every run so the schema gate can
+# never pass on checked-in goldens alone while live output drifts.
+FRESH_ARTIFACT_COMMAND = [
+    "lake", "env", "lean-assumptions",
+    "--module", "LeanAssumptionsTest.Fixtures",
+    "--decl", "LeanAssumptionsTest.Fixtures.packageBinder",
+    "--format", "json",
+    "--allow-package", "LeanAssumptionsTest.Fixtures.ProofPackage",
+]
 
 
-def resolve_ref(schema: dict[str, Any], ref: str) -> dict[str, Any]:
-    prefix = "#/$defs/"
-    if not ref.startswith(prefix):
-        raise ValueError(f"unsupported schema reference: {ref}")
-    name = ref[len(prefix) :]
-    return schema["$defs"][name]
+def load_validator(path: Path) -> Draft202012Validator:
+    schema = json.loads(path.read_text(encoding="utf-8"))
+    Draft202012Validator.check_schema(schema)
+    return Draft202012Validator(schema)
 
 
-def check_type(expected: Any, value: Any, path: str, errors: list[str]) -> None:
-    actual = json_type(value)
-    if isinstance(expected, list):
-        if actual not in expected:
-            errors.append(f"{path}: expected one of {expected}, got {actual}")
-    elif actual != expected:
-        errors.append(f"{path}: expected {expected}, got {actual}")
+def validate_value(validator: Draft202012Validator, value: Any, label: str,
+                   errors: list[str]) -> None:
+    for error in sorted(validator.iter_errors(value), key=lambda e: list(e.absolute_path)):
+        location = "/".join(str(part) for part in error.absolute_path) or "<root>"
+        errors.append(f"{label} @ {location}: {error.message}")
 
 
-def validate(schema: dict[str, Any], spec: dict[str, Any], value: Any, path: str, errors: list[str]) -> None:
-    if "$ref" in spec:
-        validate(schema, resolve_ref(schema, spec["$ref"]), value, path, errors)
-        return
+def classify_and_validate(validators: dict[str, Draft202012Validator], value: Any,
+                          label: str, errors: list[str]) -> None:
+    if isinstance(value, dict) and "clusters" in value:
+        validate_value(validators["cluster"], value, label, errors)
+    elif isinstance(value, dict) and "changes" in value:
+        validate_value(validators["delta"], value, label, errors)
+    elif isinstance(value, dict) and "reports" in value:
+        validate_value(validators["batch"], value, label, errors)
+        for index, report in enumerate(value.get("reports", [])):
+            validate_value(validators["report"], report, f"{label}.reports[{index}]", errors)
+    else:
+        validate_value(validators["report"], value, label, errors)
 
-    if "const" in spec and value != spec["const"]:
-        errors.append(f"{path}: expected constant {spec['const']!r}, got {value!r}")
 
-    if "enum" in spec and value not in spec["enum"]:
-        errors.append(f"{path}: expected enum value from {spec['enum']!r}, got {value!r}")
-
-    if "type" in spec:
-        check_type(spec["type"], value, path, errors)
-
-    if isinstance(value, dict):
-        required = spec.get("required", [])
-        for key in required:
-            if key not in value:
-                errors.append(f"{path}: missing required key {key!r}")
-
-        properties = spec.get("properties", {})
-        if spec.get("additionalProperties") is False:
-            for key in value:
-                if key not in properties:
-                    errors.append(f"{path}: unexpected key {key!r}")
-
-        for key, child_spec in properties.items():
-            if key in value:
-                validate(schema, child_spec, value[key], f"{path}.{key}", errors)
-
-    if isinstance(value, list) and "items" in spec:
-        for index, item in enumerate(value):
-            validate(schema, spec["items"], item, f"{path}[{index}]", errors)
+def validate_fresh_artifact(validators: dict[str, Draft202012Validator],
+                            errors: list[str]) -> bool:
+    if os.environ.get("CHECK_REPORT_SCHEMA_SKIP_FRESH") == "1":
+        # Explicit opt-out for contexts without a built CLI (e.g. the update
+        # workflow). Never silent: the skip is announced in the summary line.
+        print(
+            "fresh artifact validation SKIPPED (CHECK_REPORT_SCHEMA_SKIP_FRESH=1); "
+            "golden files only.",
+        )
+        return False
+    completed = subprocess.run(
+        FRESH_ARTIFACT_COMMAND, cwd=ROOT, text=True,
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+    )
+    if completed.returncode != 0:
+        errors.append(
+            "fresh artifact: CLI invocation failed "
+            f"(exit {completed.returncode}); build the executable first "
+            f"(lake build lean-assumptions LeanAssumptionsTest.Fixtures): {completed.stderr.strip()[:400]}"
+        )
+        return False
+    try:
+        value = json.loads(completed.stdout)
+    except json.JSONDecodeError as exc:
+        errors.append(f"fresh artifact: CLI emitted invalid JSON: {exc}")
+        return False
+    classify_and_validate(validators, value, "fresh CLI artifact", errors)
+    return True
 
 
 def main() -> int:
-    schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
-    batch_schema = json.loads(BATCH_SCHEMA_PATH.read_text(encoding="utf-8"))
-    delta_schema = json.loads(DELTA_SCHEMA_PATH.read_text(encoding="utf-8"))
-    cluster_schema = json.loads(CLUSTER_SCHEMA_PATH.read_text(encoding="utf-8"))
+    validators = {
+        "report": load_validator(SCHEMA_PATH),
+        "batch": load_validator(BATCH_SCHEMA_PATH),
+        "delta": load_validator(DELTA_SCHEMA_PATH),
+        "cluster": load_validator(CLUSTER_SCHEMA_PATH),
+    }
     json_files = sorted(GOLDEN_DIR.rglob("*.json"))
     errors: list[str] = []
 
@@ -99,23 +112,19 @@ def main() -> int:
         except json.JSONDecodeError as exc:
             errors.append(f"{path.relative_to(ROOT)}: invalid JSON: {exc}")
             continue
-        rel_path = path.relative_to(ROOT).as_posix()
-        if isinstance(value, dict) and "clusters" in value:
-            validate(cluster_schema, cluster_schema, value, rel_path, errors)
-        elif isinstance(value, dict) and "changes" in value:
-            validate(delta_schema, delta_schema, value, rel_path, errors)
-        elif isinstance(value, dict) and "reports" in value:
-            validate(batch_schema, batch_schema, value, rel_path, errors)
-            for index, report in enumerate(value.get("reports", [])):
-                validate(schema, schema, report, f"{rel_path}.reports[{index}]", errors)
-        else:
-            validate(schema, schema, value, rel_path, errors)
+        classify_and_validate(validators, value, path.relative_to(ROOT).as_posix(), errors)
+
+    fresh_ok = validate_fresh_artifact(validators, errors)
 
     if errors:
         print("\n".join(errors), file=sys.stderr)
         return 1
 
-    print(f"Report schema validated for {len(json_files)} golden JSON file(s).")
+    print(
+        f"Report schema validated for {len(json_files)} golden JSON file(s) "
+        f"plus {'a fresh CLI artifact' if fresh_ok else 'no fresh artifact'} "
+        "(jsonschema Draft 2020-12)."
+    )
     return 0
 
 
