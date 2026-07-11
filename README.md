@@ -143,8 +143,13 @@ environment, peels surface binders, expands supported packages recursively, emit
 a deterministic assumption tree, and evaluates that tree against a deterministic
 policy.
 
-Unknown or unsupported cases are reported conservatively. They do not silently
-pass strict policy.
+For positively recognized statement shapes, unknown and unsupported cases are
+reported conservatively rather than passed. That conservatism guarantee
+currently has confirmed exceptions, listed under
+[Known Soundness Gaps](#known-soundness-gaps): some unrecognized statement
+shapes are misclassified as `pure_data` and can pass strict policy silently.
+Until those gaps are closed, a strict-policy `pass` must not be treated as
+conservative for adversarial inputs.
 
 Baseline mode preserves that contract for CI adoption. It compares the current
 finding-bearing batch artifact against a checked-in v1 batch JSON baseline and
@@ -184,8 +189,34 @@ Implemented and locally verified:
 - cross-platform CI configuration, release-readiness checks, and a smoke-level performance baseline
 
 Remaining partial or tracked requirements are documented in
-[docs/requirements-status.md](docs/requirements-status.md). No release has been
-tagged yet, and Reservoir publication has not happened yet.
+[docs/requirements-status.md](docs/requirements-status.md). A local `v0.1.0`
+prerelease tag exists as a development checkpoint. No public release has been
+published, and Reservoir publication has not happened yet.
+
+### Known Soundness Gaps
+
+An internal audit on 2026-07-11 confirmed certified-path misclassification
+bugs. Until they are fixed, strict-policy `pass` results must not be treated
+as conservative for the following statement shapes:
+
+- binder types with unrecognized head shapes default to `pure_data` instead of
+  `unknown`, including `let`-wrapped types, non-structure inductive types that
+  carry proofs, and function types into proof-carrying data
+- aliases introduced with `def` or `@[reducible] def` are not detected as
+  aliases under `none` transparency and are classified `pure_data`
+- a declaration type hidden entirely behind an alias is peeled to zero binders
+  and passes strict policy; the result surface is not audited
+- `transparency_mode: reducible` currently reduces at default transparency,
+  unfolding more than documented, and `recursive_normalization` is not
+  operationally distinct from it
+- nested applications of the same structure head, for example
+  `Nat × Nat × Nat`, are misreported as truncated cycles and fail strict
+  policy
+- CLI `--allow-*` flags weaken the effective policy without changing the
+  `policy_identifier` carried by output artifacts
+
+Each gap is tracked in [docs/requirements-status.md](docs/requirements-status.md)
+and must be closed with a regression test before any release is published.
 
 ## Design Boundary
 
@@ -291,8 +322,9 @@ run the same explicit build, test, lint, leanchecker, schema, example, workflow,
 and CLI smoke checks. The API-docs job runs on Ubuntu. Native Windows hosted CI
 is intentionally unsupported for now; Windows users should run the package under
 WSL2. A separate compatibility workflow runs weekly against
-`leanprover/lean4:v4.30.0-rc2`, the current Lean release-candidate toolchain
-used by this repository. A scheduled update workflow uses
+`leanprover/lean4:v4.30.0-rc2`, the toolchain currently pinned by this
+repository; it does not yet test any newer stable or release-candidate
+toolchain. A scheduled update workflow uses
 `leanprover-community/lean-update@main` with
 `update_if_modified: lean-toolchain`.
 

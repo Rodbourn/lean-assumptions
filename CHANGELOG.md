@@ -28,3 +28,4 @@
 - Reduce CLI integration-test latency by reusing an imported Lean environment and suppressing repeated report output.
 - Distinguish proof-hypothesis binders from binders that quantify over `Prop` by adding the `binder_quantifies_over_prop` secondary flag to report schema v1.
 - Escape all U+0000 through U+001F control characters in JSON string output across report, delta, and cluster renderers.
+- Document confirmed certified-path soundness gaps in the README and downgrade the affected requirement-tracker rows ahead of their fixes.
