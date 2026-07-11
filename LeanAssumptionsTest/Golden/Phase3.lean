@@ -39,6 +39,15 @@ run_cmd do
   assertEq "packageBinder batch JSON golden" expected actual
 
 run_cmd do
+  let report ← LeanAssumptions.Core.inspectDeclaration `LeanAssumptionsTest.Fixtures.packageBinder
+  let evaluation := Policy.evaluate Policy.strictPolicy report
+  let actual := Render.renderBatchText Policy.strictPolicy #[
+    { report := report, evaluation := evaluation }
+  ]
+  let expected ← IO.FS.readFile "LeanAssumptionsTest/Golden/packageBinder-batch.txt"
+  assertEq "packageBinder batch text golden" expected actual
+
+run_cmd do
   let report ← LeanAssumptions.Core.inspectDeclaration `LeanAssumptionsTest.Fixtures.quantifierOverProp
   let evaluation := Policy.evaluate Policy.strictPolicy report
   let actual := Render.renderText Policy.strictPolicy report evaluation

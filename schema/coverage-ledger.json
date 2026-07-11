@@ -1064,6 +1064,13 @@
    "publicDefinitions": []
   },
   {
+   "path": "LeanAssumptionsTest/Unit/Policy/Budget.lean",
+   "tests": [
+    "lake test"
+   ],
+   "publicDefinitions": []
+  },
+  {
    "path": "LeanAssumptionsTest/Unit/Policy/Digest.lean",
    "tests": [
     "lake test"
@@ -1072,6 +1079,13 @@
   },
   {
    "path": "LeanAssumptionsTest/Unit/Policy/Phase2.lean",
+   "tests": [
+    "lake test"
+   ],
+   "publicDefinitions": []
+  },
+  {
+   "path": "LeanAssumptionsTest/Unit/PolicyFile.lean",
    "tests": [
     "lake test"
    ],

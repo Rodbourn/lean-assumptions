@@ -100,6 +100,44 @@ run_cmd do
     "--module", "LeanAssumptionsTest.Fixtures",
     "--decl", "LeanAssumptionsTest.Fixtures.packageBinder"
   ]
+  assertCliExit env opts "CLI unknown option exit" 2 #[
+    "--module", "LeanAssumptionsTest.Fixtures",
+    "--decl", "LeanAssumptionsTest.Fixtures.packageBinder",
+    "--frobnicate"
+  ]
+  assertCliExit env opts "CLI incomplete option exit" 2 #[
+    "--module", "LeanAssumptionsTest.Fixtures",
+    "--decl"
+  ]
+  assertCliExit env opts "CLI bad format exit" 2 #[
+    "--module", "LeanAssumptionsTest.Fixtures",
+    "--decl", "LeanAssumptionsTest.Fixtures.packageBinder",
+    "--format", "yaml"
+  ]
+  assertCliExit env opts "CLI missing module exit" 2 #[
+    "--decl", "LeanAssumptionsTest.Fixtures.packageBinder"
+  ]
+  assertCliExit env opts "CLI missing work exit" 2 #[
+    "--module", "LeanAssumptionsTest.Fixtures"
+  ]
+  assertCliExit env opts "CLI unknown declaration exit" 1 #[
+    "--module", "LeanAssumptionsTest.Fixtures",
+    "--decl", "LeanAssumptionsTest.Fixtures.doesNotExist"
+  ]
+  assertCliExit env opts "CLI malformed policy file exit" 2 #[
+    "--module", "LeanAssumptionsTest.Fixtures",
+    "--decl", "LeanAssumptionsTest.Fixtures.packageBinder",
+    "--policy", "LeanAssumptionsTest/Golden/packageBinder.txt"
+  ]
+  assertCliExit env opts "CLI missing diff artifact exit" 2 #[
+    "--diff",
+    "LeanAssumptionsTest/Golden/does-not-exist.json",
+    "LeanAssumptionsTest/Golden/delta-current.json"
+  ]
+  assertCliExit env opts "CLI malformed cluster artifact exit" 2 #[
+    "--cluster",
+    "LeanAssumptionsTest/Golden/packageBinder.txt"
+  ]
   assertCliExit env opts "CLI delta JSON exit" 0 #[
     "--diff",
     "LeanAssumptionsTest/Golden/delta-baseline.json",

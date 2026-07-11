@@ -99,6 +99,21 @@ theorem pairOfPackagesBinder (p : ProofPackage Nat × ProofPackage Nat) : True :
   let _ := p
   trivial
 
+/-- A tuple type nested beyond the certified expansion-fuel bound of 64. -/
+abbrev DeepTuple : Type :=
+  Nat × Nat × Nat × Nat × Nat × Nat × Nat × Nat × Nat × Nat ×
+  Nat × Nat × Nat × Nat × Nat × Nat × Nat × Nat × Nat × Nat ×
+  Nat × Nat × Nat × Nat × Nat × Nat × Nat × Nat × Nat × Nat ×
+  Nat × Nat × Nat × Nat × Nat × Nat × Nat × Nat × Nat × Nat ×
+  Nat × Nat × Nat × Nat × Nat × Nat × Nat × Nat × Nat × Nat ×
+  Nat × Nat × Nat × Nat × Nat × Nat × Nat × Nat × Nat × Nat ×
+  Nat × Nat × Nat × Nat × Nat × Nat × Nat × Nat × Nat × Nat
+
+/-- A theorem whose binder exhausts recursive expansion fuel. -/
+theorem deepTupleBinder (p : DeepTuple) : True := by
+  let _ := p
+  trivial
+
 /-- A definition that hides an entire statement surface. -/
 def HiddenStatementDef : Prop := ∀ _ : 1 = 1, True
 

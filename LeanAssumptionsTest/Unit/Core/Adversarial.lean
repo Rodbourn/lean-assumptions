@@ -148,6 +148,16 @@ run_cmd do
     AssumptionCategory.packageWithPropFields fst.primaryCategory
 
 run_cmd do
+  -- Fuel exhaustion is a conservative-failure branch: expansion beyond the
+  -- fuel bound must surface as unknown, never as a silently truncated pass.
+  let report ← LeanAssumptions.Core.inspectDeclarationWithTransparency
+    TransparencyMode.reducible `LeanAssumptionsTest.Fixtures.deepTupleBinder
+  assertEq "deepTupleBinder unknowns" true report.unknownsOccurred
+  let evaluation := Policy.evaluate
+    { Policy.strictPolicy with transparencyMode := .reducible } report
+  assertEq "deepTupleBinder strict result" PolicyResult.fail evaluation.result
+
+run_cmd do
   let report ← LeanAssumptions.Core.inspectDeclaration
     `LeanAssumptionsTest.Fixtures.aliasHiddenStatement
   assertEq "aliasHiddenStatement binder count" 0 report.binders.size

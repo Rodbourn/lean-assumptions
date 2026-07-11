@@ -122,3 +122,33 @@ run_cmd do
   let binder ← requireAt "aliasBinder recursive binder" report.binders 0
   assertEq "aliasBinder recursive category" AssumptionCategory.packageWithPropFields binder.primaryCategory
   assertEq "aliasBinder recursive direct field count" 3 binder.children.size
+
+run_cmd do
+  -- The proof-validity-versus-statement-surface pair (charter TD-005): a
+  -- theorem with a statement-surface assumption but an ordinary proof fails
+  -- strict policy, while a theorem whose PROOF uses an axiom but whose
+  -- statement takes nothing passes — proof dependencies are #print axioms'
+  -- job, not this tool's.
+  let surfaceReport ← LeanAssumptions.Core.inspectDeclaration
+    `LeanAssumptionsTest.Fixtures.statementSurfaceAssumption
+  let surfaceBinder ← requireAt "statementSurfaceAssumption binder" surfaceReport.binders 0
+  assertEq "statementSurfaceAssumption category"
+    AssumptionCategory.directProp surfaceBinder.primaryCategory
+  let surfaceEvaluation := LeanAssumptions.Policy.evaluate LeanAssumptions.Policy.strictPolicy surfaceReport
+  assertEq "statementSurfaceAssumption strict result"
+    LeanAssumptions.Policy.PolicyResult.fail surfaceEvaluation.result
+  let proofReport ← LeanAssumptions.Core.inspectDeclaration
+    `LeanAssumptionsTest.Fixtures.proofDependsOnAxiom
+  assertEq "proofDependsOnAxiom binder count" 0 proofReport.binders.size
+  let proofEvaluation := LeanAssumptions.Policy.evaluate LeanAssumptions.Policy.strictPolicy proofReport
+  assertEq "proofDependsOnAxiom strict result"
+    LeanAssumptions.Policy.PolicyResult.pass proofEvaluation.result
+
+run_cmd do
+  -- Suspicious fixture-only declaration kinds are recovered faithfully.
+  let axiomReport ← LeanAssumptions.Core.inspectDeclaration
+    `LeanAssumptionsTest.Fixtures.suspiciousTruth
+  assertEq "suspiciousTruth kind" DeclarationKind.axiom axiomReport.declarationKind
+  let opaqueReport ← LeanAssumptions.Core.inspectDeclaration
+    `LeanAssumptionsTest.Fixtures.suspiciousOpaque
+  assertEq "suspiciousOpaque kind" DeclarationKind.opaque opaqueReport.declarationKind

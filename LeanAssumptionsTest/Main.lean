@@ -3,6 +3,8 @@ import LeanAssumptionsTest.Unit.Core.Phase2
 import LeanAssumptionsTest.Unit.Core.Adversarial
 import LeanAssumptionsTest.Unit.Policy.Phase2
 import LeanAssumptionsTest.Unit.Policy.Digest
+import LeanAssumptionsTest.Unit.Policy.Budget
+import LeanAssumptionsTest.Unit.PolicyFile
 import LeanAssumptionsTest.Unit.Render
 import LeanAssumptionsTest.Unit.Baseline.Phase4
 import LeanAssumptionsTest.Integration.Phase1
