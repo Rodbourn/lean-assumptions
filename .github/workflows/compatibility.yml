@@ -5,6 +5,13 @@ on:
     - cron: "21 8 * * 1"
   workflow_dispatch:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: compatibility-${{ github.ref }}
+  cancel-in-progress: true
+
 defaults:
   run:
     shell: bash
@@ -16,10 +23,10 @@ jobs:
     env:
       LEAN_RC_TOOLCHAIN: leanprover/lean4:v4.30.0-rc2
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
       - name: Select Lean release-candidate toolchain
         run: printf '%s\n' "$LEAN_RC_TOOLCHAIN" > lean-toolchain
-      - uses: leanprover/lean-action@v1
+      - uses: leanprover/lean-action@38fbc41a8c28c4cbaec22d7f7de508ec2e7c0dd9 # v1
         with:
           build: false
           test: false

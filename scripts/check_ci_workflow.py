@@ -6,6 +6,12 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parent.parent
+
+# Pinned action revisions; update the SHA and the comment tag together.
+CHECKOUT_SHA = "93cb6efe18208431cddfb8368fd83d5badbf9bfd"  # actions/checkout v5
+SETUP_PYTHON_SHA = "a26af69be951a213d495a4c3e4e4022e16d87065"  # actions/setup-python v5
+LEAN_ACTION_SHA = "38fbc41a8c28c4cbaec22d7f7de508ec2e7c0dd9"  # leanprover/lean-action v1
+LEAN_UPDATE_SHA = "6f7b598c3255645e06f5d31f9f77b7440fc16451"  # leanprover-community/lean-update v0.12.0
 WORKFLOW = ROOT / ".github" / "workflows" / "ci.yml"
 COMPATIBILITY_WORKFLOW = ROOT / ".github" / "workflows" / "compatibility.yml"
 UPDATE_WORKFLOW = ROOT / ".github" / "workflows" / "update.yml"
@@ -21,9 +27,10 @@ def main() -> int:
     text = WORKFLOW.read_text(encoding="utf-8")
     errors: list[str] = []
 
-    require("uses: actions/checkout@v5" in text, "CI must use actions/checkout@v5.", errors)
-    require("uses: actions/checkout@v4" not in text, "CI must not use deprecated actions/checkout@v4.", errors)
-    require("uses: leanprover/lean-action@v1" in text, "CI must use leanprover/lean-action@v1.", errors)
+    require(f"uses: actions/checkout@{CHECKOUT_SHA}" in text, "CI must pin actions/checkout by commit SHA.", errors)
+    require(f"uses: leanprover/lean-action@{LEAN_ACTION_SHA}" in text, "CI must pin leanprover/lean-action by commit SHA.", errors)
+    require("permissions:" in text and "contents: read" in text, "CI must declare least-privilege permissions.", errors)
+    require("concurrency:" in text, "CI must declare a concurrency group.", errors)
     require("shell: bash" in text, "CI run steps must use Bash for cross-platform Lean toolchain PATH consistency.", errors)
     for lean_action_input in ["build: false", "test: false", "lint: false"]:
         require(
@@ -41,16 +48,21 @@ def main() -> int:
         "lake test",
         "lake lint",
         "lake env leanchecker --fresh LeanAssumptions",
-        "python scripts/check_coverage_ledger.py",
-        "python scripts/check_report_schema.py",
-        "python scripts/check_policy_schema.py",
-        "python scripts/check_line_endings.py",
-        "python scripts/check_examples.py",
-        "python scripts/check_performance_baseline.py",
-        "python scripts/check_release_readiness.py",
+        "python3 scripts/check_coverage_ledger.py",
+        "python3 scripts/check_report_schema.py",
+        "python3 scripts/check_policy_schema.py",
+        "python3 scripts/check_line_endings.py",
+        "python3 scripts/check_examples.py",
+        "python3 scripts/check_performance_baseline.py",
+        "python3 scripts/check_release_readiness.py",
         "lake env lean-assumptions --module LeanAssumptionsTest.Fixtures",
         "lake build LeanAssumptions:docs",
     ]
+    require(
+        "python scripts/" not in text,
+        "CI must invoke checker scripts with python3; bare `python` is absent on macOS runners.",
+        errors,
+    )
     for command in required_commands:
         require(command in text, f"CI must run `{command}`.", errors)
 
@@ -76,16 +88,15 @@ def main() -> int:
     require("workflow_dispatch:" in compatibility, "Compatibility workflow must be manually runnable.", errors)
     require(CURRENT_RC_TOOLCHAIN in compatibility, f"Compatibility workflow must test {CURRENT_RC_TOOLCHAIN}.", errors)
     require(
-        "uses: actions/checkout@v5" in compatibility,
-        "Compatibility workflow must use actions/checkout@v5.",
+        f"uses: actions/checkout@{CHECKOUT_SHA}" in compatibility,
+        "Compatibility workflow must pin actions/checkout by commit SHA.",
         errors,
     )
     require(
-        "uses: actions/checkout@v4" not in compatibility,
-        "Compatibility workflow must not use deprecated actions/checkout@v4.",
+        f"uses: leanprover/lean-action@{LEAN_ACTION_SHA}" in compatibility,
+        "Compatibility workflow must pin leanprover/lean-action by commit SHA.",
         errors,
     )
-    require("uses: leanprover/lean-action@v1" in compatibility, "Compatibility workflow must use leanprover/lean-action@v1.", errors)
     require(
         "shell: bash" in compatibility,
         "Compatibility workflow run steps must use Bash for Lean toolchain PATH consistency.",
@@ -113,14 +124,18 @@ def main() -> int:
 
     require("schedule:" in update, "Update workflow must run on a schedule.", errors)
     require("workflow_dispatch:" in update, "Update workflow must be manually runnable.", errors)
-    require("uses: actions/checkout@v5" in update, "Update workflow must use actions/checkout@v5.", errors)
-    require("uses: actions/checkout@v4" not in update, "Update workflow must not use deprecated actions/checkout@v4.", errors)
+    require(f"uses: actions/checkout@{CHECKOUT_SHA}" in update, "Update workflow must pin actions/checkout by commit SHA.", errors)
     require("contents: write" in update, "Update workflow must be allowed to write branch contents.", errors)
     require("pull-requests: write" in update, "Update workflow must be allowed to open pull requests.", errors)
     require("issues: write" in update, "Update workflow must be allowed to open failure issues.", errors)
     require(
-        "uses: leanprover-community/lean-update@main" in update,
-        "Update workflow must use leanprover-community/lean-update@main.",
+        f"uses: leanprover-community/lean-update@{LEAN_UPDATE_SHA}" in update,
+        "Update workflow must pin leanprover-community/lean-update by commit SHA (never a mutable ref with write permissions).",
+        errors,
+    )
+    require(
+        "lean-update@main" not in update,
+        "Update workflow must not reference the mutable lean-update@main.",
         errors,
     )
     require(
@@ -129,9 +144,9 @@ def main() -> int:
         errors,
     )
     for command in [
-        "python scripts/check_report_schema.py",
-        "python scripts/check_policy_schema.py",
-        "python scripts/check_ci_workflow.py",
+        "python3 scripts/check_report_schema.py",
+        "python3 scripts/check_policy_schema.py",
+        "python3 scripts/check_ci_workflow.py",
     ]:
         require(command in update, f"Update workflow must run `{command}`.", errors)
     require(

@@ -317,23 +317,25 @@ is intentionally unsupported for now; Windows users should run the package under
 WSL2. A separate compatibility workflow runs weekly against
 `leanprover/lean4:v4.30.0-rc2`, the toolchain currently pinned by this
 repository; it does not yet test any newer stable or release-candidate
-toolchain. A scheduled update workflow uses
-`leanprover-community/lean-update@main` with
-`update_if_modified: lean-toolchain`.
+toolchain. A scheduled update workflow uses a commit-pinned
+`leanprover-community/lean-update` with `update_if_modified:
+lean-toolchain`. All GitHub Actions are pinned by commit SHA, workflows
+declare least-privilege permissions, and concurrent runs per ref are
+deduplicated.
 
 ```text
 lake build
 lake test
 lake lint
 lake env leanchecker --fresh LeanAssumptions
-python scripts/check_coverage_ledger.py
-python scripts/check_report_schema.py
-python scripts/check_policy_schema.py
-python scripts/check_line_endings.py
-python scripts/check_examples.py
-python scripts/check_ci_workflow.py
-python scripts/check_performance_baseline.py
-python scripts/check_release_readiness.py
+python3 scripts/check_coverage_ledger.py
+python3 scripts/check_report_schema.py
+python3 scripts/check_policy_schema.py
+python3 scripts/check_line_endings.py
+python3 scripts/check_examples.py
+python3 scripts/check_ci_workflow.py
+python3 scripts/check_performance_baseline.py
+python3 scripts/check_release_readiness.py
 lake env lean-assumptions --module LeanAssumptionsTest.Fixtures --decl LeanAssumptionsTest.Fixtures.packageBinder --format json --allow-package LeanAssumptionsTest.Fixtures.ProofPackage
 cd docbuild && DOCGEN_SRC=file lake build LeanAssumptions:docs
 ```
@@ -344,14 +346,14 @@ Current local verification:
 - `lake test`
 - `lake lint`
 - `lake env leanchecker --fresh LeanAssumptions`
-- `python scripts/check_coverage_ledger.py`
-- `python scripts/check_report_schema.py`
-- `python scripts/check_policy_schema.py`
-- `python scripts/check_line_endings.py`
-- `python scripts/check_examples.py`
-- `python scripts/check_ci_workflow.py`
-- `python scripts/check_performance_baseline.py`
-- `python scripts/check_release_readiness.py`
+- `python3 scripts/check_coverage_ledger.py`
+- `python3 scripts/check_report_schema.py`
+- `python3 scripts/check_policy_schema.py`
+- `python3 scripts/check_line_endings.py`
+- `python3 scripts/check_examples.py`
+- `python3 scripts/check_ci_workflow.py`
+- `python3 scripts/check_performance_baseline.py`
+- `python3 scripts/check_release_readiness.py`
 - `lake env lean-assumptions --module LeanAssumptionsTest.Fixtures --decl LeanAssumptionsTest.Fixtures.packageBinder --format json --allow-package LeanAssumptionsTest.Fixtures.ProofPackage`
 - `cd docbuild && DOCGEN_SRC=file lake build LeanAssumptions:docs`
 

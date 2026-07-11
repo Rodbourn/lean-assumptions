@@ -4,6 +4,13 @@ on:
   push:
   pull_request:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 defaults:
   run:
     shell: bash
@@ -17,13 +24,13 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest]
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: "3.12"
       - name: Install validator dependencies
         run: python3 -m pip install jsonschema
-      - uses: leanprover/lean-action@v1
+      - uses: leanprover/lean-action@38fbc41a8c28c4cbaec22d7f7de508ec2e7c0dd9 # v1
         with:
           build: false
           test: false
@@ -37,17 +44,17 @@ jobs:
       - name: Run leanchecker
         run: lake env leanchecker --fresh LeanAssumptions
       - name: Validate coverage ledger
-        run: python scripts/check_coverage_ledger.py
+        run: python3 scripts/check_coverage_ledger.py
       - name: Validate report JSON schema
-        run: python scripts/check_report_schema.py
+        run: python3 scripts/check_report_schema.py
       - name: Validate policy JSON schema
-        run: python scripts/check_policy_schema.py
+        run: python3 scripts/check_policy_schema.py
       - name: Validate line endings
-        run: python scripts/check_line_endings.py
+        run: python3 scripts/check_line_endings.py
       - name: Validate runnable examples
-        run: python scripts/check_examples.py
+        run: python3 scripts/check_examples.py
       - name: Validate CI workflow
-        run: python scripts/check_ci_workflow.py
+        run: python3 scripts/check_ci_workflow.py
       - name: Smoke-test CLI executable
         run: lake env lean-assumptions --module LeanAssumptionsTest.Fixtures --decl LeanAssumptionsTest.Fixtures.packageBinder --format json --allow-package LeanAssumptionsTest.Fixtures.ProofPackage
 
@@ -55,8 +62,8 @@ jobs:
     name: performance-baseline
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-      - uses: leanprover/lean-action@v1
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+      - uses: leanprover/lean-action@38fbc41a8c28c4cbaec22d7f7de508ec2e7c0dd9 # v1
         with:
           build: false
           test: false
@@ -64,14 +71,14 @@ jobs:
       - name: Build CLI and smoke fixtures
         run: lake build lean-assumptions LeanAssumptionsTest.Fixtures
       - name: Validate performance baseline
-        run: python scripts/check_performance_baseline.py
+        run: python3 scripts/check_performance_baseline.py
 
   release-readiness:
     name: release-readiness
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-      - uses: leanprover/lean-action@v1
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+      - uses: leanprover/lean-action@38fbc41a8c28c4cbaec22d7f7de508ec2e7c0dd9 # v1
         with:
           build: false
           test: false
@@ -79,14 +86,14 @@ jobs:
       - name: Build CLI and smoke fixtures
         run: lake build lean-assumptions LeanAssumptionsTest.Fixtures
       - name: Validate local release readiness
-        run: python scripts/check_release_readiness.py
+        run: python3 scripts/check_release_readiness.py
 
   api-docs:
     name: api-docs
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-      - uses: leanprover/lean-action@v1
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+      - uses: leanprover/lean-action@38fbc41a8c28c4cbaec22d7f7de508ec2e7c0dd9 # v1
         with:
           build: false
           test: false

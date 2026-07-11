@@ -5,6 +5,13 @@ on:
     - cron: "37 9 * * 2"
   workflow_dispatch:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: update-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   update-lean:
     name: update-lean
@@ -14,14 +21,14 @@ jobs:
       pull-requests: write
       issues: write
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: "3.12"
       - name: Install validator dependencies
         run: python3 -m pip install jsonschema
       - name: Update Lean project
-        uses: leanprover-community/lean-update@main
+        uses: leanprover-community/lean-update@6f7b598c3255645e06f5d31f9f77b7440fc16451 # v0.12.0
         with:
           update_if_modified: lean-toolchain
       # Coverage-ledger validation needs the public-surface inventory that
@@ -31,8 +38,8 @@ jobs:
       - name: Validate report JSON schema
         env:
           CHECK_REPORT_SCHEMA_SKIP_FRESH: "1"
-        run: python scripts/check_report_schema.py
+        run: python3 scripts/check_report_schema.py
       - name: Validate policy JSON schema
-        run: python scripts/check_policy_schema.py
+        run: python3 scripts/check_policy_schema.py
       - name: Validate CI workflow
-        run: python scripts/check_ci_workflow.py
+        run: python3 scripts/check_ci_workflow.py
