@@ -261,8 +261,11 @@ def renderText (comparison : BaselineComparison) : String :=
   let lines := [
     "lean-assumptions baseline report",
     "tool_version: " ++ toolVersion,
+    "lean_version: " ++ Lean.versionString,
     "schema_version: " ++ jsonSchemaVersion,
     "baseline_schema_version: " ++ comparison.baseline.metadata.schemaVersion,
+    "baseline_lean_version: " ++ comparison.baseline.metadata.leanVersion,
+    "current_lean_version: " ++ comparison.current.metadata.leanVersion,
     "current_schema_version: " ++ comparison.current.metadata.schemaVersion,
     "baseline_policy_identifier: " ++ comparison.baseline.metadata.policyIdentifier,
     "current_policy_identifier: " ++ comparison.current.metadata.policyIdentifier,
@@ -284,9 +287,11 @@ def renderUpdateText (path : System.FilePath) (current : AuditArtifact) : String
   let lines := [
     "lean-assumptions baseline report",
     "tool_version: " ++ toolVersion,
+    "lean_version: " ++ Lean.versionString,
     "schema_version: " ++ jsonSchemaVersion,
     "baseline_path: " ++ path.toString,
     "current_schema_version: " ++ current.metadata.schemaVersion,
+    "current_lean_version: " ++ current.metadata.leanVersion,
     "current_policy_identifier: " ++ current.metadata.policyIdentifier,
     "current_transparency_mode: " ++ current.metadata.transparencyMode,
     "current_findings: " ++ toString current.findings.size,
