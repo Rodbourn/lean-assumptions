@@ -31,10 +31,10 @@ run_cmd do
   let report ← LeanAssumptions.Delta.readDeltaReport baselinePath currentPath
   let actual := LeanAssumptions.Delta.renderText report
   let expected ← IO.FS.readFile "LeanAssumptionsTest/Golden/delta-report.txt"
-  assertEq "delta text golden" expected actual
+  assertEq "delta text golden" expected (normalizeToolchainBytes actual)
 
 run_cmd do
   let report ← LeanAssumptions.Delta.readDeltaReport baselinePath currentPath
   let actual := LeanAssumptions.Delta.renderJsonString report
   let expected ← IO.FS.readFile "LeanAssumptionsTest/Golden/delta-report.json"
-  assertEq "delta JSON golden" expected actual
+  assertEq "delta JSON golden" expected (normalizeToolchainBytes actual)

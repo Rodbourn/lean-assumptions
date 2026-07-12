@@ -20,6 +20,16 @@ Current snapshots:
 - `Baseline/regression-output.txt`: human-readable baseline regression report
 - `Baseline/improvement-output.txt`: human-readable baseline improvement report
 
+Snapshots that would embed the live toolchain's `Lean.versionString` store
+the placeholder token `<LEAN_VERSION>` instead; golden comparisons (compile
+time, test-driver runtime, and `scripts/check_examples.py`) normalize exactly
+those bytes in the ACTUAL output before comparing, so one golden set validates
+every toolchain in the compatibility matrix. Emitted artifacts always carry
+the real version — the token exists only in checked-in expectations. When
+regenerating goldens, substitute the current version string with the token as
+the final step. Any non-version byte drift on a new toolchain still fails the
+golden gates by design.
+
 JSON snapshots are also validated against `schema/report-v1.schema.json` and
 `schema/batch-report-v1.schema.json`, including nested baseline fixtures; delta
 snapshots are validated against `schema/delta-report-v1.schema.json`; cluster

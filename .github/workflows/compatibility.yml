@@ -16,12 +16,12 @@ defaults:
   run:
     shell: bash
 
-# Forward-compatibility signal: build, lint, and kernel-replay the package on
-# the current Lean stable release and the current release candidate (elan
-# channels, so this job never goes stale). `lake test` is intentionally not
-# run here: golden snapshots embed the pinned toolchain's version string, so
-# full behavioral validation applies only to the toolchain in
-# lean-toolchain, which the regular CI workflow tests.
+# Forward-compatibility signal: build, test, lint, and kernel-replay the
+# package on the current Lean stable release and the current release candidate
+# (elan channels, so this job never goes stale). Golden snapshots store live
+# toolchain version bytes as a <LEAN_VERSION> token and comparisons normalize
+# only those bytes, so the full behavioral suite runs on every channel; any
+# non-version output drift on a new toolchain fails this job by design.
 jobs:
   lean-channel:
     name: lean-${{ matrix.channel }}
@@ -41,6 +41,8 @@ jobs:
           lint: false
       - name: Build package
         run: lake build
+      - name: Run tests
+        run: lake test
       - name: Run lint
         run: lake lint
       - name: Run leanchecker

@@ -54,8 +54,21 @@ def run_command(command: list[str]) -> subprocess.CompletedProcess[str]:
     raise FileNotFoundError(f"{command[0]} was not found on PATH")
 
 
+LEAN_VERSION_TOKEN = "<LEAN_VERSION>"
+
+
+def live_lean_version() -> str:
+    """Version string of the pinned toolchain, e.g. `4.31.0` from
+    `leanprover/lean4:v4.31.0`. Matches Lean.versionString for release
+    toolchains, so goldens can store a toolchain-portable token."""
+    pin = (ROOT / "lean-toolchain").read_text(encoding="utf-8").strip()
+    version = pin.rsplit(":", 1)[-1]
+    return version[1:] if version.startswith("v") else version
+
+
 def normalize_output(output: str) -> str:
-    return output.replace("\r\n", "\n").replace("\r", "\n")
+    normalized = output.replace("\r\n", "\n").replace("\r", "\n")
+    return normalized.replace(live_lean_version(), LEAN_VERSION_TOKEN)
 
 
 def main() -> int:

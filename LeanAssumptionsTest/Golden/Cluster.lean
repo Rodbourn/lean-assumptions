@@ -27,10 +27,10 @@ run_cmd do
   let report ← LeanAssumptions.Cluster.readClusterReport clusterInputPath
   let actual := LeanAssumptions.Cluster.renderText report
   let expected ← IO.FS.readFile "LeanAssumptionsTest/Golden/cluster-report.txt"
-  assertEq "cluster text golden" expected actual
+  assertEq "cluster text golden" expected (normalizeToolchainBytes actual)
 
 run_cmd do
   let report ← LeanAssumptions.Cluster.readClusterReport clusterInputPath
   let actual := LeanAssumptions.Cluster.renderJsonString report
   let expected ← IO.FS.readFile "LeanAssumptionsTest/Golden/cluster-report.json"
-  assertEq "cluster JSON golden" expected actual
+  assertEq "cluster JSON golden" expected (normalizeToolchainBytes actual)

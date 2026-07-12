@@ -1100,7 +1100,8 @@
    "path": "LeanAssumptionsTest/TestUtil.lean",
    "tests": [
     "LeanAssumptionsTest/Unit/Core/Phase1.lean",
-    "LeanAssumptionsTest/Integration/Phase1.lean"
+    "LeanAssumptionsTest/Integration/Phase1.lean",
+    "LeanAssumptionsTest/Unit/Normalization.lean"
    ],
    "publicDefinitions": [
     {
@@ -1127,6 +1128,19 @@
       "LeanAssumptionsTest/Integration/Phase1.lean",
       "LeanAssumptionsTest/Unit/Core/Phase2.lean",
       "LeanAssumptionsTest/Unit/Policy/Phase2.lean"
+     ]
+    },
+    {
+     "name": "LeanAssumptionsTest.leanVersionToken",
+     "tests": [
+      "LeanAssumptionsTest/Unit/Normalization.lean"
+     ]
+    },
+    {
+     "name": "LeanAssumptionsTest.normalizeToolchainBytes",
+     "tests": [
+      "LeanAssumptionsTest/Unit/Normalization.lean",
+      "LeanAssumptionsTest/Golden/Phase3.lean"
      ]
     }
    ]
@@ -1189,6 +1203,13 @@
   },
   {
    "path": "LeanAssumptionsTest/Unit/PolicyFile.lean",
+   "tests": [
+    "lake test"
+   ],
+   "publicDefinitions": []
+  },
+  {
+   "path": "LeanAssumptionsTest/Unit/Normalization.lean",
    "tests": [
     "lake test"
    ],

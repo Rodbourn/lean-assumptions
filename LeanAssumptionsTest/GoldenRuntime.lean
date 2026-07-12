@@ -1,4 +1,5 @@
 import LeanAssumptions
+import LeanAssumptionsTest.TestUtil
 
 /-!
 Runtime golden verification for the test driver.
@@ -35,11 +36,13 @@ private def runInImportedEnv (action : CommandElabM α) : IO α := do
   | .error exception =>
     throw (IO.userError (← exception.toMessageData.toString))
 
-/-- Compare rendered output against a golden file, reporting a labeled mismatch. -/
+/-- Compare rendered output against a golden file, reporting a labeled mismatch.
+Live `Lean.versionString` bytes in the rendered output are normalized to
+`leanVersionToken` first, matching the tokenized checked-in goldens. -/
 private def compareGolden (label path rendered : String) (failures : IO.Ref (Array String)) :
     IO Unit := do
   let expected ← IO.FS.readFile path
-  if expected != rendered then
+  if expected != LeanAssumptionsTest.normalizeToolchainBytes rendered then
     failures.modify (·.push s!"{label}: rendered output does not match {path}")
 
 /-- Re-run every golden comparison and return the list of mismatches. -/

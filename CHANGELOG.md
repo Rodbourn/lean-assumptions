@@ -2,7 +2,14 @@
 
 ## Unreleased
 
-- Nothing yet.
+- Make golden snapshots toolchain-portable: checked-in goldens and the example
+  expectation store live `Lean.versionString` bytes as a `<LEAN_VERSION>`
+  token, and all golden comparisons (compile-time, test-driver runtime, and
+  the example checker) normalize exactly those bytes before comparing. Emitted
+  artifacts still carry the real version. The scheduled compatibility workflow
+  now runs the full `lake test` suite on the Lean `stable` and `beta` channels
+  instead of skipping behavioral validation off the pinned toolchain, and the
+  CI-contract checker enforces it.
 
 ## 0.2.1 - 2026-07-12
 

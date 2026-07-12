@@ -32,21 +32,21 @@ run_cmd do
   assertEq "baseline pass status" BaselineStatus.pass comparison.status
   assertEq "baseline pass exit" (0 : UInt32) comparison.exitCode
   let expected ← IO.FS.readFile "LeanAssumptionsTest/Golden/Baseline/pass-output.txt"
-  assertEq "baseline pass text golden" expected (renderText comparison)
+  assertEq "baseline pass text golden" expected (normalizeToolchainBytes (renderText comparison))
 
 run_cmd do
   let comparison ← readComparison emptyPath debtPath
   assertEq "baseline regression status" BaselineStatus.regression comparison.status
   assertEq "baseline regression exit" (1 : UInt32) comparison.exitCode
   let expected ← IO.FS.readFile "LeanAssumptionsTest/Golden/Baseline/regression-output.txt"
-  assertEq "baseline regression text golden" expected (renderText comparison)
+  assertEq "baseline regression text golden" expected (normalizeToolchainBytes (renderText comparison))
 
 run_cmd do
   let comparison ← readComparison debtPath emptyPath
   assertEq "baseline improvement status" BaselineStatus.improvement comparison.status
   assertEq "baseline improvement exit" (0 : UInt32) comparison.exitCode
   let expected ← IO.FS.readFile "LeanAssumptionsTest/Golden/Baseline/improvement-output.txt"
-  assertEq "baseline improvement text golden" expected (renderText comparison)
+  assertEq "baseline improvement text golden" expected (normalizeToolchainBytes (renderText comparison))
 
 run_cmd do
   let currentText ← IO.FS.readFile emptyPath

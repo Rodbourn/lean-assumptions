@@ -1,6 +1,6 @@
 lean-assumptions report
 tool_version: 0.2.1
-lean_version: 4.31.0
+lean_version: <LEAN_VERSION>
 schema_version: 1
 report_model_version: 0.2.1
 target: LeanAssumptionsTest.Fixtures.quantifierOverProp

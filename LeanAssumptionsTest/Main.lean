@@ -7,6 +7,7 @@ import LeanAssumptionsTest.Unit.Policy.Budget
 import LeanAssumptionsTest.Unit.PolicyFile
 import LeanAssumptionsTest.Unit.Cluster
 import LeanAssumptionsTest.Unit.Render
+import LeanAssumptionsTest.Unit.Normalization
 import LeanAssumptionsTest.Unit.Baseline.Phase4
 import LeanAssumptionsTest.Integration.Phase1
 import LeanAssumptionsTest.Golden.Phase3

@@ -127,6 +127,7 @@ def main() -> int:
         )
     for command in [
         "lake build",
+        "lake test",
         "lake lint",
         "lake env leanchecker --fresh LeanAssumptions",
     ]:

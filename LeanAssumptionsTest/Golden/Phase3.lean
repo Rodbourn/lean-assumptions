@@ -20,14 +20,14 @@ run_cmd do
   let evaluation := Policy.evaluate Policy.strictPolicy report
   let actual := Render.renderText Policy.strictPolicy report evaluation
   let expected ← IO.FS.readFile "LeanAssumptionsTest/Golden/packageBinder.txt"
-  assertEq "packageBinder text golden" expected actual
+  assertEq "packageBinder text golden" expected (normalizeToolchainBytes actual)
 
 run_cmd do
   let report ← LeanAssumptions.Core.inspectDeclaration `LeanAssumptionsTest.Fixtures.packageBinder
   let evaluation := Policy.evaluate Policy.strictPolicy report
   let actual := Render.renderJsonString Policy.strictPolicy report evaluation
   let expected ← IO.FS.readFile "LeanAssumptionsTest/Golden/packageBinder.json"
-  assertEq "packageBinder JSON golden" expected actual
+  assertEq "packageBinder JSON golden" expected (normalizeToolchainBytes actual)
 
 run_cmd do
   let report ← LeanAssumptions.Core.inspectDeclaration `LeanAssumptionsTest.Fixtures.packageBinder
@@ -36,7 +36,7 @@ run_cmd do
     { report := report, evaluation := evaluation }
   ]
   let expected ← IO.FS.readFile "LeanAssumptionsTest/Golden/packageBinder-batch.json"
-  assertEq "packageBinder batch JSON golden" expected actual
+  assertEq "packageBinder batch JSON golden" expected (normalizeToolchainBytes actual)
 
 run_cmd do
   let report ← LeanAssumptions.Core.inspectDeclaration `LeanAssumptionsTest.Fixtures.packageBinder
@@ -45,18 +45,18 @@ run_cmd do
     { report := report, evaluation := evaluation }
   ]
   let expected ← IO.FS.readFile "LeanAssumptionsTest/Golden/packageBinder-batch.txt"
-  assertEq "packageBinder batch text golden" expected actual
+  assertEq "packageBinder batch text golden" expected (normalizeToolchainBytes actual)
 
 run_cmd do
   let report ← LeanAssumptions.Core.inspectDeclaration `LeanAssumptionsTest.Fixtures.quantifierOverProp
   let evaluation := Policy.evaluate Policy.strictPolicy report
   let actual := Render.renderText Policy.strictPolicy report evaluation
   let expected ← IO.FS.readFile "LeanAssumptionsTest/Golden/quantifierOverProp.txt"
-  assertEq "quantifierOverProp text golden" expected actual
+  assertEq "quantifierOverProp text golden" expected (normalizeToolchainBytes actual)
 
 run_cmd do
   let report ← LeanAssumptions.Core.inspectDeclaration `LeanAssumptionsTest.Fixtures.quantifierOverProp
   let evaluation := Policy.evaluate Policy.strictPolicy report
   let actual := Render.renderJsonString Policy.strictPolicy report evaluation
   let expected ← IO.FS.readFile "LeanAssumptionsTest/Golden/quantifierOverProp.json"
-  assertEq "quantifierOverProp JSON golden" expected actual
+  assertEq "quantifierOverProp JSON golden" expected (normalizeToolchainBytes actual)

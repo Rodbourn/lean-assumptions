@@ -24,4 +24,17 @@ def requireAt (label : String) (xs : Array α) (index : Nat) : CommandElabM α :
   | some value => pure value
   | none => throwError "{label}: missing array entry at index {index}"
 
+/-- Placeholder token stored in checked-in goldens wherever rendered output
+embeds the live `Lean.versionString`, so one golden set validates every
+toolchain in the compatibility matrix. -/
+def leanVersionToken : String := "<LEAN_VERSION>"
+
+/-- Replace every exact occurrence of the live toolchain's `Lean.versionString`
+with `leanVersionToken`. Applied to ACTUAL rendered output before golden
+comparison — never to emitted artifacts, whose `lean_version` must stay real
+(charter output requirements). Non-version bytes are untouched, so any other
+cross-toolchain drift still fails the golden gates. -/
+def normalizeToolchainBytes (s : String) : String :=
+  s.replace Lean.versionString leanVersionToken
+
 end LeanAssumptionsTest
