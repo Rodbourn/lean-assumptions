@@ -107,6 +107,30 @@ current output is in
 lake env lean Examples/HiddenPackage.lean
 ```
 
+## Installation
+
+Add the package to your Lake project. In `lakefile.lean`:
+
+```lean
+require «lean-assumptions» from git
+  "https://github.com/Rodbourn/lean-assumptions" @ "main"
+```
+
+or in `lakefile.toml`:
+
+```toml
+[[require]]
+name = "lean-assumptions"
+git = "https://github.com/Rodbourn/lean-assumptions"
+rev = "main"
+```
+
+Then `lake update lean-assumptions` and `lake build`. Pin a tagged revision
+instead of `main` once releases are published; after Reservoir publication the
+`require` can drop the `git` source. The package needs only core Lean (no
+mathlib); the pinned toolchain is recorded in
+[lean-toolchain](lean-toolchain).
+
 ## Quick Start
 
 In a Lean file:
