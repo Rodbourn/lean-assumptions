@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- Ship a composite GitHub Action at the repository root so downstream
+  projects can gate CI on their assumption surface with one `uses:` step:
+  the action installs the project's pinned toolchain, builds the CLI on
+  demand, runs a module scan with optional preset/policy/transparency/
+  baseline/extra-args inputs, exposes result, exit-code, and artifact
+  outputs, and fails on findings by default. A scan matching zero
+  declarations fails rather than passing silently, since a misconfigured
+  module name would otherwise look green. The CI-contract checker validates
+  the action's pin, gate configuration, and non-assurance text.
 - Add `statement_repr_digest` to report schema v1: an FNV-1a 64 digest of the
   notation-resistant `raw_declaration_type_repr`, giving consumers a rung-0
   statement-identity certificate (byte-equal digests under the same

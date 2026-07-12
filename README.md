@@ -356,6 +356,35 @@ Supported transparency spellings are `none`, `reducible`, and `recursive_normali
 
 ## CI
 
+### Auditing your project with the bundled action
+
+The repository root ships a composite GitHub Action so a downstream project
+can gate CI on its assumption surface with one step. The project must already
+`require lean-assumptions` in its lakefile (see Installation); the action
+installs the toolchain pinned by the project's `lean-toolchain`, builds the
+CLI on demand, and fails on policy findings:
+
+```yaml
+steps:
+  - uses: actions/checkout@v5
+  - uses: Rodbourn/lean-assumptions@main # pin a release tag once cut
+    with:
+      module: MyProject.Theorems
+```
+
+Optional inputs select a `preset` (`strict`/`hidden`), a `policy` file, a
+`transparency` mode, a checked-in `baseline` artifact (fail only on new
+finding identities), `extra-args` for allow flags, and `fail-on-findings:
+"false"` for report-only runs. Outputs expose the `result`
+(`pass`/`findings`/`empty-scan`/`error`), the raw `exit-code`, and the JSON
+`artifact` path. Point `module` at a module that declares constants: scanning
+a pure re-export root matches zero declarations, which the action fails by
+default (`allow-empty-scan` overrides). The action audits elaborated
+declaration types only; it does not validate proof axioms, sandbox execution,
+or prove theorem-statement equivalence.
+
+### This repository's own CI
+
 The repository CI uses `leanprover/lean-action`. The main build/test job is
 configured as an OS matrix over `ubuntu-latest` and `macos-latest`; both targets
 run the same explicit build, test, lint, leanchecker, schema, example, workflow,

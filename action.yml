@@ -1,0 +1,145 @@
+name: lean-assumptions audit
+description: >-
+  Audit the assumption surface of a Lean 4 module in CI. Requires the consumer
+  project to `require lean-assumptions` in its lakefile; this action installs
+  the toolchain pinned by the project's lean-toolchain, builds the CLI on
+  demand via `lake exe`, runs the audit, and fails on policy findings unless
+  told otherwise. It audits elaborated declaration types only; it does not
+  validate proof axioms, sandbox execution, or prove theorem-statement
+  equivalence.
+
+inputs:
+  module:
+    description: >-
+      Fully qualified Lean module to import and scan
+      (e.g. MyProject.Theorems).
+    required: true
+  preset:
+    description: Base policy preset, `strict` or `hidden`. Empty uses the CLI default (strict).
+    required: false
+    default: ""
+  policy:
+    description: Path to a policy-v1 JSON file, relative to the working directory.
+    required: false
+    default: ""
+  transparency:
+    description: Alias-transparency mode, `none`, `reducible`, or `recursive_normalization`.
+    required: false
+    default: ""
+  baseline:
+    description: >-
+      Path to a checked-in v1 batch JSON baseline. When set, the audit runs in
+      baseline mode and fails only on finding identities absent from the
+      baseline.
+    required: false
+    default: ""
+  extra-args:
+    description: Extra CLI arguments appended verbatim (e.g. allow flags).
+    required: false
+    default: ""
+  artifact-path:
+    description: Where to write the JSON audit artifact.
+    required: false
+    default: lean-assumptions-report.json
+  fail-on-findings:
+    description: Fail the step when the audit exits nonzero. Set `false` to only record outputs.
+    required: false
+    default: "true"
+  allow-empty-scan:
+    description: >-
+      A scan that matches 0 declarations fails by default, because a
+      misconfigured module name would otherwise pass silently (a pure
+      re-export root module declares no constants of its own). Set `true`
+      to permit empty scans.
+    required: false
+    default: "false"
+  working-directory:
+    description: Directory of the Lake package to audit.
+    required: false
+    default: "."
+
+outputs:
+  result:
+    description: "`pass` (exit 0), `findings` (exit 1), `empty-scan` (0 declarations matched), or `error` (exit 2 or other)."
+    value: ${{ steps.audit.outputs.result }}
+  exit-code:
+    description: Raw CLI exit code (0 pass/warn, 1 policy failure or audit error, 2 usage/import errors).
+    value: ${{ steps.audit.outputs.exit-code }}
+  artifact:
+    description: Path to the JSON audit artifact (empty when the CLI could not produce one).
+    value: ${{ steps.audit.outputs.artifact }}
+
+runs:
+  using: composite
+  steps:
+    - uses: leanprover/lean-action@38fbc41a8c28c4cbaec22d7f7de508ec2e7c0dd9 # v1
+      with:
+        build: false
+        test: false
+        lint: false
+        lake-package-directory: ${{ inputs.working-directory }}
+    - name: Run lean-assumptions audit
+      id: audit
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        MODULE: ${{ inputs.module }}
+        PRESET: ${{ inputs.preset }}
+        POLICY: ${{ inputs.policy }}
+        TRANSPARENCY: ${{ inputs.transparency }}
+        BASELINE: ${{ inputs.baseline }}
+        EXTRA_ARGS: ${{ inputs.extra-args }}
+        ARTIFACT_PATH: ${{ inputs.artifact-path }}
+        FAIL_ON_FINDINGS: ${{ inputs.fail-on-findings }}
+        ALLOW_EMPTY_SCAN: ${{ inputs.allow-empty-scan }}
+      run: |
+        set -u
+        args=(--module "$MODULE" --scan-module "$MODULE" --format json)
+        [ -n "$PRESET" ] && args+=(--preset "$PRESET")
+        [ -n "$POLICY" ] && args+=(--policy "$POLICY")
+        [ -n "$TRANSPARENCY" ] && args+=(--transparency "$TRANSPARENCY")
+        [ -n "$BASELINE" ] && args+=(--baseline "$BASELINE")
+        if [ -n "$EXTRA_ARGS" ]; then
+          # shellcheck disable=SC2206
+          args+=($EXTRA_ARGS)
+        fi
+        echo "Running: lake exe lean-assumptions ${args[*]}"
+        set +e
+        lake exe lean-assumptions "${args[@]}" > "$ARTIFACT_PATH"
+        exit_code=$?
+        set -e
+        echo "exit-code=$exit_code" >> "$GITHUB_OUTPUT"
+        case "$exit_code" in
+          0) result=pass ;;
+          1) result=findings ;;
+          *) result=error ;;
+        esac
+        if [ -z "$BASELINE" ] && [ "$result" = "pass" ] && [ "$ALLOW_EMPTY_SCAN" != "true" ] \
+            && grep -q '"declarations_scanned":0' "$ARTIFACT_PATH"; then
+          result=empty-scan
+          echo "::error title=lean-assumptions::scan of '$MODULE' matched 0 declarations. Point 'module' at a module that declares constants (a pure re-export root declares none), or set allow-empty-scan: true."
+        fi
+        echo "result=$result" >> "$GITHUB_OUTPUT"
+        if [ -s "$ARTIFACT_PATH" ]; then
+          echo "artifact=$ARTIFACT_PATH" >> "$GITHUB_OUTPUT"
+        else
+          echo "artifact=" >> "$GITHUB_OUTPUT"
+        fi
+        {
+          echo "## lean-assumptions audit"
+          echo ""
+          echo "- module: \`$MODULE\`"
+          echo "- result: **$result** (exit $exit_code)"
+          echo "- artifact: \`$ARTIFACT_PATH\`"
+          echo ""
+          echo "Audits elaborated declaration types only; does not validate proof"
+          echo "axioms, sandbox execution, or prove theorem-statement equivalence."
+        } >> "$GITHUB_STEP_SUMMARY"
+        if [ "$FAIL_ON_FINDINGS" = "true" ]; then
+          if [ "$result" = "empty-scan" ]; then
+            exit 1
+          fi
+          if [ "$exit_code" -ne 0 ]; then
+            exit "$exit_code"
+          fi
+        fi

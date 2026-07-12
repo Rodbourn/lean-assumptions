@@ -14,6 +14,7 @@ LEAN_ACTION_SHA = "38fbc41a8c28c4cbaec22d7f7de508ec2e7c0dd9"  # leanprover/lean-
 LEAN_UPDATE_SHA = "6f7b598c3255645e06f5d31f9f77b7440fc16451"  # leanprover-community/lean-update v0.12.0
 UPLOAD_ARTIFACT_SHA = "ea165f8d65b6e75b540449e92b4886f43607fa02"  # actions/upload-artifact v4
 WORKFLOW = ROOT / ".github" / "workflows" / "ci.yml"
+ACTION_FILE = ROOT / "action.yml"
 COMPATIBILITY_WORKFLOW = ROOT / ".github" / "workflows" / "compatibility.yml"
 UPDATE_WORKFLOW = ROOT / ".github" / "workflows" / "update.yml"
 RELEASE_WORKFLOW = ROOT / ".github" / "workflows" / "release.yml"
@@ -132,6 +133,35 @@ def main() -> int:
         "lake env leanchecker --fresh LeanAssumptions",
     ]:
         require(command in compatibility, f"Compatibility workflow must run `{command}`.", errors)
+
+    if ACTION_FILE.exists():
+        action = ACTION_FILE.read_text(encoding="utf-8")
+    else:
+        action = ""
+        errors.append("Composite consumer action (action.yml) is missing.")
+
+    require("using: composite" in action, "Consumer action must be a composite action.", errors)
+    require(
+        f"uses: leanprover/lean-action@{LEAN_ACTION_SHA}" in action,
+        "Consumer action must pin leanprover/lean-action by the same commit SHA as CI.",
+        errors,
+    )
+    for lean_action_input in ["build: false", "test: false", "lint: false"]:
+        require(
+            lean_action_input in action,
+            f"Consumer action must disable lean-action auto gate `{lean_action_input}`.",
+            errors,
+        )
+    require(
+        "does not" in action and "equivalence" in action,
+        "Consumer action description must state the non-assurances (HR-005).",
+        errors,
+    )
+    require(
+        "declarations_scanned" in action,
+        "Consumer action must guard against silently passing empty scans.",
+        errors,
+    )
 
     if UPDATE_WORKFLOW.exists():
         update = UPDATE_WORKFLOW.read_text(encoding="utf-8")
