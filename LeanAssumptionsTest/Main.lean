@@ -16,6 +16,7 @@ import LeanAssumptionsTest.Integration.Commands
 import LeanAssumptionsTest.Integration.Cli
 import LeanAssumptionsTest.Coverage
 import LeanAssumptionsTest.GoldenRuntime
+import LeanAssumptionsTest.Property.Soundness
 
 /-!
 Test executable root for `lean-assumptions`.

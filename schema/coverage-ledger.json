@@ -1015,6 +1015,13 @@
    ]
   },
   {
+   "path": "LeanAssumptionsTest/Property/Soundness.lean",
+   "tests": [
+    "lake test"
+   ],
+   "publicDefinitions": []
+  },
+  {
    "path": "LeanAssumptionsTest/TestUtil.lean",
    "tests": [
     "LeanAssumptionsTest/Unit/Core/Phase1.lean",
