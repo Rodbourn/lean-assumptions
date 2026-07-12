@@ -22,7 +22,7 @@ its internal fields by design, so they carry no positive/negative signal here.
 
 A false pass from this oracle is a trusted-core correctness incident: stop,
 minimize the reproducer, and fix with a regression test before proceeding
-(`AGENTS.md`, non-negotiable principles 1-3).
+(`CHARTER.md`, non-negotiable principles 1-3).
 -/
 
 open Lean Elab Command

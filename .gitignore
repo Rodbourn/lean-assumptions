@@ -33,3 +33,7 @@ Thumbs.db
 Desktop.ini
 .idea/
 .vscode/
+
+# Local tooling; never published.
+.claude/
+CLAUDE.md

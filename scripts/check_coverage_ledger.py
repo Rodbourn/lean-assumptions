@@ -16,9 +16,11 @@ COMMAND_PREFIXES = ("lake ", "lake", "python3 ", "python ")
 
 def collect_lean_files() -> list[str]:
     paths: list[str] = []
+    # Build artifacts and untracked local tooling directories are out of
+    # ledger scope; only published source participates in coverage.
     for path in ROOT.rglob("*.lean"):
         rel = path.relative_to(ROOT)
-        if rel.parts and rel.parts[0] in (".lake", ".claude"):
+        if rel.parts and rel.parts[0] in (".lake", ".claude", ".vscode", ".idea"):
             continue
         paths.append(rel.as_posix())
     return sorted(paths)

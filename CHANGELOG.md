@@ -6,6 +6,8 @@
 
 ## 0.2.0 - 2026-07-12
 
+- Publish the project charter as `CHARTER.md`: the previously unpublished charter that README, CONTRIBUTING, and SECURITY referenced now ships in the repository, addressed to contributors.
+
 - Publish the 2026-07-11 audit in full (`docs/audit-2026-07-11.md`): methodology honestly attributed as maintainer-directed multi-agent review, every finding with its minimal reproducer and fix commit, the gate-vacuousness postmortem, and what the audit did not establish. Ready-to-file issue drafts accompany it, and the README gains a maintenance-expectations section.
 - Rename the command surface before any downstream adoption: `#assumptions` (hidden-surface default), `#assumptions strict`, and `#assumptions_json` replace the `#print assumptions` family, which extended core's `#print` syntax; the redundant `#print assumption_tree` spelling is dropped. The strict marker is a non-reserved keyword, so `strict` remains usable as an ordinary identifier downstream.
 - Make the hidden-surface policy the in-editor default: bare commands flag only assumptions a reader cannot see in the statement as written (packaged proposition fields, proof-carrying data, unexpanded aliases, unknowns), while `strict` variants and the CLI's strict default preserve the certification posture. A `--preset strict|hidden` CLI flag selects the base policy.

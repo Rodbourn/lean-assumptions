@@ -1,6 +1,6 @@
 # Contributing
 
-Read `AGENTS.md` first. It is the sole authoritative project charter; nothing
+Read `CHARTER.md` first. It is the sole authoritative project charter; nothing
 below overrides it.
 
 ## The short version

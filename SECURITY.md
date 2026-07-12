@@ -41,5 +41,5 @@ misclassification template is welcome.
 In scope: the trusted classification and policy core, the renderers and CLI
 insofar as they can misrepresent trusted-core results, and the published JSON
 schemas. Out of scope: sandboxing hostile Lean code (explicitly a non-goal;
-see AGENTS.md's threat model), and vulnerabilities in Lean or Lake themselves,
+see CHARTER.md's threat model), and vulnerabilities in Lean or Lake themselves,
 which belong upstream.
