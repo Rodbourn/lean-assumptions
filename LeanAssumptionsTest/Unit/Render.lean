@@ -4,7 +4,7 @@ import LeanAssumptionsTest.TestUtil
 
 /-!
 Unit tests for renderer-specific support behavior that is not visible from the
-certified core alone.
+trusted core alone.
 -/
 
 open LeanAssumptions

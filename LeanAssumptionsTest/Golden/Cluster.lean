@@ -6,7 +6,7 @@ Golden tests for stable failure clustering.
 
 These tests specify the FR-017 support-layer contract before the clustering
 implementation. Cluster mode consumes rendered JSON artifacts and does not
-re-enter the certified classification path.
+re-enter the trusted classification core.
 -/
 
 open LeanAssumptionsTest

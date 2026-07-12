@@ -17,17 +17,17 @@ below overrides it.
   performance references may be regenerated only together with the change that
   justifies them.
 
-## Certified path vs support layers
+## Trusted core vs support layers
 
-`LeanAssumptions/Core` and `LeanAssumptions/Policy` are the certified path:
+`LeanAssumptions/Core` and `LeanAssumptions/Policy` are the trusted core:
 smallest possible, no `axiom`/`opaque`/`unsafe`/`extern`/`@[implemented_by]`/
 `native_decide` (charter HR-001), conservative failure modes (`unknown` is a
 result; silent optimism is not), and the strictest review. Everything else is
-a support layer and must not be able to silently change certified results.
+a support layer and must not be able to silently change trusted-core results.
 
 ## Landing a change
 
-1. Classify the change: certified path, public API (schemas, flags, command
+1. Classify the change: trusted core, public API (schemas, flags, command
    names — see `docs/compatibility-policy.md`), support layer, tests, or docs.
 2. Write the failing test first, or land tests in the same change.
 3. Keep `docs/requirements-status.md` honest: status rows change only with

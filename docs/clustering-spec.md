@@ -3,7 +3,7 @@
 This document records the implemented repository-agnostic failure clustering
 behavior required by FR-017. It is support-layer functionality: it consumes JSON
 audit artifacts already emitted by `lean-assumptions`; it does not re-run Lean
-elaboration, change certified classification, or change policy semantics.
+elaboration, change trusted-core classification, or change policy semantics.
 
 Cluster input requirements:
 

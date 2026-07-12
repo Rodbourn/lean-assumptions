@@ -1,6 +1,6 @@
 # Security Policy
 
-Misclassification bugs in the certified path (`LeanAssumptions/Core`,
+Misclassification bugs in the trusted core (`LeanAssumptions/Core`,
 `LeanAssumptions/Policy`) are correctness incidents for this repository, not
 cosmetic defects: a false `pass` can materially mislead downstream
 certification and audit users.
@@ -29,17 +29,17 @@ misclassification template is welcome.
 ## Response commitments
 
 - Acknowledgment within 7 days.
-- Confirmed certified-path misclassifications are fixed with a regression test
+- Confirmed trusted-core misclassifications are fixed with a regression test
   before any new release is tagged; the charter forbids releasing with known
-  misclassification bugs in certified paths.
+  misclassification bugs in trusted cores.
 - Public disclosure after a fix is available, credited if desired, including a
   changelog entry and, when severity warrants, a note in the README's audit
   status section.
 
 ## Scope
 
-In scope: the certified classification and policy path, the renderers and CLI
-insofar as they can misrepresent certified results, and the published JSON
+In scope: the trusted classification and policy core, the renderers and CLI
+insofar as they can misrepresent trusted-core results, and the published JSON
 schemas. Out of scope: sandboxing hostile Lean code (explicitly a non-goal;
 see AGENTS.md's threat model), and vulnerabilities in Lean or Lake themselves,
 which belong upstream.

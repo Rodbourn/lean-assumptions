@@ -14,7 +14,7 @@ inspection to `LeanAssumptions.Core`, policy evaluation to
 `LeanAssumptions.Policy`, audit output to `LeanAssumptions.Render`, and
 artifact comparison and clustering to `LeanAssumptions.Delta` and
 `LeanAssumptions.Cluster`. Baseline comparison remains a support-layer check
-over rendered artifacts and does not change certified classification or policy
+over rendered artifacts and does not change trusted-core classification or policy
 semantics.
 -/
 

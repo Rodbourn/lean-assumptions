@@ -1,7 +1,7 @@
 # Phase 2 Behavioral Spec
 
 This document records the executable Phase 2 behavior now implemented in the
-certified path. It is not a claim that the full project is complete.
+trusted core. It is not a claim that the full project is complete.
 
 Implemented core classification behavior:
 
@@ -36,7 +36,7 @@ Implemented policy behavior:
 
 Phase 2 boundary:
 
-- policy-file parsing, rendering, JSON output, command syntax, and CLI are Phase 3 support-layer deliverables, not Phase 2 certified-path deliverables
+- policy-file parsing, rendering, JSON output, command syntax, and CLI are Phase 3 support-layer deliverables, not Phase 2 trusted-core deliverables
 - Phase 3 owns renderer, schema, golden, command, and CLI work
 - performance benchmarks remain scaffolded for later phases
 

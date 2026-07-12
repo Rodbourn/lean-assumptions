@@ -3,7 +3,7 @@ import Lean
 /-!
 Core report-model definitions for assumption-surface analysis.
 
-These data types are part of the certified classification path. They are kept
+These data types are part of the trusted classification core. They are kept
 small and explicit so recursive classification and policy evaluation can remain
 auditable.
 -/
@@ -73,7 +73,7 @@ Declaration assumption-surface report.
 This report includes declaration lookup, binder peeling, result-type recovery,
 recursive structure/class field expansion, proof-carrying-data wrapper
 detection, and explicit cycle/unknown flags. Policy evaluation is kept in the
-separate certified policy layer.
+separate trusted policy layer.
 
 `resultSurface?` is present only when binder peeling stopped at a blocked
 result surface: an alias-headed remainder that could hide further binders

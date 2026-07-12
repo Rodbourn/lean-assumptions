@@ -6,7 +6,7 @@ Golden tests for stable delta reporting.
 
 These tests specify the FR-016 public support-layer contract before the delta
 implementation. Delta mode compares rendered JSON artifacts and does not
-re-enter the certified classification path.
+re-enter the trusted classification core.
 -/
 
 open LeanAssumptionsTest

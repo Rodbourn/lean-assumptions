@@ -1,7 +1,7 @@
 import LeanAssumptions.Core
 
 /-!
-Certified-path policy evaluation.
+Trusted-core policy evaluation.
 
 The policy layer consumes core assumption reports and produces deterministic
 pass/warn/fail/audit-error results. It does not inspect Lean environments and
@@ -411,7 +411,7 @@ def evaluate (policy : PolicyConfig) (report : AssumptionReport) : PolicyEvaluat
 ## Machine-checked properties
 
 The policy engine is pure, so its central guarantees are provable inside Lean
-rather than merely tested. Each theorem below is part of the certified trust
+rather than merely tested. Each theorem below is part of the machine-checked trust
 story: `lake build` checking these proofs re-verifies the properties on every
 build, and `leanchecker` replays them through the kernel.
 -/

@@ -3,7 +3,7 @@ import LeanAssumptionsTest.Fixtures
 import LeanAssumptionsTest.TestUtil
 
 /-!
-Phase 1 unit tests for the certified-path core.
+Phase 1 unit tests for the trusted-core core.
 
 These tests are added before the inspection implementation is written. They
 define the required behavior for declaration lookup, binder peeling, binder-kind

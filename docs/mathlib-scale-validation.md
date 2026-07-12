@@ -34,7 +34,7 @@ lake build lean-assumptions # builds the CLI inside this workspace
 
 Mathlib is a dependency of this scratch workspace only. It is never a
 dependency of `lean-assumptions` itself (charter: no mathlib in the core
-package), and nothing mathlib-specific may leak into certified or cluster
+package), and nothing mathlib-specific may leak into trusted-core or cluster
 logic (FR-017).
 
 ## Scan procedure

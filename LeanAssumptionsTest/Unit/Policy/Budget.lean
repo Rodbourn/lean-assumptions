@@ -2,7 +2,7 @@ import LeanAssumptions
 import LeanAssumptionsTest.TestUtil
 
 /-!
-Unit tests for the certified policy engine's conservative-failure branch:
+Unit tests for the policy engine's conservative-failure branch:
 exceeding the deterministic traversal budget must yield an `audit_error`
 rather than a silently truncated evaluation.
 -/

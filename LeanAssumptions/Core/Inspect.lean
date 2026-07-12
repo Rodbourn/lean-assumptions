@@ -1,7 +1,7 @@
 import LeanAssumptions.Core.Model
 
 /-!
-Certified-path declaration inspection and assumption-surface classification.
+Trusted-core declaration inspection and assumption-surface classification.
 
 This module inspects elaborated declaration types, peels outer binders, and
 classifies each binder type by positive recognition of its normalized head
@@ -23,7 +23,7 @@ namespace LeanAssumptions.Core
 /--
 Maximum recursive package-expansion depth.
 
-The bound keeps the certified path structurally recursive rather than relying
+The bound keeps the trusted core structurally recursive rather than relying
 on unbounded recursion. Exhausting the bound yields an `unknown` node.
 -/
 private def maxExpansionDepth : Nat := 64
@@ -650,7 +650,7 @@ private def inspectDeclarationMeta
 /--
 Inspect a declaration visible in the current command-elaboration environment.
 
-This is the thin certified-path adapter used by tests and later support layers.
+This is the thin trusted-core adapter used by tests and later support layers.
 Policy evaluation stays in `LeanAssumptions.Policy`; command, CLI, and rendering
 adapters must not silently alter this report.
 -/

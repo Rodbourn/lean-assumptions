@@ -12,7 +12,7 @@ Status labels:
 
 - Phase 0 deliverables: `done`
 - Phase 1 deliverables: `done` and locally verified
-- Phase 2 deliverables: `done` for the certified core/policy scope
+- Phase 2 deliverables: `done` for the trusted core/policy scope
 - Phase 3 deliverables: `done` and locally verified
 - Phase 4 deliverables: `done` and locally verified
 
@@ -63,7 +63,7 @@ public push; those boundaries are operator actions, not open engineering work.
 
 | Requirement | Status | Notes |
 | --- | --- | --- |
-| HR-001 minimal trusted core | done | The certified path is limited to `Core` and `Policy`; certified modules use no `axiom`, `constant`, `opaque`, `unsafe`, `extern`, `@[implemented_by]`, or `native_decide` (re-verify: `grep -nE 'axiom|opaque|unsafe|extern|implemented_by|native_decide' LeanAssumptions/Core*/** LeanAssumptions/Policy.lean`). No exceptions exist to document. Fixture-only suspicious constructs remain confined to `LeanAssumptionsTest/Fixtures`, and the policy engine additionally carries kernel-checked theorems. |
+| HR-001 minimal trusted core | done | The trusted core is limited to `Core` and `Policy`; trusted-core modules use no `axiom`, `constant`, `opaque`, `unsafe`, `extern`, `@[implemented_by]`, or `native_decide` (re-verify: `grep -nE 'axiom|opaque|unsafe|extern|implemented_by|native_decide' LeanAssumptions/Core*/** LeanAssumptions/Policy.lean`). No exceptions exist to document. Fixture-only suspicious constructs remain confined to `LeanAssumptionsTest/Fixtures`, and the policy engine additionally carries kernel-checked theorems. |
 | HR-002 no silent fallback | done | Core, policy, command, CLI, and schema validators do not silently fall back from stricter modes; parse/import/policy errors are explicit failures. |
 | HR-003 no network dependence | done | The runtime audit path is local-only. |
 | HR-004 reproducible reports | done | Reports are reproducible by construction: deterministic ordering everywhere, generated fvar IDs erased, no timestamps, LF-pinned text validated by a gate, and every golden re-verified byte-for-byte at test-driver runtime on each `lake test`. Documented boundary: byte comparison across hosted platforms is an operational check that runs once CI executes on a public remote; the same-inputs-same-bytes contract itself is enforced locally. |

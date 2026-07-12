@@ -3,7 +3,7 @@
 This document records the implemented repository-agnostic delta reporting
 behavior required by FR-016. It is support-layer functionality: it compares JSON
 audit artifacts already emitted by `lean-assumptions`; it does not re-run Lean
-elaboration, change certified classification, or change policy semantics.
+elaboration, change trusted-core classification, or change policy semantics.
 
 Delta input requirements:
 

@@ -5,7 +5,7 @@ import LeanAssumptions.JsonUtil
 /-!
 Deterministic rendering for assumption reports.
 
-This support layer converts certified core and policy outputs into stable text
+This support layer converts trusted core and policy outputs into stable text
 and JSON artifacts. Renderer bugs must not affect `LeanAssumptions.Core` or
 `LeanAssumptions.Policy` decisions.
 -/
@@ -15,7 +15,7 @@ namespace LeanAssumptions.Render
 open LeanAssumptions.Core
 open LeanAssumptions.Policy
 
-/-- A rendered report input: certified core report plus deterministic policy evaluation. -/
+/-- A rendered report input: trusted core report plus deterministic policy evaluation. -/
 structure ReportArtifact where
   report : AssumptionReport
   evaluation : PolicyEvaluation

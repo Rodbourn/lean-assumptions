@@ -7,7 +7,7 @@ Support-layer failure clustering for rendered audit artifacts.
 
 This module consumes JSON artifacts already emitted by `lean-assumptions`.
 It does not inspect Lean environments, reclassify theorem surfaces, infer
-project-specific cleanup lanes, or alter certified core or policy semantics.
+project-specific cleanup lanes, or alter trusted core or policy semantics.
 -/
 
 namespace LeanAssumptions.Cluster

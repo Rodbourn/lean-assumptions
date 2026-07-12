@@ -11,9 +11,9 @@ Tightened implementation boundary for current phases:
 - maintain a machine-readable coverage ledger
 - validate that implemented Lean source files and public definitions are mapped
   to tests
-- keep the certified path small until stronger coverage tooling is available
+- keep the trusted core small until stronger coverage tooling is available
 
-No Phase 0/1/2 certified-path feature was omitted because of a known Lean API
+No Phase 0/1/2 trusted-core feature was omitted because of a known Lean API
 limitation in declaration lookup, binder peeling, proposition detection,
 structure/class expansion, cycle detection, proof-carrying wrapper detection, or
 strict policy evaluation.

@@ -20,7 +20,7 @@ binders are exercised by the fixture corpus instead: under strict policy every
 instance binder fails regardless of content, and an allowlisted typeclass owns
 its internal fields by design, so they carry no positive/negative signal here.
 
-A false pass from this oracle is a certified-path correctness incident: stop,
+A false pass from this oracle is a trusted-core correctness incident: stop,
 minimize the reproducer, and fix with a regression test before proceeding
 (`AGENTS.md`, non-negotiable principles 1-3).
 -/
@@ -142,7 +142,7 @@ run_cmd do
       unless result == PolicyResult.fail do
         throwError "SOUNDNESS ORACLE VIOLATION: {declName} embeds the marked \
           proposition but strict policy reported {repr result}. Treat as a \
-          certified-path correctness incident."
+          trusted-core correctness incident."
       positives := positives + 1
   for (typeLabel, _) in negativeTypeSources do
     for kind in binderKindLabels do

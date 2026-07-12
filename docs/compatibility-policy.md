@@ -43,7 +43,7 @@ Per the charter's compatibility policy, the project aims to support the latest
 Lean stable release and the current release candidate.
 
 Current state: the repository pins `leanprover/lean4:v4.31.0`, the latest
-stable Lean release, in `lean-toolchain`. Full behavioral certification (tests
+stable Lean release, in `lean-toolchain`. Full behavioral validation (tests
 and golden snapshots, which embed the toolchain's version string) applies only
 to that pinned toolchain. A weekly compatibility workflow
 builds, lints, and kernel-replays the package on the current `stable` and

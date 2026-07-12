@@ -7,7 +7,7 @@ Support-layer delta reporting for rendered audit artifacts.
 
 This module compares JSON artifacts already emitted by `lean-assumptions`.
 It does not inspect Lean environments, reclassify theorem surfaces, or alter
-certified core or policy semantics.
+trusted core or policy semantics.
 -/
 
 namespace LeanAssumptions.Delta

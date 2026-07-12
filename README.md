@@ -222,7 +222,7 @@ is pending its indexing criteria.
 
 ### Audit Status
 
-An internal audit on 2026-07-11 confirmed certified-path bugs: silent
+An internal audit on 2026-07-11 confirmed trusted-core bugs: silent
 `pure_data` false passes for unrecognized statement shapes, `abbrev`-only
 alias detection, an unaudited declaration surface, mislabeled transparency
 semantics, false cycle reports on nested generics, and artifacts that reported
@@ -233,13 +233,13 @@ requirement-level work is tracked honestly in
 
 ## Design Boundary
 
-The repository keeps its certified core in:
+The repository keeps its trusted core in:
 
 - `LeanAssumptions/Core`
 - `LeanAssumptions/Policy`
 
 Rendering, commands, CLI, delta reporting, clustering, baseline comparison,
-docs, scripts, and CI are support layers. They should not be able to silently change certified
+docs, scripts, and CI are support layers. They should not be able to silently change trusted-core
 classification or policy decisions.
 
 Implemented behavior, remaining gaps, and phase boundaries are documented here:

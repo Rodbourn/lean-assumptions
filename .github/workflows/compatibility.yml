@@ -20,7 +20,7 @@ defaults:
 # the current Lean stable release and the current release candidate (elan
 # channels, so this job never goes stale). `lake test` is intentionally not
 # run here: golden snapshots embed the pinned toolchain's version string, so
-# full behavioral certification applies only to the toolchain in
+# full behavioral validation applies only to the toolchain in
 # lean-toolchain, which the regular CI workflow tests.
 jobs:
   lean-channel:

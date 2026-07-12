@@ -1,6 +1,6 @@
 # Phase 1 Behavioral Spec
 
-This document is the concrete behavioral spec for the Phase 1 certified path.
+This document is the concrete behavioral spec for the Phase 1 trusted core.
 
 Implemented behavior:
 
