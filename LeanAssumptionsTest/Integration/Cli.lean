@@ -164,11 +164,29 @@ run_cmd do
   for flag in [
     "--module", "--decl", "--scan-module", "--format", "--policy",
     "--allow-direct", "--allow-package", "--allow-typeclasses",
-    "--allow-unknowns", "--warn-unknowns", "--diff", "--cluster",
-    "--baseline", "--accept", "--update-baseline", "--help"
+    "--allow-unknowns", "--warn-unknowns", "--transparency", "--diff",
+    "--cluster", "--baseline", "--accept", "--update-baseline", "--help"
   ] do
     assertTrue s!"usage documents {flag}"
       ((LeanAssumptions.Cli.usage.splitOn flag).length >= 2)
+  assertCliExit env opts "CLI transparency flag expands alias" 0 #[
+    "--module", "LeanAssumptionsTest.Fixtures",
+    "--decl", "LeanAssumptionsTest.Fixtures.aliasBinder",
+    "--format", "json",
+    "--transparency", "reducible",
+    "--allow-package", "LeanAssumptionsTest.Fixtures.ProofPackage"
+  ]
+  assertCliExit env opts "CLI duplicate transparency rejected" 2 #[
+    "--module", "LeanAssumptionsTest.Fixtures",
+    "--decl", "LeanAssumptionsTest.Fixtures.packageBinder",
+    "--transparency", "reducible",
+    "--transparency", "none"
+  ]
+  assertCliExit env opts "CLI bad transparency rejected" 2 #[
+    "--module", "LeanAssumptionsTest.Fixtures",
+    "--decl", "LeanAssumptionsTest.Fixtures.packageBinder",
+    "--transparency", "everything"
+  ]
   assertCliExit env opts "CLI delta JSON exit" 0 #[
     "--diff",
     "LeanAssumptionsTest/Golden/delta-baseline.json",

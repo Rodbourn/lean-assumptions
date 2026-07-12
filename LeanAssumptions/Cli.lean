@@ -55,7 +55,14 @@ inductive PolicyModifier where
   | allowTypeclasses
   | allowUnknowns
   | warnUnknowns
+  | setTransparency (mode : Core.TransparencyMode)
   deriving DecidableEq, Repr
+
+/-- Render a transparency mode using its public spelling. -/
+private def transparencySpelling : Core.TransparencyMode → String
+  | .none => "none"
+  | .reducible => "reducible"
+  | .recursiveNormalization => "recursive_normalization"
 
 /-- Render one modifier as a deterministic policy-identifier segment. -/
 def renderPolicyModifier : PolicyModifier → String
@@ -64,6 +71,7 @@ def renderPolicyModifier : PolicyModifier → String
   | .allowTypeclasses => "allow-typeclasses"
   | .allowUnknowns => "allow-unknowns"
   | .warnUnknowns => "warn-unknowns"
+  | .setTransparency mode => s!"transparency:{transparencySpelling mode}"
 
 /--
 Apply CLI policy modifiers on top of a base policy.
@@ -83,7 +91,8 @@ def applyPolicyModifiers (base : PolicyConfig) (modifiers : Array PolicyModifier
         { policy with permittedPackageTypes := policy.permittedPackageTypes.push (.exact name) }
       | .allowTypeclasses => { policy with typeclassPolicy := .allow }
       | .allowUnknowns => { policy with unknownPolicy := .allow }
-      | .warnUnknowns => { policy with unknownPolicy := .warn })
+      | .warnUnknowns => { policy with unknownPolicy := .warn }
+      | .setTransparency mode => { policy with transparencyMode := mode })
     base
   if modifiers.isEmpty then
     composed
@@ -111,12 +120,32 @@ structure Config where
 
 /-- Usage text for `--help` and invalid invocations. -/
 def usage : String :=
-  "usage: lean-assumptions --module <Module> (--decl <Name> | --scan-module <Module>) [--format text|json] [--policy <file>] [--allow-direct <Name>] [--allow-package <Name>] [--allow-typeclasses] [--allow-unknowns] [--warn-unknowns]\n" ++
+  "usage: lean-assumptions --module <Module> (--decl <Name> | --scan-module <Module>) [options]\n" ++
   "   or: lean-assumptions --module <Module> (--decl <Name> | --scan-module <Module>) --baseline <audit.json> [--accept]\n" ++
   "   or: lean-assumptions --module <Module> (--decl <Name> | --scan-module <Module>) --update-baseline <audit.json>\n" ++
   "   or: lean-assumptions --diff <baseline.json> <current.json> [--format text|json]\n" ++
   "   or: lean-assumptions --cluster <audit.json> [--format text|json]\n" ++
-  "   or: lean-assumptions --help"
+  "   or: lean-assumptions --help\n" ++
+  "\n" ++
+  "audit options:\n" ++
+  "  --module <Module>          import a module into the audit environment (repeatable)\n" ++
+  "  --decl <Name>              audit one declaration (repeatable)\n" ++
+  "  --scan-module <Module>     audit every constant of an imported module (repeatable)\n" ++
+  "  --format text|json         output format; text streams, json is one versioned artifact\n" ++
+  "  --transparency none|reducible|recursive_normalization\n" ++
+  "                             how far definition heads unfold; unexpanded heads report\n" ++
+  "                             as alias (default none; recorded in every artifact)\n" ++
+  "  --policy <file>            versioned JSON policy file (schema/policy-v1.schema.json)\n" ++
+  "  --allow-direct <Name>      permit an exact direct proposition binder name\n" ++
+  "  --allow-package <Name>     permit an exact package or proof-carrying type head\n" ++
+  "  --allow-typeclasses        permit typeclass assumptions\n" ++
+  "  --allow-unknowns           permit unknown nodes\n" ++
+  "  --warn-unknowns            downgrade unknown nodes to warnings\n" ++
+  "\n" ++
+  "Allow flags and --transparency compose on top of --policy regardless of\n" ++
+  "argument order; every modification is recorded in the reported\n" ++
+  "policy_identifier and policy_digest. Exit codes: 0 pass/warn, 1 policy\n" ++
+  "failure or audit error, 2 usage, import, or artifact errors."
 
 /-- Return whether `a` sorts before `b` in public dotted-name order. -/
 private def nameLt (a b : Lean.Name) : Bool :=
@@ -494,6 +523,20 @@ private def parseArgsAux : List String -> Config -> IO Config
       policyModifiers := config.policyModifiers.push .warnUnknowns
       policyConfigured := true
     }
+  | "--transparency" :: value :: rest, config => do
+    if config.policyModifiers.any fun modifier =>
+        match modifier with
+        | .setTransparency _ => true
+        | _ => false then
+      throw (IO.userError s!"multiple --transparency options are not supported\n{usage}")
+    match parseTransparencyMode value with
+    | .ok mode =>
+      parseArgsAux rest {
+        config with
+        policyModifiers := config.policyModifiers.push (.setTransparency mode)
+        policyConfigured := true
+      }
+    | .error error => throw (IO.userError s!"{error}\n{usage}")
   | "--help" :: _, config => pure { config with helpRequested := true }
   | option :: _, _ => throw (IO.userError s!"unknown or incomplete option: {option}\n{usage}")
 

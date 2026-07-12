@@ -83,6 +83,23 @@ theorem reducibleDefAliasPackageBinder (pkg : ReducibleDefPackageAlias) : True :
 /-- A proposition abbreviation used to pin alias-versus-proposition precedence. -/
 abbrev TrivialHypAlias : Prop := 1 = 1
 
+universe adversarialU
+
+/--
+A binder written with an unnormalized-looking sort level. The elaborator
+normalizes `Sort (imax 0 0)` to `Prop` before storing the declaration type;
+this fixture pins that assumption against future elaborator changes, because
+the quantifier diagnostic compares levels syntactically.
+-/
+theorem imaxConcreteBinder (P : Sort (imax 0 0)) : True := by
+  let _ := P
+  trivial
+
+/-- The universe-parametric variant: `imax u 0` always normalizes to `Prop`. -/
+theorem imaxParametricBinder (P : Sort (imax adversarialU 0)) : True := by
+  let _ := P
+  trivial
+
 /-- An abbreviation that hides an entire statement surface. -/
 abbrev HiddenStatementAlias : Prop := ∀ _ : 1 = 1, True
 

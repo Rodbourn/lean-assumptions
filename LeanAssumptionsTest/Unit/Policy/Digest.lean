@@ -48,3 +48,9 @@ run_cmd do
   let warned := Cli.applyPolicyModifiers base #[.warnUnknowns]
   assertEq "warn modifier semantics" AssumptionTreatment.warn warned.unknownPolicy
   assertEq "warn modifier identifier" "strict+warn-unknowns" warned.identifier
+  let transparent := Cli.applyPolicyModifiers base #[.setTransparency .reducible]
+  assertEq "transparency modifier semantics"
+    LeanAssumptions.Core.TransparencyMode.reducible transparent.transparencyMode
+  assertEq "transparency modifier identifier"
+    "strict+transparency:reducible" transparent.identifier
+  assertTrue "transparency modifier changes digest" (base.digest != transparent.digest)

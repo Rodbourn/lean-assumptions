@@ -144,19 +144,20 @@ import MyProject.Theorems
 #print assumption_json MyProject.Theorems.target
 ```
 
-From the CLI:
+From the CLI (`lake exe` builds the executable on demand):
 
 ```text
-lake env lean-assumptions --module MyProject.Theorems --decl MyProject.Theorems.target --format text
-lake env lean-assumptions --module MyProject.Theorems --scan-module MyProject.Theorems --format json
+lake exe lean-assumptions --module MyProject.Theorems --decl MyProject.Theorems.target --format text
+lake exe lean-assumptions --module MyProject.Theorems --scan-module MyProject.Theorems --format json
+lake exe lean-assumptions --module MyProject.Theorems --decl MyProject.Theorems.target --transparency reducible
 ```
 
 For iterative cleanup work, compare or cluster prior audit artifacts:
 
 ```text
-lake env lean-assumptions --diff baseline-audit.json current-audit.json --format text
-lake env lean-assumptions --cluster current-audit.json --format text
-lake env lean-assumptions --module MyProject.Theorems --scan-module MyProject.Theorems --baseline .lean-assumptions-baseline.json
+lake exe lean-assumptions --diff baseline-audit.json current-audit.json --format text
+lake exe lean-assumptions --cluster current-audit.json --format text
+lake exe lean-assumptions --module MyProject.Theorems --scan-module MyProject.Theorems --baseline .lean-assumptions-baseline.json
 ```
 
 ## What It Guarantees
@@ -300,6 +301,8 @@ lake env lean-assumptions --module MyProject.Theorems --scan-module MyProject.Th
 
 Supported policy-related flags:
 
+- `--transparency none|reducible|recursive_normalization` sets the alias
+  transparency mode directly; at most one is accepted.
 - `--policy <file>` reads a versioned JSON policy file. At most one `--policy`
   is accepted.
 - `--allow-direct <Name>` permits an exact direct proposition binder name.

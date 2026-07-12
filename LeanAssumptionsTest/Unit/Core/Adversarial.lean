@@ -244,6 +244,19 @@ run_cmd do
     false dataReport.transparencyLimited
 
 run_cmd do
+  -- Sort levels arrive normalized from the elaborator, so imax-spelled Prop
+  -- binders classify as direct propositions. If a future elaborator stops
+  -- normalizing, these assertions catch the regression before the syntactic
+  -- level comparison in the quantifier diagnostic could false-pass.
+  for name in [`LeanAssumptionsTest.Fixtures.imaxConcreteBinder,
+               `LeanAssumptionsTest.Fixtures.imaxParametricBinder] do
+    let report ← LeanAssumptions.Core.inspectDeclaration name
+    let binder ← requireAt s!"{name} binder" report.binders 0
+    assertEq s!"{name} category" AssumptionCategory.directProp binder.primaryCategory
+    let evaluation := Policy.evaluate Policy.strictPolicy report
+    assertEq s!"{name} strict result" PolicyResult.fail evaluation.result
+
+run_cmd do
   let report ← LeanAssumptions.Core.inspectDeclaration
     `LeanAssumptionsTest.Fixtures.propAliasBinder
   let binder ← requireAt "propAliasBinder binder" report.binders 0
