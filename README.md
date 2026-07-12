@@ -213,9 +213,8 @@ Implemented and locally verified:
 
 Remaining partial or tracked requirements are documented in
 [docs/requirements-status.md](docs/requirements-status.md). Version `0.2.0`
-is tagged locally with every release gate green; publication to a public
-GitHub repository and Reservoir requires operator actions (public repo,
-pushed tag, two stars) and has not happened yet.
+is the current release line with every release gate green; Reservoir listing
+is pending its indexing criteria.
 
 ### Audit Status
 

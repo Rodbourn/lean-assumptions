@@ -22,6 +22,18 @@ def windows_path_to_wsl(path: Path) -> str:
 
 def run_command(command: list[str]) -> subprocess.CompletedProcess[str]:
     if shutil.which(command[0]) is not None:
+        if os.name == "posix":
+            # Elaborating the example runs interpreted metaprogram code, whose
+            # recursion can overflow the default thread stack on CI runners
+            # (observed as exit 139 on a hosted job whose sibling jobs passed
+            # the identical command). Raise the stack limit where the platform
+            # allows; macOS caps the value, hence the fallback chain.
+            shell_command = " ".join(shlex.quote(part) for part in command)
+            command = [
+                "bash", "-c",
+                "ulimit -s unlimited 2>/dev/null || ulimit -s 65500 2>/dev/null || true; "
+                f"exec {shell_command}",
+            ]
         return subprocess.run(
             command,
             cwd=ROOT,

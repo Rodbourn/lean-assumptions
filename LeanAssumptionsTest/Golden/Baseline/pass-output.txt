@@ -1,10 +1,10 @@
 lean-assumptions baseline report
 tool_version: 0.2.0
-lean_version: 4.30.0-rc2
+lean_version: 4.31.0
 schema_version: 1
 baseline_schema_version: 1
-baseline_lean_version: 4.30.0-rc2
-current_lean_version: 4.30.0-rc2
+baseline_lean_version: 4.31.0
+current_lean_version: 4.31.0
 current_schema_version: 1
 baseline_policy_identifier: strict
 current_policy_identifier: strict

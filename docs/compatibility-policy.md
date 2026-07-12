@@ -42,10 +42,10 @@ The following are public APIs. Changing any of them is a compatibility event:
 Per the charter's compatibility policy, the project aims to support the latest
 Lean stable release and the current release candidate.
 
-Current state, honestly labeled: the repository pins
-`leanprover/lean4:v4.30.0-rc2` in `lean-toolchain`. Full behavioral
-certification (tests and golden snapshots, which embed the toolchain's version
-string) applies only to that pinned toolchain. A weekly compatibility workflow
+Current state: the repository pins `leanprover/lean4:v4.31.0`, the latest
+stable Lean release, in `lean-toolchain`. Full behavioral certification (tests
+and golden snapshots, which embed the toolchain's version string) applies only
+to that pinned toolchain. A weekly compatibility workflow
 builds, lints, and kernel-replays the package on the current `stable` and
 `beta` elan channels so forward incompatibilities surface without manual
 re-pinning; a scheduled update workflow proposes toolchain bumps. If a Lean

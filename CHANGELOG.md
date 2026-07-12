@@ -2,7 +2,8 @@
 
 ## Unreleased
 
-- Nothing yet.
+- Update the pinned Lean toolchain from `v4.30.0-rc2` to `v4.31.0`, the latest stable release, resolving the automated update issue: the entire library including the certified core and its machine-checked theorems builds unchanged, all goldens are regenerated for the new version string, and the doc-gen4 build tracks the same toolchain. The package is now consumable from stable-toolchain projects.
+- Raise the stack limit when elaborating the runnable example in `scripts/check_examples.py`: a hosted release-readiness job segfaulted (exit 139) on a command that passed in both build-test jobs of the same run, the signature of near-threshold stack exhaustion in interpreted metaprogram elaboration.
 
 ## 0.2.0 - 2026-07-11
 
