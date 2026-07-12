@@ -397,12 +397,20 @@ private def renderBatchSummaryText (summary : BatchSummary) : List String := [
   "schema_version: " ++ jsonSchemaVersion
 ]
 
+/--
+Render the batch summary block exactly as `renderBatchText` appends it.
+
+Streaming emitters print per-report text incrementally and then this block,
+producing bytes identical to `renderBatchText`.
+-/
+def renderBatchSummaryTextBlock (artifacts : Array ReportArtifact) : String :=
+  joinWith "\n" (renderBatchSummaryText (summarizeBatch artifacts)) ++ "\n"
+
 /-- Render a batch of reports as deterministic human-readable text. -/
 def renderBatchText (policy : PolicyConfig) (artifacts : Array ReportArtifact) : String :=
   let reports := artifacts.toList.map fun artifact =>
     renderText policy artifact.report artifact.evaluation
-  let summary := joinWith "\n" (renderBatchSummaryText (summarizeBatch artifacts)) ++ "\n"
-  joinWith "\n" reports ++ summary
+  joinWith "\n" reports ++ renderBatchSummaryTextBlock artifacts
 
 /-- Render a batch summary as deterministic JSON. -/
 private def renderBatchSummaryJson (summary : BatchSummary) : String :=

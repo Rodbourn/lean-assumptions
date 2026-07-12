@@ -253,6 +253,14 @@
      ]
     },
     {
+     "name": "LeanAssumptions.Cli.requestedDeclarationNames",
+     "tests": [
+      "LeanAssumptionsTest/Integration/Cli.lean",
+      "LeanAssumptionsTest/Unit/Render.lean",
+      "lake test"
+     ]
+    },
+    {
      "name": "LeanAssumptions.Cli.run",
      "tests": [
       "LeanAssumptionsTest/Integration/Cli.lean"
@@ -839,6 +847,14 @@
       "LeanAssumptionsTest/Golden/Phase3.lean",
       "LeanAssumptionsTest/Integration/Cli.lean",
       "scripts/check_report_schema.py"
+     ]
+    },
+    {
+     "name": "LeanAssumptions.Render.renderBatchSummaryTextBlock",
+     "tests": [
+      "LeanAssumptionsTest/Integration/Cli.lean",
+      "LeanAssumptionsTest/Unit/Render.lean",
+      "lake test"
      ]
     },
     {

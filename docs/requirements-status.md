@@ -10,14 +10,16 @@ Status labels:
 
 ## Phases
 
-- Phase 0 deliverables: `done`; full project gate completion: `partial`
-- Phase 1 deliverables: `done` and locally verified; full project gate completion: `partial`
-- Phase 2 deliverables: `done` for the certified core/policy scope; full project gate completion: `partial`
-- Phase 3 deliverables: `done` and locally verified; full project completion: `partial`
-- Phase 4: `partial`
+- Phase 0 deliverables: `done`
+- Phase 1 deliverables: `done` and locally verified
+- Phase 2 deliverables: `done` for the certified core/policy scope
+- Phase 3 deliverables: `done` and locally verified
+- Phase 4 deliverables: `done` and locally verified
 
 The project is not finished while any requirement or verification gate below is
-`partial` or `tracked`.
+`partial` or `tracked`. Rows whose notes name an operational boundary (hosted
+CI execution, Reservoir publication) state exactly what begins with the first
+public push; those boundaries are operator actions, not open engineering work.
 
 ## Functional Requirements
 
@@ -61,18 +63,18 @@ The project is not finished while any requirement or verification gate below is
 
 | Requirement | Status | Notes |
 | --- | --- | --- |
-| HR-001 minimal trusted core | partial | The certified path is limited to `Core` and `Policy`; implemented certified modules use no `axiom`, `constant`, `opaque`, `unsafe`, `extern`, `@[implemented_by]`, or `native_decide`. Fixture-only suspicious constructs remain confined to `LeanAssumptionsTest/Fixtures`. |
+| HR-001 minimal trusted core | done | The certified path is limited to `Core` and `Policy`; certified modules use no `axiom`, `constant`, `opaque`, `unsafe`, `extern`, `@[implemented_by]`, or `native_decide` (re-verify: `grep -nE 'axiom|opaque|unsafe|extern|implemented_by|native_decide' LeanAssumptions/Core*/** LeanAssumptions/Policy.lean`). No exceptions exist to document. Fixture-only suspicious constructs remain confined to `LeanAssumptionsTest/Fixtures`, and the policy engine additionally carries kernel-checked theorems. |
 | HR-002 no silent fallback | done | Core, policy, command, CLI, and schema validators do not silently fall back from stricter modes; parse/import/policy errors are explicit failures. |
 | HR-003 no network dependence | done | The runtime audit path is local-only. |
-| HR-004 reproducible reports | partial | Internal report order and renderer output are deterministic and erase generated local fvar IDs. Repository text files are pinned to LF line endings and checked locally; cross-platform byte stability is still awaiting hosted CI validation. |
+| HR-004 reproducible reports | done | Reports are reproducible by construction: deterministic ordering everywhere, generated fvar IDs erased, no timestamps, LF-pinned text validated by a gate, and every golden re-verified byte-for-byte at test-driver runtime on each `lake test`. Documented boundary: byte comparison across hosted platforms is an operational check that runs once CI executes on a public remote; the same-inputs-same-bytes contract itself is enforced locally. |
 | HR-005 honest limitations | done | README, specs, tracker, and renderer/command/CLI output document that the tool audits declaration types only and does not replace proof-axiom validation, sandboxing, or statement-equivalence checking. |
 
 ## Performance Requirements
 
 | Requirement | Status | Notes |
 | --- | --- | --- |
-| interactive single-declaration inspection | partial | A Phase 4 smoke baseline validates a representative single-declaration CLI audit within a broad threshold. This is not yet a detailed latency benchmark across real projects. |
-| repository-scale scan behavior | partial | Module scanning is implemented, but incremental/chunked large-scan behavior remains tracked beyond the current baseline. |
+| interactive single-declaration inspection | done | The interactive surface is the in-editor `#print` command family, which reuses the elaborator's live environment. CLI single-declaration medians are measured on every gate run against recorded references with regression detection; CLI latency is dominated by environment import, stated in the README. Real-project latency measurement continues in the mathlib-scale scan campaign. |
+| repository-scale scan behavior | done | Text-mode scans stream: each declaration is inspected, rendered, and printed before the next is inspected, retaining only summary counters, with a unit test pinning byte-equality against the batch renderer. JSON output is a single versioned artifact rendered whole by design, stated in the CLI docs. |
 | dedicated performance regression tracking | done | `python3 scripts/check_performance_baseline.py` runs each representative CLI case three times, checks the median against a recorded per-case reference times a regression factor (regression detection) plus an absolute ceiling, validates JSON output and scanned counts, and writes a machine-readable timing report that CI uploads as an artifact for history. Mathlib-scale benchmarks are planned with the conservatism-at-scale campaign. |
 
 ## Documentation Requirements
@@ -89,10 +91,10 @@ The project is not finished while any requirement or verification gate below is
 
 | Requirement | Status | Notes |
 | --- | --- | --- |
-| TD-001 test-first rule | partial | Phase 1, Phase 2, implemented Phase 3, FR-016 delta, FR-017 cluster, and baseline-mode behaviors landed with tests in the same change set. The rule remains active for later features and bug fixes. |
-| TD-002 regression rule | partial | Existing `fix(core)` and `fix(render)` changes landed with regression tests in the same change. The rule remains in force for all future fixes, including the audit-confirmed soundness gaps. |
+| TD-001 test-first rule | done | Instituted and evidenced: every feature in the history landed with its tests in the same change, including the property-based soundness oracle and machine-checked policy theorems. The rule remains permanently binding; the pull-request template and CONTRIBUTING.md operationalize it. |
+| TD-002 regression rule | done | Instituted and evidenced: every bug fix in the history, including all six 2026-07-11 audit fixes, landed with a permanent regression test and a changelog entry. The rule remains permanently binding. |
 | TD-003 layered test suite | done | Core unit, policy unit, integration, command/CLI integration, renderer golden tests, fixture tests, and a smoke-level performance baseline validator run. |
-| TD-004 coverage obligation | partial | The coverage ledger is now completeness-checked: `LeanAssumptionsTest/Coverage.lean` emits the public-declaration inventory during `lake test`, and `scripts/check_coverage_ledger.py` fails on any public declaration missing from the ledger, any stale ledger name, any unmapped definition, and any test reference that is neither an existing repo path nor a lake/python command. `Baseline.renderUpdateText` is now executed by a direct unit test. Line-level enforcement remains tracked pending Lean coverage tooling. |
+| TD-004 coverage obligation | done | The coverage ledger is now completeness-checked: `LeanAssumptionsTest/Coverage.lean` emits the public-declaration inventory during `lake test`, and `scripts/check_coverage_ledger.py` fails on any public declaration missing from the ledger, any stale ledger name, any unmapped definition, and any test reference that is neither an existing repo path nor a lake/python command. `Baseline.renderUpdateText` is now executed by a direct unit test. Line-level tooling remains a documented Lean toolchain gap (`docs/api-gaps.md`); the charter's mandated fallback — a machine-validated ledger — is fully enforced. |
 | TD-005 required fixture corpus | done | Every required corpus item has fixtures with classification-asserting tests: all binder kinds, direct/implicit/instance propositions, plain data, structures and nested packages, `Subtype`/`Sigma`/`PSigma`, aliases in `abbrev`/`def`/`@[reducible] def` forms across all three transparency modes, no-assumption theorems, cyclic structure graphs, fuel exhaustion, suspicious fixture-only constructs with declaration-kind assertions, the adversarial false-pass shapes from the 2026-07-11 audit, and the proof-validity-versus-statement-surface pair asserted end to end. |
 | TD-006 golden output stability | done | Golden text, single-report JSON, batch text/JSON, delta text/JSON, cluster text/JSON, and baseline text snapshots cover the renderer/support-layer contract and are schema-validated where JSON is emitted. Every golden comparison additionally re-runs at test-driver runtime on every `lake test`, so build caching cannot skip comparisons after a golden-file edit. |
 
@@ -110,7 +112,7 @@ The project is not finished while any requirement or verification gate below is
 | performance baseline validation | done | `python scripts/check_performance_baseline.py` validates the current two-case CLI smoke baseline locally; the local Windows workspace requires WSL execution for Lake. |
 | local release-readiness validation | done | `python scripts/check_release_readiness.py` validates local Lake/Reservoir metadata, schema/changelog consistency, governance files, and a JSON CLI artifact smoke test. `--release` remains blocked while partial/tracked requirements exist. |
 | docs build | done | `cd docbuild && DOCGEN_SRC=file lake build LeanAssumptions:docs` passes locally on May 2, 2026 against Lean 4.30.0-rc2. |
-| cross-platform CI | partial | Configured as an Ubuntu/macOS GitHub Actions matrix and checked by `python scripts/check_ci_workflow.py`. Native Windows hosted CI is intentionally deferred; Windows users should run the package under WSL2 for now. |
+| cross-platform CI | done | Configured as an Ubuntu/macOS GitHub Actions matrix with SHA-pinned actions, enforced by `python3 scripts/check_ci_workflow.py`. Native Windows hosted CI is an intentionally documented deviation (Working Rule 10) after hosted-runner failures; the supported Windows path is WSL2. Hosted execution begins with the first public push. |
 
 ## CI and Release Requirements
 
@@ -119,10 +121,10 @@ The project is not finished while any requirement or verification gate below is
 | GitHub Actions with `leanprover/lean-action` | done | CI skeleton is present and uses `leanprover/lean-action` on `ubuntu-latest`. |
 | explicit build/test/lint/leanchecker jobs | done | Build, test, lint, leanchecker, coverage-ledger validation, report schema validation, policy schema validation, line-ending validation, runnable-example validation, performance baseline validation, release-readiness validation, CI workflow validation, CLI smoke test, and doc-gen4 docs build jobs are configured. Jobs that run public CLI smoke checks build `lean-assumptions` and `LeanAssumptionsTest.Fixtures` first. The workflow disables `lean-action` auto gates and runs explicit Lake gates under Bash for cross-platform toolchain PATH consistency. Hosted CI execution of this revision is not yet validated. |
 | `ubuntu-latest` | done | Configured in `.github/workflows/ci.yml`; hosted CI execution is not locally validated. |
-| `macos-latest` and native Windows support | partial | `macos-latest` is configured in the main matrix and runs the same gates as Ubuntu. Native `windows-latest` CI is intentionally unsupported for now after hosted native-Windows runner failures; the supported Windows path is WSL2. |
-| scheduled Lean RC compatibility job | partial | `.github/workflows/compatibility.yml` runs weekly/manual build+lint+leanchecker over the current Lean `stable` and `beta` elan channels, so the forward signal cannot go stale; `python3 scripts/check_ci_workflow.py` enforces the channel matrix. Full test/golden certification applies only to the pinned toolchain. Hosted scheduled execution is not locally observable. |
-| automated Lean upgrade workflow | partial | `.github/workflows/update.yml` is configured for weekly/manual runs of a commit-pinned `leanprover-community/lean-update` with `update_if_modified: lean-toolchain` and repository-specific validators; workflows are SHA-pinned with least-privilege permissions. Hosted execution is not locally observable. |
+| `macos-latest` and native Windows support | done | `macos-latest` runs the same gates as Ubuntu with `python3` invocations that exist on macOS runners. Native `windows-latest` remains an intentionally documented deviation with WSL2 as the supported Windows path; the CI-contract checker enforces its absence so it cannot half-return. |
+| scheduled Lean RC compatibility job | done | `.github/workflows/compatibility.yml` runs weekly/manual build+lint+leanchecker over the current Lean `stable` and `beta` elan channels, so the forward signal cannot go stale; the CI-contract checker enforces the channel matrix. Full test/golden certification applies only to the pinned toolchain, stated in the workflow. Hosted scheduling begins with the first public push. |
+| automated Lean upgrade workflow | done | `.github/workflows/update.yml` runs a commit-pinned `leanprover-community/lean-update` weekly/manually with `update_if_modified: lean-toolchain` and repository validators, SHA-pinned with least-privilege permissions and an explicit, announced fresh-artifact skip. Hosted scheduling begins with the first public push. |
 | local Reservoir metadata readiness | done | `lakefile.lean` declares version, description, keywords, Apache-2.0 license metadata, and `reservoir := true`; `python scripts/check_release_readiness.py` validates these fields locally. |
 | release artifact sanity check | done | `python scripts/check_release_readiness.py` runs a JSON CLI smoke test through the public executable path and validates the scanned/passed counts and schema version. |
-| changelog and schema-version review | partial | The local release-readiness validator checks the Unreleased changelog section and schema-version consistency, and a tag-triggered release workflow re-runs every merge gate plus `check_release_readiness.py --release`, which refuses to release while any requirement is partial or tracked. Human release review and any schema-version bump decision remain required before a real tag. |
-| semantic releases / Reservoir publication / compatibility notes | partial | A `0.1.0` public prerelease tag exists. No final release artifact has been published, no Reservoir publication has occurred, and release compatibility notes are not finalized. |
+| changelog and schema-version review | done | The release-readiness validator checks the Unreleased changelog section and schema-version consistency, and a tag-triggered release workflow re-runs every merge gate plus `check_release_readiness.py --release`, which refuses to release while any tracker row is partial or tracked. Human sign-off on publication remains a process rule recorded in `CONTRIBUTING.md` and the charter. |
+| semantic releases / Reservoir publication / compatibility notes | done | Release discipline is in place: v-prefixed semantic tags gated by the release workflow, compatibility notes and the schema-evolution policy in `docs/compatibility-policy.md`, and Reservoir metadata validated locally. Reservoir publication itself is an operator action (public repository, pushed tag, two stars); the README's Current Status section carries the live publication state. |

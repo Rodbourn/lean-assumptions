@@ -156,35 +156,69 @@ private def inspectArtifact (policy : PolicyConfig) (declName : Lean.Name) :
   let evaluation := Policy.evaluate policy report
   pure { report := report, evaluation := evaluation }
 
+/-- Expand explicit declarations plus module scans into a deterministic name list. -/
+def requestedDeclarationNames
+    (declarations : Array Lean.Name)
+    (scanModules : Array Lean.Name) : CommandElabM (Array Lean.Name) := do
+  let mut names := declarations
+  for moduleName in scanModules do
+    names := names ++ (← declarationsInModule moduleName)
+  pure names
+
 /-- Expand explicit declarations plus module scans into deterministic report artifacts. -/
 def inspectRequested
     (policy : PolicyConfig)
     (declarations : Array Lean.Name)
     (scanModules : Array Lean.Name) : CommandElabM (Array Render.ReportArtifact) := do
-  let mut names := declarations
-  for moduleName in scanModules do
-    names := names ++ (← declarationsInModule moduleName)
+  let names ← requestedDeclarationNames declarations scanModules
   let mut artifacts : Array Render.ReportArtifact := #[]
   for declName in names do
     artifacts := artifacts.push (← inspectArtifact policy declName)
   pure artifacts
 
-/-- Run the generated command-elaboration body used by the CLI executable. -/
+/--
+Run the generated command-elaboration body used by the CLI executable.
+
+Text output streams: each declaration is inspected, rendered, and printed
+before the next is inspected, so large scans never hold all reports resident;
+only the per-declaration evaluations are retained for the batch summary. The
+streamed bytes are identical to `Render.renderBatchText`. JSON output is a
+single versioned artifact and is rendered whole by design.
+-/
 def runGenerated
     (format : OutputFormat)
     (policy : PolicyConfig)
     (declarations : Array Lean.Name)
     (scanModules : Array Lean.Name)
     (emitOutput : Bool := true) : CommandElabM Unit := do
-  let artifacts ← inspectRequested policy declarations scanModules
-  let output :=
-    match format with
-    | .text => Render.renderBatchText policy artifacts
-    | .json => Render.renderBatchJsonString policy artifacts
-  if emitOutput then
-    IO.print output
-  if artifacts.any (fun artifact => Render.policyResultIsFailure artifact.evaluation.result) then
-    throwError "lean-assumptions policy failure"
+  match format with
+  | .text =>
+    let names ← requestedDeclarationNames declarations scanModules
+    let mut summaryArtifacts : Array Render.ReportArtifact := #[]
+    let mut anyFailure := false
+    let mut firstReport := true
+    for declName in names do
+      let artifact ← inspectArtifact policy declName
+      if emitOutput then
+        unless firstReport do
+          IO.print "\n"
+        IO.print (Render.renderText policy artifact.report artifact.evaluation)
+      firstReport := false
+      anyFailure := anyFailure || Render.policyResultIsFailure artifact.evaluation.result
+      summaryArtifacts := summaryArtifacts.push {
+        artifact with
+        report := { artifact.report with binders := #[], resultSurface? := none }
+      }
+    if emitOutput then
+      IO.print (Render.renderBatchSummaryTextBlock summaryArtifacts)
+    if anyFailure then
+      throwError "lean-assumptions policy failure"
+  | .json =>
+    let artifacts ← inspectRequested policy declarations scanModules
+    if emitOutput then
+      IO.print (Render.renderBatchJsonString policy artifacts)
+    if artifacts.any (fun artifact => Render.policyResultIsFailure artifact.evaluation.result) then
+      throwError "lean-assumptions policy failure"
 
 /-- Keep only reports with policy findings for a compact debt baseline artifact. -/
 private def baselineArtifacts (artifacts : Array Render.ReportArtifact) : Array Render.ReportArtifact :=

@@ -73,6 +73,21 @@ private def forgedNameReport : AssumptionReport :=
   }
 
 run_cmd do
+  -- The streaming CLI text path prints per-report text plus the summary
+  -- block; that composition must stay byte-identical to renderBatchText.
+  let artifact : ReportArtifact := {
+    report := controlLiteralReport
+    evaluation := { result := .pass, findings := #[] }
+  }
+  let artifacts := #[artifact, artifact]
+  let streamed :=
+    (Render.renderText strictPolicy artifact.report artifact.evaluation) ++ "\n" ++
+    (Render.renderText strictPolicy artifact.report artifact.evaluation) ++
+    Render.renderBatchSummaryTextBlock artifacts
+  assertEq "streamed text equals batch text"
+    (Render.renderBatchText strictPolicy artifacts) streamed
+
+run_cmd do
   -- Text reports must be line-injection-proof: a hostile name may never
   -- fabricate a report line such as a second `policy_result:` entry.
   let rendered := Render.renderText strictPolicy forgedNameReport {
