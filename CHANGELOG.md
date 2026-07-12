@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- Publish the mathlib-scale validation continuously: a scheduled workflow
+  re-runs the documented module scans against the latest mathlib release
+  using its prebuilt olean cache, verifies the byte-identical determinism
+  rescan, and deploys an aggregates-only page (per-module counts, unknown
+  rates, timings) to GitHub Pages, republishing on tool release tags. No
+  per-declaration findings are published; the page measures the classifier,
+  not mathlib. The CI-contract checker pins the workflow's actions and its
+  aggregates-only policy.
 - Ship a composite GitHub Action at the repository root so downstream
   projects can gate CI on their assumption surface with one `uses:` step:
   the action installs the project's pinned toolchain, builds the CLI on

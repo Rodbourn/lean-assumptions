@@ -95,6 +95,27 @@ Interpretation notes:
   all sampled cases are conservative (`unknown`), which is the designed
   failure direction.
 
+## Scheduled publication
+
+`.github/workflows/mathlib-validation.yml` re-runs this procedure on hosted
+runners and publishes the results to GitHub Pages as a static page plus a
+machine-readable `summary.json`. Triggers: a weekly schedule that scans the
+latest mathlib release (skipping when the published summary already covers
+that release at the current tool revision), any `v*` tag push (republishing
+for the new tool revision), and manual dispatch. The scan workspace uses the
+mathlib release's own pinned toolchain and prebuilt olean cache
+(`lake exe cache get`), so no mathlib compilation happens on the runner.
+
+The published page carries **aggregates only** — per-module counts, unknown
+rates, the byte-identical determinism rescan, and timings. No per-declaration
+findings leave the runner: these runs measure the classifier, not mathlib,
+and strict-policy failure counts on real mathematical code are expected
+behavior, not a hygiene report. The page is generated exclusively by the
+reviewed `scripts/build_mathlib_validation_page.py`, and the CI-contract
+checker pins the workflow's actions, its aggregates-only statement, and the
+determinism rescan. Publishing requires the repository's Pages source to be
+set to "GitHub Actions" (a one-time operator step in repository settings).
+
 ## Re-verification
 
 ```bash

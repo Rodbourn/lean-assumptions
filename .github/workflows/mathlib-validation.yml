@@ -1,0 +1,191 @@
+name: mathlib-validation
+
+on:
+  schedule:
+    - cron: "43 7 * * 3"
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: mathlib-validation
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+# Publishes the mathlib-scale validation (docs/mathlib-scale-validation.md) as
+# a GitHub Pages site. AGGREGATES ONLY: per-module counts, unknown rates,
+# determinism, and timings. It measures the classifier, not mathlib —
+# strict-policy failures on real mathematical code are expected, and no
+# per-declaration findings leave the runner. Weekly runs re-scan when a new
+# mathlib release appears; tag pushes republish for the new tool revision.
+jobs:
+  validate-and-publish:
+    name: mathlib-scale-validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        with:
+          path: lean-assumptions
+      - name: Resolve latest mathlib release
+        id: mathlib
+        run: |
+          tag=$(curl -fsSL https://api.github.com/repos/leanprover-community/mathlib4/releases/latest \
+            | python3 -c 'import json, sys; print(json.load(sys.stdin)["tag_name"])')
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "Latest mathlib release: $tag"
+      - name: Decide whether this run adds information
+        id: gate
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          MATHLIB_TAG: ${{ steps.mathlib.outputs.tag }}
+          TOOL_REV: ${{ github.sha }}
+        run: |
+          should_run=true
+          if [ "$EVENT_NAME" = "schedule" ]; then
+            published=$(curl -fsSL "https://rodbourn.github.io/lean-assumptions/summary.json" || echo '{}')
+            same=$(printf '%s' "$published" | python3 -c '
+          import json, os, sys
+          try:
+              d = json.load(sys.stdin)
+          except Exception:
+              d = {}
+          same = d.get("mathlib_tag") == os.environ["MATHLIB_TAG"] and \
+              d.get("tool_rev") == os.environ["TOOL_REV"]
+          print("yes" if same else "no")')
+            if [ "$same" = "yes" ]; then
+              echo "Already published for $MATHLIB_TAG at $TOOL_REV; skipping."
+              should_run=false
+            fi
+          fi
+          echo "run=$should_run" >> "$GITHUB_OUTPUT"
+      - name: Assemble scan workspace
+        if: steps.gate.outputs.run == 'true'
+        env:
+          MATHLIB_TAG: ${{ steps.mathlib.outputs.tag }}
+        run: |
+          mkdir scan
+          cd scan
+          curl -fsSL "https://raw.githubusercontent.com/leanprover-community/mathlib4/$MATHLIB_TAG/lean-toolchain" > lean-toolchain
+          echo "mathlib toolchain: $(cat lean-toolchain)"
+          git clone --depth 1 --branch "$MATHLIB_TAG" \
+            https://github.com/leanprover-community/mathlib4 mathlib4
+          cat > lakefile.lean <<'LAKE'
+          import Lake
+          open Lake DSL
+
+          package «lean-assumptions-scan» where
+            description := "Scheduled mathlib-scale validation harness for lean-assumptions."
+
+          require mathlib from "./mathlib4"
+
+          require «lean-assumptions» from "../lean-assumptions"
+          LAKE
+      - uses: leanprover/lean-action@38fbc41a8c28c4cbaec22d7f7de508ec2e7c0dd9 # v1
+        if: steps.gate.outputs.run == 'true'
+        with:
+          build: false
+          test: false
+          lint: false
+          use-github-cache: false
+          use-mathlib-cache: false
+          lake-package-directory: scan
+      - name: Fetch mathlib oleans and build the CLI
+        if: steps.gate.outputs.run == 'true'
+        working-directory: scan
+        run: |
+          lake update
+          lake exe cache get
+          lake build lean-assumptions
+      - name: Run module scans
+        if: steps.gate.outputs.run == 'true'
+        working-directory: scan
+        env:
+          MATHLIB_TAG: ${{ steps.mathlib.outputs.tag }}
+          TOOL_REV: ${{ github.sha }}
+        run: |
+          mkdir -p ../artifacts
+          declare -A seconds
+          scan() {
+            local module=$1 out=$2
+            local start=$SECONDS
+            set +e
+            lake exe lean-assumptions --module "$module" --scan-module "$module" \
+              --format json > "$out"
+            local code=$?
+            set -e
+            seconds[$module]=$((SECONDS - start))
+            if [ "$code" -ne 0 ] && [ "$code" -ne 1 ]; then
+              echo "::error::scan of $module exited $code (expected 0 or 1)"
+              exit "$code"
+            fi
+            echo "$module: exit $code in ${seconds[$module]}s"
+          }
+          scan Mathlib.Logic.Basic ../artifacts/Mathlib.Logic.Basic.json
+          scan Mathlib.Order.Basic ../artifacts/Mathlib.Order.Basic.json
+          scan Mathlib.Algebra.Group.Basic ../artifacts/Mathlib.Algebra.Group.Basic.json
+          scan Mathlib.Logic.Basic ../rescan.json
+          if cmp -s ../artifacts/Mathlib.Logic.Basic.json ../rescan.json; then
+            deterministic=true
+          else
+            echo "::error::rescan of Mathlib.Logic.Basic was not byte-identical"
+            deterministic=false
+          fi
+          export META_TOOL_VERSION=$(sed -n 's/def toolVersion : String := "\([^"]*\)"/\1/p' \
+            ../lean-assumptions/LeanAssumptions/Version.lean)
+          export META_TOOLCHAIN=$(cat lean-toolchain)
+          export META_RUN_DATE=$(date -u +%F)
+          export META_DETERMINISTIC=$deterministic
+          export META_SECONDS_LOGIC=${seconds[Mathlib.Logic.Basic]}
+          export META_SECONDS_ORDER=${seconds[Mathlib.Order.Basic]}
+          export META_SECONDS_ALGEBRA=${seconds[Mathlib.Algebra.Group.Basic]}
+          python3 - <<'PY'
+          import json
+          import os
+
+          env = os.environ
+          meta = {
+              "mathlib_tag": env["MATHLIB_TAG"],
+              "mathlib_toolchain": env["META_TOOLCHAIN"].strip(),
+              "tool_rev": env["TOOL_REV"],
+              "tool_version": env["META_TOOL_VERSION"],
+              "run_date": env["META_RUN_DATE"],
+              "determinism_byte_identical_rescan": env["META_DETERMINISTIC"] == "true",
+              "wall_seconds": {
+                  "Mathlib.Logic.Basic": int(env["META_SECONDS_LOGIC"]),
+                  "Mathlib.Order.Basic": int(env["META_SECONDS_ORDER"]),
+                  "Mathlib.Algebra.Group.Basic": int(env["META_SECONDS_ALGEBRA"]),
+              },
+          }
+          with open("../meta.json", "w", encoding="utf-8") as handle:
+              json.dump(meta, handle, indent=1)
+          PY
+          if [ "$deterministic" != "true" ]; then
+            exit 1
+          fi
+      - name: Build validation page
+        if: steps.gate.outputs.run == 'true'
+        run: |
+          python3 lean-assumptions/scripts/build_mathlib_validation_page.py \
+            --artifacts artifacts --meta meta.json --out site
+      - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
+        if: steps.gate.outputs.run == 'true'
+      - uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
+        if: steps.gate.outputs.run == 'true'
+        with:
+          path: site
+      - uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
+        if: steps.gate.outputs.run == 'true'
+        id: deployment
