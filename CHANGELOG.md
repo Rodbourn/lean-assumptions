@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Publish the 2026-07-11 audit in full (`docs/audit-2026-07-11.md`): methodology honestly attributed as maintainer-directed multi-agent review, every finding with its minimal reproducer and fix commit, the gate-vacuousness postmortem, and what the audit did not establish. Ready-to-file issue drafts accompany it, and the README gains a maintenance-expectations section.
 - Rename the command surface before any downstream adoption: `#assumptions` (hidden-surface default), `#assumptions strict`, and `#assumptions_json` replace the `#print assumptions` family, which extended core's `#print` syntax; the redundant `#print assumption_tree` spelling is dropped. The strict marker is a non-reserved keyword, so `strict` remains usable as an ordinary identifier downstream.
 - Make the hidden-surface policy the in-editor default: bare commands flag only assumptions a reader cannot see in the statement as written (packaged proposition fields, proof-carrying data, unexpanded aliases, unknowns), while `strict` variants and the CLI's strict default preserve the certification posture. A `--preset strict|hidden` CLI flag selects the base policy.
 - Add policy granularity for real theorem corpora: `direct_prop_policy` and `alias_policy` treatments, `permit_direct_prop_types` (match direct propositions by proposition head rather than binder name), and `permit_typeclass_types` (allow named classes while typeclass_policy stays warn/fail) in policy files and the policy engine. The canonical policy description bumps to v2, so all policy digests change.
