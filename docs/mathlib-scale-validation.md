@@ -48,7 +48,7 @@ and proposition binders, so nonzero exit (1) is the expected outcome — these
 runs measure classifier behavior, performance, and determinism, not policy
 cleanliness.
 
-## Results (2026-07-11, run at repository revision `028ef60`)
+## Results (2026-07-11, run at repository revision `a38d4fd`)
 
 | Module | Scanned | Passed | Failed | Unknown-bearing | Wall time |
 | --- | --- | --- | --- | --- | --- |
