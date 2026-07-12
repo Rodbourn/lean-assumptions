@@ -9,6 +9,13 @@ declarations_scanned: 5
 failing_declarations: 4
 failure_findings: 4
 clusters: 3
+trend_hidden: 2
+trend_explicit_direct_prop: 1
+trend_explicit_typeclass: 1
+trend_mixed: 0
+trend_hidden_families: Example.Package=2
+trend_explicit_direct_prop_families: none=1
+trend_lanes: none
 failure_clusters:
 - source=package kind=unapproved_package_with_prop_fields category=package_with_prop_fields type=Example.Package module=none lane=none declarations=2 findings=2
   declarations: [Example.packageOne,Example.packageTwo]

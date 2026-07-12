@@ -71,11 +71,43 @@ structure ClusterSummary where
   clusters : Nat
   deriving BEq, Repr, Inhabited
 
+/--
+FR-018 remediation signal for one failing declaration, inferred mechanically
+from public finding categories: `hidden` failures come from packaging,
+proof-carrying data, aliases, or unknowns; `explicit` failures from direct
+proposition binders or typeclass assumptions; declarations with more than one
+bucket are `mixed`.
+-/
+inductive RemediationSignal where
+  | hidden
+  | explicitDirectProp
+  | explicitTypeclass
+  | mixed
+  deriving BEq, DecidableEq, Repr, Inhabited
+
+/-- One report-derived failure family: a type head and its declaration count. -/
+structure TrendFamily where
+  typeName? : Option String
+  declarations : Nat
+  deriving BEq, Repr, Inhabited
+
+/-- FR-019 deterministic trend summary derived from public artifact fields. -/
+structure TrendSummary where
+  hidden : Nat := 0
+  explicitDirectProp : Nat := 0
+  explicitTypeclass : Nat := 0
+  mixed : Nat := 0
+  hiddenFamilies : Array TrendFamily := #[]
+  explicitDirectPropFamilies : Array TrendFamily := #[]
+  laneCounts : Array (String × Nat) := #[]
+  deriving BEq, Repr, Inhabited
+
 /-- Complete deterministic failure-clustering report. -/
 structure ClusterReport where
   source : SourceMetadata
   summary : ClusterSummary
   clusters : Array FailureCluster
+  trend : TrendSummary
   deriving BEq, Repr, Inhabited
 
 /-- Join strings with a separator without depending on map iteration order. -/
@@ -352,6 +384,112 @@ private def countFailingDeclarations (declarations : Array DeclarationSnapshot) 
 private def countClusteredFindings (clusters : Array FailureCluster) : Nat :=
   clusters.foldl (fun count cluster => count + cluster.findingCount) 0
 
+/-- Return whether a finding category belongs to the hidden remediation bucket. -/
+private def categoryIsHidden (category : String) : Bool :=
+  category == "package_with_prop_fields" || category == "proof_carrying_data" ||
+    category == "alias" || category == "unknown"
+
+/--
+Classify one failing declaration's remediation signal from the categories of
+its failing findings (FR-018). Categories outside the public set are treated
+as hidden, conservatively: content the report cannot name explicitly is not
+explicit.
+-/
+def remediationSignalOfCategories (categories : Array String) : RemediationSignal :=
+  let hasHidden := categories.any fun category =>
+    !(category == "direct_prop" || category == "typeclass_assumption")
+  let hasDirect := categories.any (· == "direct_prop")
+  let hasTypeclass := categories.any (· == "typeclass_assumption")
+  match hasHidden, hasDirect, hasTypeclass with
+  | true, false, false => .hidden
+  | false, true, false => .explicitDirectProp
+  | false, false, true => .explicitTypeclass
+  | _, _, _ => .mixed
+
+/-- The remediation signal of one failing declaration snapshot. -/
+private def signalOfDeclaration (declaration : DeclarationSnapshot) : RemediationSignal :=
+  let findings := failingFindings declaration
+  let findings := if findings.isEmpty then #[missingFailureFinding declaration] else findings
+  remediationSignalOfCategories (findings.map (·.category))
+
+/-- Insert one declaration into a sorted unique family count list. -/
+private def addToFamilies (typeName? : Option String) :
+    List TrendFamily -> List TrendFamily
+  | [] => [{ typeName? := typeName?, declarations := 1 }]
+  | family :: rest =>
+    if family.typeName? == typeName? then
+      { family with declarations := family.declarations + 1 } :: rest
+    else
+      family :: addToFamilies typeName? rest
+
+/-- Sort families by descending declaration count, then type name. -/
+private def sortFamilies (families : List TrendFamily) : Array TrendFamily :=
+  let familyLt (left right : TrendFamily) : Bool :=
+    if left.declarations > right.declarations then true
+    else if left.declarations < right.declarations then false
+    else optionKey left.typeName? < optionKey right.typeName?
+  let rec insert (family : TrendFamily) : List TrendFamily -> List TrendFamily
+    | [] => [family]
+    | head :: rest =>
+      if familyLt family head then family :: head :: rest else head :: insert family rest
+  families.foldl (fun sorted family => insert family sorted) [] |>.toArray
+
+/-- The first failing-finding type head per bucket for one declaration. -/
+private def bucketTypeName? (declaration : DeclarationSnapshot)
+    (bucket : String → Bool) : Option (Option String) :=
+  let findings := failingFindings declaration
+  let findings := if findings.isEmpty then #[missingFailureFinding declaration] else findings
+  findings.foldl (fun found finding =>
+    match found with
+    | some _ => found
+    | none => if bucket finding.category then some finding.typeName? else none) none
+
+/-- Insert one lane occurrence into a sorted lane-count list. -/
+private def addLaneCount (lane : String) : List (String × Nat) -> List (String × Nat)
+  | [] => [(lane, 1)]
+  | (name, count) :: rest =>
+    if name == lane then (name, count + 1) :: rest
+    else if lane < name then (lane, 1) :: (name, count) :: rest
+    else (name, count) :: addLaneCount lane rest
+
+/-- Compute the FR-019 trend summary over failing declarations. -/
+private def trendOfDeclarations (declarations : Array DeclarationSnapshot) : TrendSummary :=
+  declarations.foldl (fun trend declaration =>
+    if !policyResultIsFailure declaration.policyResult then trend else
+    let signal := signalOfDeclaration declaration
+    let trend :=
+      match signal with
+      | .hidden => { trend with hidden := trend.hidden + 1 }
+      | .explicitDirectProp =>
+        { trend with explicitDirectProp := trend.explicitDirectProp + 1 }
+      | .explicitTypeclass =>
+        { trend with explicitTypeclass := trend.explicitTypeclass + 1 }
+      | .mixed => { trend with mixed := trend.mixed + 1 }
+    let trend :=
+      match bucketTypeName? declaration categoryIsHidden with
+      | some typeName? =>
+        { trend with
+          hiddenFamilies := (addToFamilies typeName? trend.hiddenFamilies.toList).toArray }
+      | none => trend
+    let trend :=
+      match bucketTypeName? declaration (· == "direct_prop") with
+      | some typeName? =>
+        { trend with
+          explicitDirectPropFamilies :=
+            (addToFamilies typeName? trend.explicitDirectPropFamilies.toList).toArray }
+      | none => trend
+    match declaration.lane? with
+    | some lane =>
+      { trend with laneCounts := (addLaneCount lane trend.laneCounts.toList).toArray }
+    | none => trend) {}
+
+/-- Sort the family lists of a computed trend deterministically. -/
+private def sortTrend (trend : TrendSummary) : TrendSummary := {
+  trend with
+  hiddenFamilies := sortFamilies trend.hiddenFamilies.toList
+  explicitDirectPropFamilies := sortFamilies trend.explicitDirectPropFamilies.toList
+}
+
 /-- Build a deterministic failure-clustering report from a parsed artifact. -/
 def clusterArtifact (artifact : AuditArtifact) : ClusterReport :=
   let clusters :=
@@ -366,6 +504,7 @@ def clusterArtifact (artifact : AuditArtifact) : ClusterReport :=
       clusters := clusters.size
     }
     clusters := clusters
+    trend := sortTrend (trendOfDeclarations artifact.declarations)
   }
 
 /-- Parse and cluster one JSON artifact. -/
@@ -412,6 +551,24 @@ private def limitationsText : String :=
     "validate proof axioms, sandbox execution, prove theorem-statement equivalence, " ++
     "infer project-specific cleanup lanes, or suggest remediation."
 
+/-- Render one trend family as a stable text fragment. -/
+private def renderFamilyText (family : TrendFamily) : String :=
+  renderOptionalText family.typeName? ++ "=" ++ toString family.declarations
+
+/-- Render a trend family list as stable text. -/
+private def renderFamiliesText (families : Array TrendFamily) : String :=
+  if families.isEmpty then
+    "none"
+  else
+    joinWith "," (families.toList.map renderFamilyText)
+
+/-- Render lane counts as stable text. -/
+private def renderLaneCountsText (lanes : Array (String × Nat)) : String :=
+  if lanes.isEmpty then
+    "none"
+  else
+    joinWith "," (lanes.toList.map fun (lane, count) => lane ++ "=" ++ toString count)
+
 /-- Render a complete cluster report as stable human-readable text. -/
 def renderText (report : ClusterReport) : String :=
   let clusterLines :=
@@ -431,6 +588,14 @@ def renderText (report : ClusterReport) : String :=
     "failing_declarations: " ++ toString report.summary.failingDeclarations,
     "failure_findings: " ++ toString report.summary.failureFindings,
     "clusters: " ++ toString report.summary.clusters,
+    "trend_hidden: " ++ toString report.trend.hidden,
+    "trend_explicit_direct_prop: " ++ toString report.trend.explicitDirectProp,
+    "trend_explicit_typeclass: " ++ toString report.trend.explicitTypeclass,
+    "trend_mixed: " ++ toString report.trend.mixed,
+    "trend_hidden_families: " ++ renderFamiliesText report.trend.hiddenFamilies,
+    "trend_explicit_direct_prop_families: " ++
+      renderFamiliesText report.trend.explicitDirectPropFamilies,
+    "trend_lanes: " ++ renderLaneCountsText report.trend.laneCounts,
     "failure_clusters:"
   ] ++ clusterLines ++ [limitationsText]
   joinWith "\n" lines ++ "\n"
@@ -485,6 +650,33 @@ private def renderClusterJson (cluster : FailureCluster) : String :=
     ("declarations", jsonArray (cluster.declarations.map jsonString))
   ]
 
+/-- Render one trend family as deterministic JSON. -/
+private def renderFamilyJson (family : TrendFamily) : String :=
+  jsonObject [
+    ("type_name", jsonOptionalString family.typeName?),
+    ("declarations", toString family.declarations)
+  ]
+
+/-- Render lane counts as deterministic JSON. -/
+private def renderLaneCountJson (lane : String × Nat) : String :=
+  jsonObject [
+    ("lane", jsonString lane.fst),
+    ("declarations", toString lane.snd)
+  ]
+
+/-- Render the FR-019 trend summary as deterministic JSON. -/
+private def renderTrendJson (trend : TrendSummary) : String :=
+  jsonObject [
+    ("hidden", toString trend.hidden),
+    ("explicit_direct_prop", toString trend.explicitDirectProp),
+    ("explicit_typeclass", toString trend.explicitTypeclass),
+    ("mixed", toString trend.mixed),
+    ("hidden_families", jsonArray (trend.hiddenFamilies.map renderFamilyJson)),
+    ("explicit_direct_prop_families",
+      jsonArray (trend.explicitDirectPropFamilies.map renderFamilyJson)),
+    ("lanes", jsonArray (trend.laneCounts.map renderLaneCountJson))
+  ]
+
 /-- Render a complete cluster report as stable minified JSON plus a trailing newline. -/
 def renderJsonString (report : ClusterReport) : String :=
   jsonObject [
@@ -493,6 +685,7 @@ def renderJsonString (report : ClusterReport) : String :=
     ("cluster_model_version", jsonString reportModelVersion),
     ("source", renderSourceJson report.source),
     ("summary", renderSummaryJson report.summary),
+    ("trend", renderTrendJson report.trend),
     ("clusters", jsonArray (report.clusters.map renderClusterJson)),
     ("limitations", jsonArray #[
       jsonString "clusters rendered audit artifacts only",

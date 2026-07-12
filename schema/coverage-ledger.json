@@ -345,9 +345,33 @@
      ]
     },
     {
+     "name": "LeanAssumptions.Cluster.RemediationSignal",
+     "tests": [
+      "LeanAssumptionsTest/Unit/Cluster.lean",
+      "LeanAssumptionsTest/Golden/Cluster.lean",
+      "lake test"
+     ]
+    },
+    {
      "name": "LeanAssumptions.Cluster.SourceMetadata",
      "tests": [
       "LeanAssumptionsTest/Golden/Cluster.lean"
+     ]
+    },
+    {
+     "name": "LeanAssumptions.Cluster.TrendFamily",
+     "tests": [
+      "LeanAssumptionsTest/Unit/Cluster.lean",
+      "LeanAssumptionsTest/Golden/Cluster.lean",
+      "lake test"
+     ]
+    },
+    {
+     "name": "LeanAssumptions.Cluster.TrendSummary",
+     "tests": [
+      "LeanAssumptionsTest/Unit/Cluster.lean",
+      "LeanAssumptionsTest/Golden/Cluster.lean",
+      "lake test"
      ]
     },
     {
@@ -373,6 +397,14 @@
      "tests": [
       "LeanAssumptionsTest/Golden/Cluster.lean",
       "LeanAssumptionsTest/Integration/Cli.lean"
+     ]
+    },
+    {
+     "name": "LeanAssumptions.Cluster.remediationSignalOfCategories",
+     "tests": [
+      "LeanAssumptionsTest/Unit/Cluster.lean",
+      "LeanAssumptionsTest/Golden/Cluster.lean",
+      "lake test"
      ]
     },
     {
@@ -1086,6 +1118,13 @@
   },
   {
    "path": "LeanAssumptionsTest/Unit/Baseline/Phase4.lean",
+   "tests": [
+    "lake test"
+   ],
+   "publicDefinitions": []
+  },
+  {
+   "path": "LeanAssumptionsTest/Unit/Cluster.lean",
    "tests": [
     "lake test"
    ],
