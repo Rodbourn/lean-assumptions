@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Nothing yet.
+
+## 0.2.0 - 2026-07-12
+
 - Publish the 2026-07-11 audit in full (`docs/audit-2026-07-11.md`): methodology honestly attributed as maintainer-directed multi-agent review, every finding with its minimal reproducer and fix commit, the gate-vacuousness postmortem, and what the audit did not establish. Ready-to-file issue drafts accompany it, and the README gains a maintenance-expectations section.
 - Rename the command surface before any downstream adoption: `#assumptions` (hidden-surface default), `#assumptions strict`, and `#assumptions_json` replace the `#print assumptions` family, which extended core's `#print` syntax; the redundant `#print assumption_tree` spelling is dropped. The strict marker is a non-reserved keyword, so `strict` remains usable as an ordinary identifier downstream.
 - Make the hidden-surface policy the in-editor default: bare commands flag only assumptions a reader cannot see in the statement as written (packaged proposition fields, proof-carrying data, unexpanded aliases, unknowns), while `strict` variants and the CLI's strict default preserve the certification posture. A `--preset strict|hidden` CLI flag selects the base policy.
@@ -9,8 +13,6 @@
 - Add a `--transparency` CLI flag so alias-transparency modes are reachable without a policy file; the setting composes with `--policy` order-independently and is recorded in the policy identifier and digest. `--help` now describes every flag, the composition rules, and the exit codes. README quick-start commands use `lake exe`, which builds the executable on demand for downstream users. Regression fixtures pin that imax-spelled `Prop` sorts arrive normalized from the elaborator and classify as direct propositions.
 - Update the pinned Lean toolchain from `v4.30.0-rc2` to `v4.31.0`, the latest stable release, resolving the automated update issue: the entire library including the certified core and its machine-checked theorems builds unchanged, all goldens are regenerated for the new version string, and the doc-gen4 build tracks the same toolchain. The package is now consumable from stable-toolchain projects.
 - Raise the stack limit when elaborating the runnable example in `scripts/check_examples.py`: a hosted release-readiness job segfaulted (exit 139) on a command that passed in both build-test jobs of the same run, the signature of near-threshold stack exhaustion in interpreted metaprogram elaboration.
-
-## 0.2.0 - 2026-07-11
 
 - Bootstrap repository skeleton for Phase 0 and Phase 1.
 - Add certified-path report model, fixture corpus, and test layout.
