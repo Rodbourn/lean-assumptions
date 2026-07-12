@@ -725,9 +725,23 @@
      ]
     },
     {
+     "name": "LeanAssumptions.Policy.digest_label_independent",
+     "tests": [
+      "lake build",
+      "lake env leanchecker --fresh LeanAssumptions"
+     ]
+    },
+    {
      "name": "LeanAssumptions.Policy.evaluate",
      "tests": [
       "LeanAssumptionsTest/Unit/Policy/Phase2.lean"
+     ]
+    },
+    {
+     "name": "LeanAssumptions.Policy.evaluate_transparency_mismatch",
+     "tests": [
+      "lake build",
+      "lake env leanchecker --fresh LeanAssumptions"
      ]
     },
     {
@@ -739,9 +753,23 @@
      ]
     },
     {
+     "name": "LeanAssumptions.Policy.resultOfFindings_empty",
+     "tests": [
+      "lake build",
+      "lake env leanchecker --fresh LeanAssumptions"
+     ]
+    },
+    {
      "name": "LeanAssumptions.Policy.strictPolicy",
      "tests": [
       "LeanAssumptionsTest/Unit/Policy/Phase2.lean"
+     ]
+    },
+    {
+     "name": "LeanAssumptions.Policy.transparencyMismatchFinding",
+     "tests": [
+      "LeanAssumptionsTest/Unit/Policy/Phase2.lean",
+      "lake test"
      ]
     }
    ]

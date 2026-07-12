@@ -331,37 +331,157 @@ private def resultOfFindings (findings : Array PolicyFinding) : PolicyResult :=
   else
     .pass
 
+/-- The audit-error finding seeded when policy and report transparency differ. -/
+def transparencyMismatchFinding : PolicyFinding := {
+  kind := .transparencyMismatch
+  severity := .auditError
+  path := #[]
+  category := .unknown
+  typeName? := none
+}
+
+/-- Seed findings for an evaluation: empty, or the transparency mismatch. -/
+private def seedFindings (policy : PolicyConfig) (report : AssumptionReport) :
+    Array PolicyFinding :=
+  if policy.transparencyMode == report.transparencyMode then
+    #[]
+  else
+    #[transparencyMismatchFinding]
+
+/--
+Initial work items for an evaluation: every top-level binder, followed by the
+blocked result surface when one is present. A blocked result surface
+participates in policy evaluation like a binder: an alias-headed or unpeelable
+declaration surface must not pass silently.
+-/
+private def initialWorkItems (report : AssumptionReport) : List WorkItem :=
+  (report.binders.toList.map fun binder => {
+    node := binder
+    path := #[binder.userName]
+    insidePackagedAssumption := false
+    : WorkItem
+  }) ++
+    (match report.resultSurface? with
+      | some node =>
+        [{ node := node, path := #[node.userName], insidePackagedAssumption := false : WorkItem }]
+      | none => [])
+
+/-- The complete deterministic findings of an evaluation. -/
+private def evaluationFindings (policy : PolicyConfig) (report : AssumptionReport) :
+    Array PolicyFinding :=
+  evaluateWork policy policyTraversalBudget (initialWorkItems report)
+    (seedFindings policy report)
+
 /-- Evaluate a core assumption report against a deterministic policy. -/
 def evaluate (policy : PolicyConfig) (report : AssumptionReport) : PolicyEvaluation :=
-  let findings : Array PolicyFinding :=
-    if policy.transparencyMode == report.transparencyMode then
-      #[]
-    else
-      #[{
-        kind := .transparencyMismatch
-        severity := .auditError
-        path := #[]
-        category := .unknown
-        typeName? := none
-      }]
-  let initialWork :=
-    report.binders.toList.map fun binder => {
-      node := binder
-      path := #[binder.userName]
-      insidePackagedAssumption := false
-      : WorkItem
-    }
-  -- A blocked result surface participates in policy evaluation like a binder:
-  -- an alias-headed or unpeelable declaration surface must not pass silently.
-  let resultWork :=
-    match report.resultSurface? with
-    | some node =>
-      [{ node := node, path := #[node.userName], insidePackagedAssumption := false : WorkItem }]
-    | none => []
-  let findings := evaluateWork policy policyTraversalBudget (initialWork ++ resultWork) findings
+  let findings := evaluationFindings policy report
   {
     result := resultOfFindings findings
     findings := findings
   }
+
+/-!
+## Machine-checked properties
+
+The policy engine is pure, so its central guarantees are provable inside Lean
+rather than merely tested. Each theorem below is part of the certified trust
+story: `lake build` checking these proofs re-verifies the properties on every
+build, and `leanchecker` replays them through the kernel.
+-/
+
+/-- The policy digest ignores the human-facing identifier label. -/
+theorem digest_label_independent (policy : PolicyConfig) (label : String) :
+    PolicyConfig.digest { policy with identifier := label } = policy.digest :=
+  rfl
+
+/-- Pushing an extra finding preserves any existing `any` witness. -/
+private theorem any_push_of_any (findings : Array PolicyFinding) (extra : PolicyFinding)
+    (predicate : PolicyFinding → Bool) (present : findings.any predicate = true) :
+    (findings.push extra).any predicate = true := by
+  rcases Array.any_eq_true.mp present with ⟨index, inBounds, holds⟩
+  have pushBound : index < (findings.push extra).size := by
+    simp only [Array.size_push]
+    omega
+  refine Array.any_eq_true.mpr ⟨index, pushBound, ?_⟩
+  simpa [Array.getElem_push_lt inBounds] using holds
+
+/-- A finding surviving `pushTreatedFinding` still satisfies `any`. -/
+private theorem any_pushTreatedFinding
+    (findings : Array PolicyFinding) (treatment : AssumptionTreatment)
+    (kind : PolicyFindingKind) (path : Array Lean.Name) (node : BinderSurface)
+    (predicate : PolicyFinding → Bool) (present : findings.any predicate) :
+    (pushTreatedFinding findings treatment kind path node).any predicate := by
+  unfold pushTreatedFinding
+  split
+  · exact present
+  · exact any_push_of_any _ _ _ present
+
+/-- `evaluateOwnNode` never removes findings: `any` predicates are preserved. -/
+private theorem any_evaluateOwnNode
+    (policy : PolicyConfig) (insidePackagedAssumption : Bool)
+    (path : Array Lean.Name) (node : BinderSurface) (findings : Array PolicyFinding)
+    (predicate : PolicyFinding → Bool) (present : findings.any predicate) :
+    (evaluateOwnNode policy insidePackagedAssumption path node findings).any predicate := by
+  cases hFlag : hasFlag node AssumptionFlag.cycleTruncated <;>
+  cases hInside : insidePackagedAssumption <;>
+  cases hCat : node.primaryCategory <;>
+    simp only [evaluateOwnNode, hFlag, hCat, if_true, if_false,
+      Bool.false_eq_true] <;>
+    (try split) <;>
+    (try split) <;>
+    first
+      | exact present
+      | exact any_push_of_any _ _ _ present
+      | exact any_pushTreatedFinding _ _ _ _ _ _ present
+      | exact any_push_of_any _ _ _ (any_push_of_any _ _ _ present)
+      | exact any_push_of_any _ _ _ (any_pushTreatedFinding _ _ _ _ _ _ present)
+      | exact any_pushTreatedFinding _ _ _ _ _ _ (any_push_of_any _ _ _ present)
+      | exact any_pushTreatedFinding _ _ _ _ _ _
+          (any_pushTreatedFinding _ _ _ _ _ _ present)
+      | (rename_i contradictory; simp at contradictory)
+      | simp_all
+
+/-- `evaluateWork` never removes findings: `any` predicates are preserved. -/
+private theorem any_evaluateWork
+    (policy : PolicyConfig) (predicate : PolicyFinding → Bool) :
+    ∀ (fuel : Nat) (work : List WorkItem) (findings : Array PolicyFinding),
+      findings.any predicate → (evaluateWork policy fuel work findings).any predicate
+  | 0, [], _, present => present
+  | 0, _ :: _, findings, present => by
+    unfold evaluateWork
+    exact any_push_of_any _ _ _ present
+  | _ + 1, [], _, present => present
+  | fuel + 1, item :: rest, findings, present => by
+    unfold evaluateWork
+    exact any_evaluateWork policy predicate fuel _ _
+      (any_evaluateOwnNode _ _ _ _ _ _ present)
+
+/-- Any audit-error finding forces the overall audit-error result. -/
+private theorem resultOfFindings_auditError (findings : Array PolicyFinding)
+    (present : findings.any (fun finding => finding.severity == .auditError)) :
+    resultOfFindings findings = PolicyResult.auditError := by
+  unfold resultOfFindings
+  simp [present]
+
+/--
+A transparency mismatch is never recoverable: when the policy's transparency
+mode differs from the report's, evaluation is an `audit_error` no matter what
+the report contains. Mismatched artifacts can never pass silently.
+-/
+theorem evaluate_transparency_mismatch
+    (policy : PolicyConfig) (report : AssumptionReport)
+    (mismatch : (policy.transparencyMode == report.transparencyMode) = false) :
+    (evaluate policy report).result = PolicyResult.auditError := by
+  have seeded :
+      (seedFindings policy report).any
+        (fun finding => finding.severity == .auditError) = true := by
+    simp [seedFindings, mismatch, transparencyMismatchFinding]
+  exact resultOfFindings_auditError _
+    (any_evaluateWork policy _ policyTraversalBudget _ _ seeded)
+
+/-- An empty findings array is exactly a pass. -/
+theorem resultOfFindings_empty : resultOfFindings #[] = PolicyResult.pass := by
+  unfold resultOfFindings
+  simp
 
 end LeanAssumptions.Policy

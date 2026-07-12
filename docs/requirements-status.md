@@ -54,7 +54,7 @@ The project is not finished while any requirement or verification gate below is
 
 | Requirement | Status | Notes |
 | --- | --- | --- |
-| `pass` / `warn` / `fail` / `audit_error` | done | Implemented in `LeanAssumptions.Policy` and tested through strict, allowlisted, cycle, transparency-mismatch, and CLI exit-code cases. |
+| `pass` / `warn` / `fail` / `audit_error` | done | Implemented in `LeanAssumptions.Policy` and tested through strict, allowlisted, cycle, transparency-mismatch, and CLI exit-code cases. Machine-checked theorems additionally prove findings-preservation, audit-error dominance, transparency-mismatch unrecoverability, digest label-independence, and empty-findings-pass, kernel-replayed on every build. |
 | strict-mode unknown handling | done | Strict policy fails unknown nodes and cycle truncation; unknowns may only be downgraded by explicit policy configuration. |
 
 ## Hardening Requirements
