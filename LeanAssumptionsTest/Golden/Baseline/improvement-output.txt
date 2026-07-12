@@ -1,5 +1,5 @@
 lean-assumptions baseline report
-tool_version: 0.2.0
+tool_version: 0.2.1
 lean_version: 4.31.0
 schema_version: 1
 baseline_schema_version: 1

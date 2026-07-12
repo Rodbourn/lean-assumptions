@@ -10,8 +10,8 @@ open LeanAssumptions.Core
 open LeanAssumptionsTest
 
 run_cmd do
-  assertEq "toolVersion" "0.2.0" LeanAssumptions.toolVersion
-  assertEq "reportModelVersion" "0.2.0" LeanAssumptions.reportModelVersion
+  assertEq "toolVersion" "0.2.1" LeanAssumptions.toolVersion
+  assertEq "reportModelVersion" "0.2.1" LeanAssumptions.reportModelVersion
 
 run_cmd do
   let report ← LeanAssumptions.inspectDeclaration `LeanAssumptionsTest.Fixtures.implicitProp

@@ -216,7 +216,7 @@ Implemented and locally verified:
 - cross-platform CI configuration, release-readiness checks, and a smoke-level performance baseline
 
 Remaining partial or tracked requirements are documented in
-[docs/requirements-status.md](docs/requirements-status.md). Version `0.2.0`
+[docs/requirements-status.md](docs/requirements-status.md). Version `0.2.1`
 is the current release line with every release gate green; Reservoir listing
 is pending its indexing criteria.
 

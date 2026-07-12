@@ -4,6 +4,10 @@
 
 - Nothing yet.
 
+## 0.2.1 - 2026-07-12
+
+- Build the `LeanAssumptions` library explicitly in the performance-baseline and release-readiness CI jobs. The CLI imports the root `LeanAssumptions` module at runtime, but that module was outside the build closure of the two jobs' build targets, so any cold-cache run — including the v0.2.0 tag run — failed with a missing `LeanAssumptions.olean` before the checks could execute; warm caches from earlier full builds had masked the gap. The CI workflow validator now pins the strengthened build command so a regression to the old command fails locally.
+
 ## 0.2.0 - 2026-07-12
 
 - Publish the project charter as `CHARTER.md`: the previously unpublished charter that README, CONTRIBUTING, and SECURITY referenced now ships in the repository, addressed to contributors.

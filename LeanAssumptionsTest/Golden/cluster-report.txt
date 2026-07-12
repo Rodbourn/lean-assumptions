@@ -1,5 +1,5 @@
 lean-assumptions cluster report
-tool_version: 0.2.0
+tool_version: 0.2.1
 schema_version: 1
 source_schema_version: 1
 source_lean_version: 4.30.0-rc2

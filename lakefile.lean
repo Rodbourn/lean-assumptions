@@ -3,7 +3,7 @@ import Lake
 open Lake DSL
 
 package «lean-assumptions» where
-  version := v!"0.2.0"
+  version := v!"0.2.1"
   description := "Audit assumption surfaces in elaborated Lean declaration types."
   keywords := #["lean", "assumptions", "audit", "static-analysis"]
   license := "Apache-2.0"
