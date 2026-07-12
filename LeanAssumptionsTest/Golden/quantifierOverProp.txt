@@ -1,8 +1,8 @@
 lean-assumptions report
-tool_version: 0.1.0-dev
+tool_version: 0.2.0
 lean_version: 4.30.0-rc2
 schema_version: 1
-report_model_version: 0.1.0-dev
+report_model_version: 0.2.0
 target: LeanAssumptionsTest.Fixtures.quantifierOverProp
 declaration_kind: theorem
 transparency_mode: none

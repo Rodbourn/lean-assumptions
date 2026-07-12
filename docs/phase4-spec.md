@@ -56,7 +56,7 @@ Current Phase 4 boundary:
 - local Reservoir metadata and release artifact sanity checks are implemented,
   but actual Reservoir publication is not
 - release mode remains blocked while partial/tracked requirements are present
-- a `0.1.0` public prerelease tag has been cut; final release mode remains
+- a `v0.2.0` release tag exists locally with release mode green; publication remains
   blocked while partial/tracked requirements remain
 
 The corresponding local validators are:

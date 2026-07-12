@@ -1,5 +1,5 @@
 lean-assumptions delta report
-tool_version: 0.1.0-dev
+tool_version: 0.2.0
 schema_version: 1
 baseline_schema_version: 1
 current_schema_version: 1

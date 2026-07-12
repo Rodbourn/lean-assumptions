@@ -212,9 +212,10 @@ Implemented and locally verified:
 - cross-platform CI configuration, release-readiness checks, and a smoke-level performance baseline
 
 Remaining partial or tracked requirements are documented in
-[docs/requirements-status.md](docs/requirements-status.md). A local `v0.1.0`
-prerelease tag exists as a development checkpoint. No public release has been
-published, and Reservoir publication has not happened yet.
+[docs/requirements-status.md](docs/requirements-status.md). Version `0.2.0`
+is tagged locally with every release gate green; publication to a public
+GitHub repository and Reservoir requires operator actions (public repo,
+pushed tag, two stars) and has not happened yet.
 
 ### Audit Status
 

@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Nothing yet.
+
+## 0.2.0 - 2026-07-11
+
 - Bootstrap repository skeleton for Phase 0 and Phase 1.
 - Add certified-path report model, fixture corpus, and test layout.
 - Track all deferred project requirements explicitly instead of leaving them implicit.
