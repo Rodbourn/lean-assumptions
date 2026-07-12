@@ -79,8 +79,8 @@ def main() -> int:
         errors,
     )
     require(
-        len(re.findall(r"lake build lean-assumptions LeanAssumptionsTest\.Fixtures", text)) >= 2,
-        "Performance and release-readiness jobs must build the CLI executable and smoke fixtures before running CLI smoke checks.",
+        len(re.findall(r"lake build LeanAssumptions lean-assumptions LeanAssumptionsTest\.Fixtures", text)) >= 2,
+        "Performance and release-readiness jobs must build the LeanAssumptions library (imported by the CLI at runtime), the CLI executable, and smoke fixtures before running CLI smoke checks.",
         errors,
     )
 
