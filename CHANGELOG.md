@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- Add `statement_repr_digest` to report schema v1: an FNV-1a 64 digest of the
+  notation-resistant `raw_declaration_type_repr`, giving consumers a rung-0
+  statement-identity certificate (byte-equal digests under the same
+  `lean_version` certify byte-identical elaborated statements). The field is
+  always emitted but schema-optional, so artifacts from earlier tool versions
+  remain valid inputs to delta, cluster, and baseline modes. The
+  accompanying `docs/statement-identity-spec.md` fixes the identity-claim
+  ladder and states what the digest never certifies — equal digests across
+  Lean versions carry no claim, and statement-meaning equivalence stays
+  permanently out of scope.
 - Make golden snapshots toolchain-portable: checked-in goldens and the example
   expectation store live `Lean.versionString` bytes as a `<LEAN_VERSION>`
   token, and all golden comparisons (compile-time, test-driver runtime, and

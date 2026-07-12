@@ -90,6 +90,11 @@
   "raw_declaration_type_repr": {
    "type": "string"
   },
+  "statement_repr_digest": {
+   "description": "Rung-0 statement-identity digest: FNV-1a 64 over raw_declaration_type_repr. Byte-equal digests under the same lean_version certify byte-identical elaborated statements; across lean_version values they certify nothing, and the digest never certifies statement-meaning equivalence. Optional so artifacts from tool versions predating the field stay valid; current tool versions always emit it.",
+   "type": "string",
+   "pattern": "^fnv1a64:[0-9a-f]{16}$"
+  },
   "result_type_repr": {
    "type": "string"
   },

@@ -881,6 +881,13 @@
      "tests": [
       "LeanAssumptionsTest/Golden/Phase3.lean"
      ]
+    },
+    {
+     "name": "LeanAssumptions.Render.statementReprDigest",
+     "tests": [
+      "LeanAssumptionsTest/Unit/Render.lean",
+      "LeanAssumptionsTest/Golden/Phase3.lean"
+     ]
     }
    ]
   },

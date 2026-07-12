@@ -20,5 +20,6 @@ assumption_tree:
 policy_findings:
 - unapproved_package_with_prop_fields severity=failure path=pkg category=package_with_prop_fields type=LeanAssumptionsTest.Fixtures.ProofPackage
 raw_declaration_type_repr: forall(pkg,explicit,app(const(LeanAssumptionsTest.Fixtures.ProofPackage,[]),const(Nat,[])),app(app(app(const(Eq,[succ(0)]),const(Nat,[])),app(app(const(LeanAssumptionsTest.Fixtures.ProofPackage.carrier,[]),const(Nat,[])),bvar(0))),app(app(const(LeanAssumptionsTest.Fixtures.ProofPackage.carrier,[]),const(Nat,[])),bvar(0))))
+statement_repr_digest: fnv1a64:e217256d625a53a9
 result_type_repr: app(app(app(const(Eq,[succ(0)]),const(Nat,[])),app(app(const(LeanAssumptionsTest.Fixtures.ProofPackage.carrier,[]),const(Nat,[])),fvar)),app(app(const(LeanAssumptionsTest.Fixtures.ProofPackage.carrier,[]),const(Nat,[])),fvar))
 limitations: audits elaborated declaration types only; does not validate proof axioms, sandbox execution, or theorem-statement equivalence.

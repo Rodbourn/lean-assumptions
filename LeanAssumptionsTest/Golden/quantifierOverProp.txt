@@ -17,5 +17,6 @@ assumption_tree:
 policy_findings:
 - unapproved_direct_prop severity=failure path=P category=direct_prop type=none
 raw_declaration_type_repr: forall(P,explicit,sort(0),const(True,[]))
+statement_repr_digest: fnv1a64:a76b6bfa9c42e23b
 result_type_repr: const(True,[])
 limitations: audits elaborated declaration types only; does not validate proof axioms, sandbox execution, or theorem-statement equivalence.

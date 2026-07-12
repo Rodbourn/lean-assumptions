@@ -178,6 +178,15 @@ conservatively and do not silently pass strict policy. All false-pass classes
 confirmed by the 2026-07-11 audit are closed with regression tests; see
 [Audit Status](#audit-status).
 
+Every report also carries a `statement_repr_digest`: an FNV-1a 64 digest of
+the notation-resistant `raw_declaration_type_repr`. Byte-equal digests under
+the same `lean_version` certify that two artifacts audited byte-identical
+elaborated statements (including binder display names). That is an identity
+certificate, not an equivalence check: equal digests across different Lean
+versions certify nothing, and differing digests never prove two statements
+differ in meaning. See `docs/statement-identity-spec.md` for the precise
+claim ladder and its boundaries.
+
 Baseline mode preserves that contract for CI adoption. It compares the current
 finding-bearing batch artifact against a checked-in v1 batch JSON baseline and
 fails only when new finding identities appear. It does not reclassify the

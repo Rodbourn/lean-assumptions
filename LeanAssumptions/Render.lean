@@ -115,6 +115,16 @@ private def renderExprWithFuel : Nat -> Lean.Expr -> String
 private def renderExpr (expr : Lean.Expr) : String :=
   renderExprWithFuel 256 expr
 
+/-- Rung-0 statement-identity digest: FNV-1a 64 over the deterministic
+`raw_declaration_type_repr` encoding of the elaborated declaration type.
+Byte-equal digests under the SAME `lean_version` certify that two artifacts
+audited byte-identical elaborated statements (including binder display names —
+stricter than alpha-equivalence). Equal digests across different
+`lean_version` values certify nothing, and the digest never certifies
+statement-meaning equivalence (see `docs/statement-identity-spec.md`). -/
+def statementReprDigest (report : AssumptionReport) : String :=
+  "fnv1a64:" ++ Policy.fnv1a64Hex (renderExpr report.declarationType)
+
 /-- Render a transparency mode using public schema spelling. -/
 private def renderTransparencyMode : TransparencyMode -> String
   | .none => "none"
@@ -266,6 +276,7 @@ def renderText
     ["policy_findings:"] ++ findingLines ++
     [
       "raw_declaration_type_repr: " ++ renderExpr report.declarationType,
+      "statement_repr_digest: " ++ statementReprDigest report,
       "result_type_repr: " ++ renderExpr report.resultType,
       "limitations: audits elaborated declaration types only; does not validate proof axioms, sandbox execution, or theorem-statement equivalence."
     ]
@@ -341,6 +352,7 @@ private def renderJsonCore
     ("cycles_truncated", renderBool report.cyclesTruncated),
     ("transparency_limited", renderBool report.transparencyLimited),
     ("raw_declaration_type_repr", jsonString (renderExpr report.declarationType)),
+    ("statement_repr_digest", jsonString (statementReprDigest report)),
     ("result_type_repr", jsonString (renderExpr report.resultType)),
     ("assumption_tree", jsonArray (report.binders.map (renderNodeJson renderTraversalBudget))),
     ("result_surface",

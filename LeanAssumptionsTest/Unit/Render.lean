@@ -100,3 +100,42 @@ run_cmd do
     2 (rendered.splitOn "\ntarget:").length
   assertTrue "newline in name is escaped, not emitted"
     ((rendered.splitOn "evil\\ntarget").length == 2)
+
+/-- A minimal report over a known constant head, for statement-digest pinning. -/
+private def natHeadedReport : AssumptionReport :=
+  let natExpr := Lean.Expr.const `Nat []
+  {
+    declarationName := `LeanAssumptionsTest.NatHeaded
+    declarationKind := .definition
+    declarationType := natExpr
+    binders := #[]
+    resultType := natExpr
+    transparencyMode := .none
+  }
+
+run_cmd do
+  -- Rung-0 statement-identity digest: exactly FNV-1a 64 over the
+  -- raw_declaration_type_repr bytes, carrying the shared fnv1a64: prefix.
+  assertEq "statement digest hashes the raw repr bytes"
+    ("fnv1a64:" ++ Policy.fnv1a64Hex "const(Nat,[])")
+    (Render.statementReprDigest natHeadedReport)
+  assertEq "statement digest is deterministic"
+    (Render.statementReprDigest natHeadedReport)
+    (Render.statementReprDigest natHeadedReport)
+  assertTrue "different statements get different digests"
+    (!(Render.statementReprDigest natHeadedReport ==
+       Render.statementReprDigest controlLiteralReport))
+  let rendered := Render.renderJsonString strictPolicy natHeadedReport {
+    result := .pass
+    findings := #[]
+  }
+  let needle := "\"statement_repr_digest\":\"" ++ Render.statementReprDigest natHeadedReport ++ "\""
+  assertTrue "rendered JSON carries the statement digest"
+    ((rendered.splitOn needle).length > 1)
+  let renderedText := Render.renderText strictPolicy natHeadedReport {
+    result := .pass
+    findings := #[]
+  }
+  let textNeedle := "statement_repr_digest: " ++ Render.statementReprDigest natHeadedReport
+  assertTrue "rendered text carries the statement digest"
+    ((renderedText.splitOn textNeedle).length > 1)
