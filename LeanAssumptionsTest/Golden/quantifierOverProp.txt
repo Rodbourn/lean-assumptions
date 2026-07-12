@@ -7,7 +7,7 @@ target: LeanAssumptionsTest.Fixtures.quantifierOverProp
 declaration_kind: theorem
 transparency_mode: none
 policy_identifier: strict
-policy_digest: fnv1a64:acdda4d48f069903
+policy_digest: fnv1a64:d777c31ae3070b53
 policy_result: fail
 unknowns_occurred: false
 cycles_truncated: false

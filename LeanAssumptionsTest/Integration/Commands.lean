@@ -2,14 +2,17 @@ import LeanAssumptions
 import LeanAssumptionsTest.Fixtures
 
 /-!
-Integration tests for the public Phase 3 `#print` command surface.
+Integration tests for the public `#assumptions` command surface.
 
 The renderer has separate golden tests; this file verifies that the command
-adapters elaborate against real fixture declarations.
+adapters elaborate against real fixture declarations in both the default
+hidden-surface mode and the explicit strict mode.
 -/
 
-#print assumptions LeanAssumptionsTest.Fixtures.packageBinder
+#assumptions LeanAssumptionsTest.Fixtures.packageBinder
 
-#print assumption_tree LeanAssumptionsTest.Fixtures.packageBinder
+#assumptions strict LeanAssumptionsTest.Fixtures.packageBinder
 
-#print assumption_json LeanAssumptionsTest.Fixtures.packageBinder
+#assumptions_json LeanAssumptionsTest.Fixtures.packageBinder
+
+#assumptions_json strict LeanAssumptionsTest.Fixtures.packageBinder

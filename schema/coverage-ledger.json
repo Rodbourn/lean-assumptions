@@ -440,7 +440,7 @@
    ],
    "publicDefinitions": [
     {
-     "name": "LeanAssumptions.Command.printAssumptionJson",
+     "name": "LeanAssumptions.Command.assumptionsCmd",
      "tests": [
       "LeanAssumptionsTest/Integration/Commands.lean",
       "python3 scripts/check_examples.py",
@@ -448,15 +448,7 @@
      ]
     },
     {
-     "name": "LeanAssumptions.Command.printAssumptionTree",
-     "tests": [
-      "LeanAssumptionsTest/Integration/Commands.lean",
-      "python3 scripts/check_examples.py",
-      "lake test"
-     ]
-    },
-    {
-     "name": "LeanAssumptions.Command.printAssumptions",
+     "name": "LeanAssumptions.Command.assumptionsJsonCmd",
      "tests": [
       "LeanAssumptionsTest/Integration/Commands.lean",
       "python3 scripts/check_examples.py",
@@ -789,6 +781,13 @@
      "tests": [
       "LeanAssumptionsTest/Unit/Policy/Phase2.lean",
       "LeanAssumptionsTest/Unit/Policy/Digest.lean",
+      "lake test"
+     ]
+    },
+    {
+     "name": "LeanAssumptions.Policy.hiddenSurfacePolicy",
+     "tests": [
+      "LeanAssumptionsTest/Unit/Policy/Phase2.lean",
       "lake test"
      ]
     },

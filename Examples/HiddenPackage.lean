@@ -26,8 +26,8 @@ assumption surface.
 theorem usesCertifiedValue (pkg : CertifiedValue) : pkg.value = pkg.value := rfl
 
 #print axioms Examples.HiddenPackage.usesCertifiedValue
-#print assumptions Examples.HiddenPackage.usesCertifiedValue
-#print assumption_tree Examples.HiddenPackage.usesCertifiedValue
-#print assumption_json Examples.HiddenPackage.usesCertifiedValue
+#assumptions Examples.HiddenPackage.usesCertifiedValue
+#assumptions strict Examples.HiddenPackage.usesCertifiedValue
+#assumptions_json Examples.HiddenPackage.usesCertifiedValue
 
 end Examples.HiddenPackage

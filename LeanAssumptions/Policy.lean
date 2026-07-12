@@ -62,12 +62,15 @@ structure PolicyFinding where
   typeName? : Option Lean.Name := none
   deriving Repr
 
-/-- Policy configuration for the certified policy engine. -/
+/-- Policy configuration for the policy engine. -/
 structure PolicyConfig where
   identifier : String := "strict"
   transparencyMode : TransparencyMode := .none
   permittedDirectProps : Array NamePattern := #[]
+  permittedDirectPropTypes : Array NamePattern := #[]
   permittedPackageTypes : Array NamePattern := #[]
+  permittedTypeclassTypes : Array NamePattern := #[]
+  directPropPolicy : AssumptionTreatment := .fail
   typeclassPolicy : AssumptionTreatment := .fail
   unknownPolicy : AssumptionTreatment := .fail
   aliasPolicy : AssumptionTreatment := .fail
@@ -81,6 +84,20 @@ structure PolicyEvaluation where
 
 /-- Strict default policy: no direct, packaged, typeclass, alias, or unknown assumptions pass. -/
 def strictPolicy : PolicyConfig := {}
+
+/--
+Hidden-surface policy: flags only assumptions the reader cannot see in the
+statement as written — packaged proposition fields, proof-carrying data,
+unexpanded aliases, and unknowns — while allowing direct proposition binders
+and typeclass assumptions, which are visible in the signature. This is the
+default for the in-editor commands; certification workflows use `strictPolicy`
+explicitly.
+-/
+def hiddenSurfacePolicy : PolicyConfig := {
+  identifier := "hidden"
+  directPropPolicy := .allow
+  typeclassPolicy := .allow
+}
 
 /-- Render an assumption treatment canonically for policy digests. -/
 private def canonicalTreatment : AssumptionTreatment → String
@@ -114,11 +131,16 @@ It is versioned so future semantic fields force a visible digest change.
 -/
 def PolicyConfig.canonicalDescription (policy : PolicyConfig) : String :=
   let directs := (policy.permittedDirectProps.map NamePattern.canonical).qsort (· < ·)
+  let directTypes := (policy.permittedDirectPropTypes.map NamePattern.canonical).qsort (· < ·)
   let packages := (policy.permittedPackageTypes.map NamePattern.canonical).qsort (· < ·)
-  "policy-canonical-v1" ++
+  let typeclasses := (policy.permittedTypeclassTypes.map NamePattern.canonical).qsort (· < ·)
+  "policy-canonical-v2" ++
     ";transparency=" ++ canonicalTransparency policy.transparencyMode ++
     ";direct=[" ++ joinComma directs.toList ++ "]" ++
+    ";directTypes=[" ++ joinComma directTypes.toList ++ "]" ++
     ";package=[" ++ joinComma packages.toList ++ "]" ++
+    ";typeclassTypes=[" ++ joinComma typeclasses.toList ++ "]" ++
+    ";directProp=" ++ canonicalTreatment policy.directPropPolicy ++
     ";typeclass=" ++ canonicalTreatment policy.typeclassPolicy ++
     ";unknown=" ++ canonicalTreatment policy.unknownPolicy ++
     ";alias=" ++ canonicalTreatment policy.aliasPolicy
@@ -262,10 +284,11 @@ private def evaluateOwnNode
   else
     match node.primaryCategory with
     | .directProp =>
-      if matchesAny policy.permittedDirectProps node.userName then
+      if matchesAny policy.permittedDirectProps node.userName ||
+          typeHeadPermitted policy.permittedDirectPropTypes node.binderType then
         findings
       else
-        findings.push (finding .unapprovedDirectProp .failure path node)
+        pushTreatedFinding findings policy.directPropPolicy .unapprovedDirectProp path node
     | .packageWithPropFields =>
       if typeHeadPermitted policy.permittedPackageTypes node.binderType then
         findings
@@ -277,7 +300,11 @@ private def evaluateOwnNode
       else
         findings.push (finding .unapprovedProofCarryingData .failure path node)
     | .typeclassAssumption =>
-      pushTreatedFinding findings policy.typeclassPolicy .unapprovedTypeclassAssumption path node
+      if typeHeadPermitted policy.permittedTypeclassTypes node.binderType then
+        findings
+      else
+        pushTreatedFinding findings policy.typeclassPolicy .unapprovedTypeclassAssumption
+          path node
     | .alias =>
       pushTreatedFinding findings policy.aliasPolicy .unsupportedAlias path node
     | .pureData | .unknown =>

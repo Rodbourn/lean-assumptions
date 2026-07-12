@@ -11,14 +11,17 @@ It is meant to sit next to Lean's built-in axiom reporting:
 
 ```lean
 #print axioms MyTheorem
-#print assumptions MyTheorem
-#print assumption_tree MyTheorem
-#print assumption_json MyTheorem
+#assumptions MyTheorem
+#assumptions_json MyTheorem
 ```
 
 `#print axioms` answers which axioms a proof term transitively depends on.
-`#print assumptions` answers a different question: what assumptions are present
-in the elaborated declaration type itself?
+`#assumptions` answers a different question: what assumptions are present in
+the elaborated declaration type itself? By default it flags only assumptions a
+reader cannot see in the statement as written — packaged proposition fields,
+proof-carrying data, unexpanded aliases, unknowns. `#assumptions strict`
+additionally fails every visible proposition binder and typeclass argument,
+for certification workflows.
 
 That includes assumptions carried by:
 
@@ -47,14 +50,14 @@ theorem usesCertifiedValue (pkg : CertifiedValue) : pkg.value = pkg.value := rfl
 ```
 
 The theorem has no direct hypothesis named `h`, but its `pkg` argument carries a
-proposition-valued field. The four commands below show how this sits next to
-Lean's built-in axiom view:
+proposition-valued field. The commands below show how this sits next to Lean's
+built-in axiom view:
 
 ```lean
 #print axioms Examples.HiddenPackage.usesCertifiedValue
-#print assumptions Examples.HiddenPackage.usesCertifiedValue
-#print assumption_tree Examples.HiddenPackage.usesCertifiedValue
-#print assumption_json Examples.HiddenPackage.usesCertifiedValue
+#assumptions Examples.HiddenPackage.usesCertifiedValue
+#assumptions strict Examples.HiddenPackage.usesCertifiedValue
+#assumptions_json Examples.HiddenPackage.usesCertifiedValue
 ```
 
 The first command answers the proof-dependency question:
@@ -63,8 +66,9 @@ The first command answers the proof-dependency question:
 'Examples.HiddenPackage.usesCertifiedValue' does not depend on any axioms
 ```
 
-The relevant output from `#print assumptions` answers the statement-surface
-question:
+The relevant output from `#assumptions` answers the statement-surface
+question — this fails under the DEFAULT hidden-surface policy, because the
+proposition rides inside a package the reader cannot see:
 
 ```text
 lean-assumptions report
@@ -78,8 +82,7 @@ policy_findings:
 - unapproved_package_with_prop_fields severity=failure path=pkg category=package_with_prop_fields type=Examples.HiddenPackage.CertifiedValue
 ```
 
-`#print assumption_tree` emits the same normalized tree in the text report.
-`#print assumption_json` emits the same result as machine-readable JSON; the
+`#assumptions_json` emits the same result as machine-readable JSON; the
 relevant fields are:
 
 ```json
@@ -139,9 +142,9 @@ In a Lean file:
 import LeanAssumptions
 import MyProject.Theorems
 
-#print assumptions MyProject.Theorems.target
-#print assumption_tree MyProject.Theorems.target
-#print assumption_json MyProject.Theorems.target
+#assumptions MyProject.Theorems.target
+#assumptions strict MyProject.Theorems.target
+#assumptions_json MyProject.Theorems.target
 ```
 
 From the CLI (`lake exe` builds the executable on demand):
@@ -203,7 +206,7 @@ Implemented and locally verified:
 - recursive structure/class expansion and proof-carrying data detection
 - cycle-safe unknown reporting and strict policy evaluation
 - deterministic text, JSON, and batch renderers with golden snapshots
-- `#print assumptions`, `#print assumption_tree`, and `#print assumption_json`
+- `#assumptions`, `#assumptions strict`, and `#assumptions_json` commands
 - CLI declaration inspection, declaration lists, module scans, policy files, and CI-oriented exit codes
 - versioned report, batch-report, delta-report, cluster-report, and policy schemas
 - delta reporting between prior/current JSON audit artifacts
@@ -261,12 +264,15 @@ Import `LeanAssumptions` in a Lean file and use the command surface:
 import LeanAssumptions
 import MyProject.Theorems
 
-#print assumptions MyProject.Theorems.target
-#print assumption_tree MyProject.Theorems.target
-#print assumption_json MyProject.Theorems.target
+#assumptions MyProject.Theorems.target
+#assumptions strict MyProject.Theorems.target
+#assumptions_json MyProject.Theorems.target
 ```
 
-All three commands inspect the elaborated declaration type and evaluate the strict policy. The text commands show the normalized assumption tree, raw declaration type representation, policy result, unknown/cycle flags, tool version, Lean version, schema version, target declaration, transparency mode, and policy identifier. The JSON command emits the stable report schema. These commands do not validate proof axioms, sandbox Lean execution, or prove statement equivalence.
+The bare commands evaluate the hidden-surface policy: only packaged
+proposition fields, proof-carrying data, unexpanded aliases, and unknown nodes
+fail, so ordinary theorems with visible hypotheses and typeclass binders pass.
+The `strict` variants fail every unapproved assumption. The text commands show the normalized assumption tree, raw declaration type representation, policy result, unknown/cycle flags, tool version, Lean version, schema version, target declaration, transparency mode, and policy identifier. The JSON command emits the stable report schema. These commands do not validate proof axioms, sandbox Lean execution, or prove statement equivalence.
 
 ## CLI
 
@@ -301,6 +307,9 @@ lake env lean-assumptions --module MyProject.Theorems --scan-module MyProject.Th
 
 Supported policy-related flags:
 
+- `--preset strict|hidden` selects the base policy; `hidden` flags only
+  packaged, proof-carrying, alias, and unknown assumptions. At most one
+  `--preset` or `--policy` is accepted. The CLI default remains `strict`.
 - `--transparency none|reducible|recursive_normalization` sets the alias
   transparency mode directly; at most one is accepted.
 - `--policy <file>` reads a versioned JSON policy file. At most one `--policy`

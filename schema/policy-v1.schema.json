@@ -1,52 +1,114 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://lean-assumptions.local/schema/policy-v1.schema.json",
-  "title": "lean-assumptions policy v1",
-  "type": "object",
-  "additionalProperties": false,
-  "required": ["version"],
-  "properties": {
-    "version": { "const": 1 },
-    "identifier": { "type": "string" },
-    "transparency_mode": {
-      "enum": ["none", "reducible", "recursive_normalization"]
-    },
-    "permit_direct_props": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/name_pattern" }
-    },
-    "permit_package_types": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/name_pattern" }
-    },
-    "typeclass_policy": {
-      "enum": ["allow", "warn", "fail"]
-    },
-    "unknown_policy": {
-      "enum": ["allow", "warn", "fail"]
-    }
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "https://lean-assumptions.local/schema/policy-v1.schema.json",
+ "title": "lean-assumptions policy v1",
+ "type": "object",
+ "additionalProperties": false,
+ "required": [
+  "version"
+ ],
+ "properties": {
+  "version": {
+   "const": 1
   },
-  "$defs": {
-    "name_pattern": {
-      "oneOf": [
-        { "type": "string" },
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": ["exact"],
-          "properties": {
-            "exact": { "type": "string" }
-          }
-        },
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": ["prefix"],
-          "properties": {
-            "prefix": { "type": "string" }
-          }
-        }
-      ]
-    }
+  "identifier": {
+   "type": "string"
+  },
+  "transparency_mode": {
+   "enum": [
+    "none",
+    "reducible",
+    "recursive_normalization"
+   ]
+  },
+  "permit_direct_props": {
+   "type": "array",
+   "items": {
+    "$ref": "#/$defs/name_pattern"
+   }
+  },
+  "permit_direct_prop_types": {
+   "type": "array",
+   "items": {
+    "$ref": "#/$defs/name_pattern"
+   },
+   "description": "Proposition head constants permitted as direct proposition binders, matched by exact name or explicit prefix."
+  },
+  "permit_package_types": {
+   "type": "array",
+   "items": {
+    "$ref": "#/$defs/name_pattern"
+   }
+  },
+  "permit_typeclass_types": {
+   "type": "array",
+   "items": {
+    "$ref": "#/$defs/name_pattern"
+   },
+   "description": "Typeclass head constants permitted as instance-implicit assumptions even when typeclass_policy is warn or fail."
+  },
+  "typeclass_policy": {
+   "enum": [
+    "allow",
+    "warn",
+    "fail"
+   ]
+  },
+  "direct_prop_policy": {
+   "enum": [
+    "allow",
+    "warn",
+    "fail"
+   ],
+   "description": "Treatment for unapproved direct proposition binders (default fail)."
+  },
+  "alias_policy": {
+   "enum": [
+    "allow",
+    "warn",
+    "fail"
+   ],
+   "description": "Treatment for unexpanded alias heads (default fail)."
+  },
+  "unknown_policy": {
+   "enum": [
+    "allow",
+    "warn",
+    "fail"
+   ]
   }
+ },
+ "$defs": {
+  "name_pattern": {
+   "oneOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "exact"
+     ],
+     "properties": {
+      "exact": {
+       "type": "string"
+      }
+     }
+    },
+    {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "prefix"
+     ],
+     "properties": {
+      "prefix": {
+       "type": "string"
+      }
+     }
+    }
+   ]
+  }
+ }
 }

@@ -62,9 +62,9 @@ def main() -> int:
     source = (ROOT / EXAMPLE).read_text(encoding="utf-8")
     required_commands = [
         "#print axioms Examples.HiddenPackage.usesCertifiedValue",
-        "#print assumptions Examples.HiddenPackage.usesCertifiedValue",
-        "#print assumption_tree Examples.HiddenPackage.usesCertifiedValue",
-        "#print assumption_json Examples.HiddenPackage.usesCertifiedValue",
+        "#assumptions Examples.HiddenPackage.usesCertifiedValue",
+        "#assumptions strict Examples.HiddenPackage.usesCertifiedValue",
+        "#assumptions_json Examples.HiddenPackage.usesCertifiedValue",
     ]
     missing_commands = [command for command in required_commands if command not in source]
     if missing_commands:

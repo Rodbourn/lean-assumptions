@@ -135,6 +135,9 @@ def usage : String :=
   "  --transparency none|reducible|recursive_normalization\n" ++
   "                             how far definition heads unfold; unexpanded heads report\n" ++
   "                             as alias (default none; recorded in every artifact)\n" ++
+  "  --preset strict|hidden     base policy: strict fails every unapproved assumption;\n" ++
+  "                             hidden flags only packaged, proof-carrying, alias, and\n" ++
+  "                             unknown assumptions (default strict)\n" ++
   "  --policy <file>            versioned JSON policy file (schema/policy-v1.schema.json)\n" ++
   "  --allow-direct <Name>      permit an exact direct proposition binder name\n" ++
   "  --allow-package <Name>     permit an exact package or proof-carrying type head\n" ++
@@ -396,17 +399,24 @@ def parsePolicyJson (json : Lean.Json) : Except String PolicyConfig := do
   let transparencyValue ← optionalString json "transparency_mode" "none"
   let transparencyMode ← parseTransparencyMode transparencyValue
   let permittedDirectProps ← optionalNamePatterns json "permit_direct_props"
+  let permittedDirectPropTypes ← optionalNamePatterns json "permit_direct_prop_types"
   let permittedPackageTypes ← optionalNamePatterns json "permit_package_types"
+  let permittedTypeclassTypes ← optionalNamePatterns json "permit_typeclass_types"
+  let directPropPolicy ← optionalTreatment json "direct_prop_policy" .fail
   let typeclassPolicy ← optionalTreatment json "typeclass_policy" .fail
   let unknownPolicy ← optionalTreatment json "unknown_policy" .fail
+  let aliasPolicy ← optionalTreatment json "alias_policy" .fail
   pure {
     identifier := identifier
     transparencyMode := transparencyMode
     permittedDirectProps := permittedDirectProps
+    permittedDirectPropTypes := permittedDirectPropTypes
     permittedPackageTypes := permittedPackageTypes
+    permittedTypeclassTypes := permittedTypeclassTypes
+    directPropPolicy := directPropPolicy
     typeclassPolicy := typeclassPolicy
     unknownPolicy := unknownPolicy
-    aliasPolicy := .fail
+    aliasPolicy := aliasPolicy
   }
 
 /-- Read and parse a versioned JSON policy file. -/
@@ -483,9 +493,23 @@ private def parseArgsAux : List String -> Config -> IO Config
     match parseOutputFormat value with
     | .ok format => parseArgsAux rest { config with format := format }
     | .error error => throw (IO.userError error)
+  | "--preset" :: value :: rest, config => do
+    if config.policyFileLoaded then
+      throw (IO.userError s!"--preset cannot be combined with --policy or another --preset\n{usage}")
+    let policy ←
+      match value with
+      | "strict" => pure Policy.strictPolicy
+      | "hidden" => pure Policy.hiddenSurfacePolicy
+      | other => throw (IO.userError s!"unsupported policy preset: {other}\n{usage}")
+    parseArgsAux rest {
+      config with
+      policy := policy
+      policyFileLoaded := true
+      policyConfigured := true
+    }
   | "--policy" :: value :: rest, config => do
     if config.policyFileLoaded then
-      throw (IO.userError s!"multiple --policy options are not supported\n{usage}")
+      throw (IO.userError s!"multiple --policy or --preset options are not supported\n{usage}")
     let policy ← readPolicyFile value
     parseArgsAux rest {
       config with

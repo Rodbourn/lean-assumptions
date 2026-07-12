@@ -10,7 +10,7 @@ The following are public APIs. Changing any of them is a compatibility event:
 
 | Surface | Contract |
 | --- | --- |
-| Command names (`#print assumptions`, `#print assumption_tree`, `#print assumption_json`) | Stable. Names may change only for strong community reasons, with the old spelling kept as a deprecated alias for at least one minor release and a changelog entry announcing the migration window. |
+| Command names (`#assumptions`, `#assumptions strict`, `#assumptions_json`) | Stable from v0.2.0. The pre-adoption `#print assumptions` family was renamed on 2026-07-12, before any downstream use, to avoid extending core's `#print` syntax; names may change hereafter only for strong community reasons, with the old spelling kept as a deprecated alias for at least one minor release. |
 | CLI flags and exit codes | Stable. New flags may be added freely; existing flags may not change meaning or arity. Removing or renaming a flag requires a deprecation period of one minor release during which the old flag still works and warns. Exit-code semantics (`0` pass/warn, `1` fail/audit error, `2` usage/parse) may not change within a major version. |
 | Report JSON (`schema/report-v1.schema.json`, `schema/batch-report-v1.schema.json`) | Versioned. See schema evolution rules below. |
 | Delta and cluster JSON (`schema/delta-report-v1.schema.json`, `schema/cluster-report-v1.schema.json`) | Versioned. Same rules. |
