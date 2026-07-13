@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Nothing yet.
+
+## 0.2.2 - 2026-07-12
+
 - Add a machine-generated-proof guard story: a runnable example
   (`Examples/MachineProofGuard.lean`, with checked expected output) where an
   honest and a premise-smuggling submission of the same goal both satisfy
