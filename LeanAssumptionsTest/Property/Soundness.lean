@@ -20,6 +20,15 @@ binders are exercised by the fixture corpus instead: under strict policy every
 instance binder fails regardless of content, and an allowlisted typeclass owns
 its internal fields by design, so they carry no positive/negative signal here.
 
+A third table, `conservativeTypeSources`, pins data-only shapes the
+classifier currently resolves to `unknown` (conservative false failures):
+each must FAIL strict policy WITH `unknownsOccurred`. This is the
+recognizer-precision metric on our own generated corpus — shrinking this
+table by moving entries to `negativeTypeSources` (with the recognizer change
+that justifies the move, e.g. a branch-wise recursor recognizer) is the
+release-over-release goal; an entry silently starting to pass without such a
+change is classification drift and fails the suite.
+
 A false pass from this oracle is a trusted-core correctness incident: stop,
 minimize the reproducer, and fix with a regression test before proceeding
 (`CHARTER.md`, non-negotiable principles 1-3).
@@ -74,7 +83,9 @@ def positiveTypeSources : Array (String × String) := #[
   ("subtype", "{ n : Nat // n = 1 }"),
   ("psigma", "PSigma fun _ : Nat => LeanAssumptionsTest.Property.MarkedProp"),
   ("pair", "Nat × LeanAssumptionsTest.Property.MarkedField"),
-  ("listed", "List LeanAssumptionsTest.Property.MarkedCarrier")
+  ("listed", "List LeanAssumptionsTest.Property.MarkedCarrier"),
+  ("stuckrec", "(n : Nat) → Nat.rec (motive := fun _ => Type) Nat (fun _ ih => Nat × LeanAssumptionsTest.Property.MarkedField) n"),
+  ("fvarprop", "(P : Nat → Prop) → P 3")
 ]
 
 /-- Negative control sites: data-only mirrors that must keep passing. -/
@@ -86,7 +97,26 @@ def negativeTypeSources : Array (String × String) := #[
   ("codomain", "Unit → LeanAssumptionsTest.Property.PlainField"),
   ("pair", "Nat × LeanAssumptionsTest.Property.PlainField"),
   ("listed", "List LeanAssumptionsTest.Property.PlainCarrier"),
-  ("function", "Nat → List Nat")
+  ("function", "Nat → List Nat"),
+  ("fvarapp", "(f : Nat → Type) → f 3")
+]
+
+/-- Data-only shapes the classifier currently resolves to `unknown` —
+conservative false failures, pinned so precision changes are always loud.
+
+- `stuckrec_data`: recognizer debt. Both minor premises are pure data, so a
+  branch-wise recursor recognizer could soundly move this to the negative
+  controls together with that trusted-core change.
+
+Note the shape this table deliberately does NOT contain: fvar-headed
+applications like `f 3` for a bound `f : Nat → Type` are positively
+recognized as parametric data (`Core/Inspect.lean`, fvar branch) — the
+surrounding telescope quantifies over the type family, so the statement as
+written smuggles no specific proposition. That settled behavior is pinned by
+the `fvarapp` negative control, and its soundness boundary by the `fvarprop`
+positive (a prop-valued family application must always fail strict). -/
+def conservativeTypeSources : Array (String × String) := #[
+  ("stuckrec_data", "(n : Nat) → Nat.rec (motive := fun _ => Type) Nat (fun _ ih => Nat × ih) n")
 ]
 
 /-- The binder-kind dimension swept for every embedding site. -/
@@ -122,11 +152,14 @@ run_cmd do
     declareShapes "positive" typeLabel source
   for (typeLabel, source) in negativeTypeSources do
     declareShapes "negative" typeLabel source
+  for (typeLabel, source) in conservativeTypeSources do
+    declareShapes "conservative" typeLabel source
 
-/-- Evaluate one generated declaration against strict policy. -/
-private def strictResultOf (declName : Lean.Name) : CommandElabM PolicyResult := do
+/-- Evaluate one generated declaration against strict policy, also returning
+whether the report carries `unknown` nodes. -/
+private def strictResultOf (declName : Lean.Name) : CommandElabM (PolicyResult × Bool) := do
   let report ← LeanAssumptions.Core.inspectDeclaration declName
-  pure (Policy.evaluate Policy.strictPolicy report).result
+  pure ((Policy.evaluate Policy.strictPolicy report).result, report.unknownsOccurred)
 
 run_cmd do
   -- The conservatism oracle. Every positive must fail; every negative must
@@ -138,7 +171,7 @@ run_cmd do
     for kind in binderKindLabels do
       let declName := `LeanAssumptionsTest.Property ++
         Name.mkSimple s!"positive_{typeLabel}_{kind}"
-      let result ← strictResultOf declName
+      let (result, _) ← strictResultOf declName
       unless result == PolicyResult.fail do
         throwError "SOUNDNESS ORACLE VIOLATION: {declName} embeds the marked \
           proposition but strict policy reported {repr result}. Treat as a \
@@ -148,12 +181,28 @@ run_cmd do
     for kind in binderKindLabels do
       let declName := `LeanAssumptionsTest.Property ++
         Name.mkSimple s!"negative_{typeLabel}_{kind}"
-      let result ← strictResultOf declName
+      let (result, _) ← strictResultOf declName
       unless result == PolicyResult.pass do
         throwError "conservatism drift: data-only control {declName} reported \
           {repr result} under strict policy instead of pass."
       negatives := negatives + 1
+  let mut conservatives := 0
+  for (typeLabel, _) in conservativeTypeSources do
+    for kind in binderKindLabels do
+      let declName := `LeanAssumptionsTest.Property ++
+        Name.mkSimple s!"conservative_{typeLabel}_{kind}"
+      let (result, unknownsOccurred) ← strictResultOf declName
+      unless result == PolicyResult.fail && unknownsOccurred do
+        throwError "precision drift: conservative control {declName} reported \
+          {repr result} (unknowns: {unknownsOccurred}) instead of an \
+          unknown-bearing strict failure. If a recognizer change justifies \
+          this, move the entry to negativeTypeSources in the same commit; \
+          otherwise treat as classification drift."
+      conservatives := conservatives + 1
   assertEq "oracle positive coverage" (positiveTypeSources.size * 3) positives
   assertEq "oracle negative coverage" (negativeTypeSources.size * 3) negatives
+  -- The precision metric: shrink by moving entries to negatives, never by
+  -- deleting. 6 = 2 conservative shapes x 3 binder kinds.
+  assertEq "conservative unknown-bearing controls" (conservativeTypeSources.size * 3) conservatives
 
 end LeanAssumptionsTest.Property

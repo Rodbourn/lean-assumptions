@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+- Extend the property-based soundness oracle with the shape classes the
+  2026-07-11 large-scale scan surfaced, reproduced synthetically: a stuck
+  recursor-computed type embedding the marked proposition in one branch
+  (must always fail strict), a prop-valued bound-family application (must
+  always fail strict), and a bound-type-family application pinned as the
+  settled parametric-data behavior. A new conservative-controls table pins
+  data-only shapes the classifier currently resolves to `unknown` as
+  unknown-bearing strict failures — the recognizer-precision metric on the
+  generated corpus: entries may only move to the negative controls together
+  with the recognizer change that justifies the move, and any silent drift
+  in either direction fails the suite.
 - Remove the mathlib-scale validation document and its scheduled
   GitHub Pages publication workflow. Scanning a third-party library and
   publishing per-module pass/fail counts reads as a judgment of that
