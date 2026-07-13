@@ -13,14 +13,10 @@ SETUP_PYTHON_SHA = "a26af69be951a213d495a4c3e4e4022e16d87065"  # actions/setup-p
 LEAN_ACTION_SHA = "38fbc41a8c28c4cbaec22d7f7de508ec2e7c0dd9"  # leanprover/lean-action v1
 LEAN_UPDATE_SHA = "6f7b598c3255645e06f5d31f9f77b7440fc16451"  # leanprover-community/lean-update v0.12.0
 UPLOAD_ARTIFACT_SHA = "ea165f8d65b6e75b540449e92b4886f43607fa02"  # actions/upload-artifact v4
-CONFIGURE_PAGES_SHA = "983d7736d9b0ae728b81ab479565c72886d7745b"  # actions/configure-pages v5
-UPLOAD_PAGES_ARTIFACT_SHA = "7b1f4a764d45c48632c6b24a0339c27f5614fb0b"  # actions/upload-pages-artifact v4
-DEPLOY_PAGES_SHA = "d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e"  # actions/deploy-pages v4
 WORKFLOW = ROOT / ".github" / "workflows" / "ci.yml"
 ACTION_FILE = ROOT / "action.yml"
 COMPATIBILITY_WORKFLOW = ROOT / ".github" / "workflows" / "compatibility.yml"
 UPDATE_WORKFLOW = ROOT / ".github" / "workflows" / "update.yml"
-MATHLIB_VALIDATION_WORKFLOW = ROOT / ".github" / "workflows" / "mathlib-validation.yml"
 RELEASE_WORKFLOW = ROOT / ".github" / "workflows" / "release.yml"
 
 
@@ -137,50 +133,6 @@ def main() -> int:
         "lake env leanchecker --fresh LeanAssumptions",
     ]:
         require(command in compatibility, f"Compatibility workflow must run `{command}`.", errors)
-
-    if MATHLIB_VALIDATION_WORKFLOW.exists():
-        validation = MATHLIB_VALIDATION_WORKFLOW.read_text(encoding="utf-8")
-    else:
-        validation = ""
-        errors.append("Scheduled mathlib-scale validation workflow is missing.")
-
-    require("schedule:" in validation, "Mathlib validation workflow must run on a schedule.", errors)
-    require("workflow_dispatch:" in validation, "Mathlib validation workflow must be manually runnable.", errors)
-    require(
-        f"uses: actions/checkout@{CHECKOUT_SHA}" in validation,
-        "Mathlib validation workflow must pin actions/checkout by commit SHA.",
-        errors,
-    )
-    require(
-        f"uses: leanprover/lean-action@{LEAN_ACTION_SHA}" in validation,
-        "Mathlib validation workflow must pin leanprover/lean-action by commit SHA.",
-        errors,
-    )
-    for pages_action, sha in [
-        ("actions/configure-pages", CONFIGURE_PAGES_SHA),
-        ("actions/upload-pages-artifact", UPLOAD_PAGES_ARTIFACT_SHA),
-        ("actions/deploy-pages", DEPLOY_PAGES_SHA),
-    ]:
-        require(
-            f"uses: {pages_action}@{sha}" in validation,
-            f"Mathlib validation workflow must pin {pages_action} by commit SHA.",
-            errors,
-        )
-    require(
-        "AGGREGATES ONLY" in validation,
-        "Mathlib validation workflow must state its aggregates-only publication policy.",
-        errors,
-    )
-    require(
-        "build_mathlib_validation_page.py" in validation,
-        "Mathlib validation workflow must build the page through the reviewed script.",
-        errors,
-    )
-    require(
-        "cmp -s" in validation,
-        "Mathlib validation workflow must keep the byte-identical determinism rescan.",
-        errors,
-    )
 
     if ACTION_FILE.exists():
         action = ACTION_FILE.read_text(encoding="utf-8")

@@ -261,7 +261,6 @@ Implemented behavior, remaining gaps, and phase boundaries are documented here:
 - Failure clustering spec: [docs/clustering-spec.md](docs/clustering-spec.md)
 - Baseline mode spec: [docs/baseline-spec.md](docs/baseline-spec.md)
 - Compatibility policy: [docs/compatibility-policy.md](docs/compatibility-policy.md)
-- Mathlib-scale validation: [docs/mathlib-scale-validation.md](docs/mathlib-scale-validation.md)
 - Requirement tracker: [docs/requirements-status.md](docs/requirements-status.md)
 - Lean API and tooling gaps: [docs/api-gaps.md](docs/api-gaps.md)
 
