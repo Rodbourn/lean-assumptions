@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- Add a machine-generated-proof guard story: a runnable example
+  (`Examples/MachineProofGuard.lean`, with checked expected output) where an
+  honest and a premise-smuggling submission of the same goal both satisfy
+  the kernel and both report a clean `#print axioms`, while `#assumptions
+  strict` passes the honest statement and fails the smuggled one; a README
+  section documents the pin-audit-kernel pipeline (statement digest at task
+  creation, strict-policy exit code per submission) with its boundaries
+  stated plainly. The example checker now validates every runnable example
+  from a table.
 - Extend the property-based soundness oracle with the shape classes the
   2026-07-11 large-scale scan surfaced, reproduced synthetically: a stuck
   recursor-computed type embedding the marked proposition in one branch

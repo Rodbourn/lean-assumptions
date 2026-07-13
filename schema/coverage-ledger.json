@@ -24,6 +24,33 @@
    ]
   },
   {
+   "path": "Examples/MachineProofGuard.lean",
+   "tests": [
+    "python scripts/check_examples.py",
+    "lake env lean Examples/MachineProofGuard.lean"
+   ],
+   "publicDefinitions": [
+    {
+     "name": "Examples.MachineProofGuard.addComm",
+     "tests": [
+      "python scripts/check_examples.py"
+     ]
+    },
+    {
+     "name": "Examples.MachineProofGuard.Premise",
+     "tests": [
+      "python scripts/check_examples.py"
+     ]
+    },
+    {
+     "name": "Examples.MachineProofGuard.addCommSmuggled",
+     "tests": [
+      "python scripts/check_examples.py"
+     ]
+    }
+   ]
+  },
+  {
    "path": "LeanAssumptions.lean",
    "tests": [
     "LeanAssumptionsTest/Integration/Phase1.lean",

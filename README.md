@@ -205,6 +205,45 @@ This tool does not replace:
 It audits declaration statements. It does not prove that a theorem matches an
 informal claim, validate proof axioms, or certify imported libraries.
 
+## Guarding Machine-Generated Proofs
+
+When an AI system produces Lean proofs — an agent session, an
+autoformalization pipeline, a training loop — the kernel checks that the
+proof proves the statement, but nothing checks that the statement is the one
+that was asked for. Under optimization pressure that gap is where cheating
+concentrates: the easiest way to "prove" a hard statement is to prove a
+lookalike whose real content arrives as a packaged premise, a typeclass
+argument, or an alias. The proof then checks, `#print axioms` comes back
+clean, and the conclusion reads exactly like the assigned goal.
+
+That gap is a statement-surface problem, so it can be closed mechanically:
+
+1. **Pin the statement once, at task creation.** Record the intended
+   statement's `statement_repr_digest` and the Lean version. A submission
+   whose digest differs did not prove the pinned statement (see
+   [docs/statement-identity-spec.md](docs/statement-identity-spec.md) for
+   exactly what the digest does and does not certify).
+2. **Audit every submission's assumption surface.** `lake exe
+   lean-assumptions --module <M> --decl <target> --format json` must exit `0`
+   under your policy — `strict` approves nothing implicit, so a smuggled
+   premise is a failing finding, not a judgment call.
+3. **Let the kernel do the rest.**
+
+The runnable example
+[Examples/MachineProofGuard.lean](Examples/MachineProofGuard.lean) (checked
+output alongside it) shows the catch end to end: an honest and a
+premise-smuggling submission of `∀ a b : Nat, a + b = b + a` both compile and
+both report a clean `#print axioms`; `#assumptions strict` passes the honest
+one and fails the smuggled one with an `unapproved_package_with_prop_fields`
+finding, and their statement digests differ.
+
+Boundaries, stated plainly: deciding that the pinned statement formalizes the
+informal task is a one-time human judgment this tool cannot make; the digest
+certifies byte-identity under the same Lean version, never meaning; and the
+audit does not validate proof axioms, replay the kernel, or sandbox
+execution — pair it with `#print axioms`, `leanchecker`, and `comparator` as
+ever.
+
 ## Current Status
 
 This is an early public development checkpoint, not a finished release.
